@@ -2367,6 +2367,7 @@ export default function MakanLedger() {
               onCompleteComponentBatch={completeComponentBatch}
               prepCardOpen={prepCardOpen}
               onTogglePrepCard={setPrepCardOpen}
+              onAutoPlan={planMyWeek}
             />
           </>)}
           {tab === "prep" && <main style={{ padding: "28px 20px 100px", display: "grid", gap: 14 }}>
@@ -2516,7 +2517,7 @@ function GenerateScreen(props) {
     onAddOn, onRedo, generateNote, grouped, onRegenerate, onPickMeal, pickableMeals, rawPickableMeals, onAddExtraDish, onReapplyHousehold, onRemove, household,
     cookNowRanked, onGenerateOne, onCookNow, pantryCount, todayDishes, slotPax, onSetSlotPax, onSetMealPax,
     skippedDays, toggleSkipDay, onMarkCooked,
-    prepList, prepChecked, togglePrepChecked, onCompleteComponentBatch, prepCardOpen, onTogglePrepCard,
+    prepList, prepChecked, togglePrepChecked, onCompleteComponentBatch, prepCardOpen, onTogglePrepCard, onAutoPlan,
   } = props;
 
   const totalPax = household.adults + household.kids + household.elderly;
@@ -2524,6 +2525,7 @@ function GenerateScreen(props) {
   const [cookOffset, setCookOffset] = useState(0);
   const [cookOpen, setCookOpen] = useState(false);
   const [showLegacyPlan, setShowLegacyPlan] = useState(false);
+  const [planningMode, setPlanningMode] = useState("auto");
   const [cookPaxOverride, setCookPaxOverride] = useState(null); // null = follow the lunch/dinner headcount
   const cookPax = cookPaxOverride != null ? cookPaxOverride : (slotPax && slotPax[cookType] != null ? slotPax[cookType] : totalPax);
   const cookList = (cookNowRanked && cookNowRanked[cookType]) || [];
@@ -2565,7 +2567,33 @@ function GenerateScreen(props) {
   }
 
   return (
-    <div style={{ padding: "18px 18px 28px" }}>
+    <div style={{ padding: "18px 18px 28px", maxWidth: 760, margin: "0 auto", color:C.ink }}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:8,marginBottom:18,background:"#F1EFFB",padding:6,borderRadius:19}} role="group" aria-label="Planning mode">
+        {[
+          ["auto","✨ Auto","One tap"],
+          ["custom","🎛 Custom","Quick tweaks"],
+          ["manual","⚙ Manual","Full control"]
+        ].map(([id,label,description])=><button key={id} onClick={()=>setPlanningMode(id)} aria-pressed={planningMode===id} style={{minWidth:0,border:0,borderRadius:15,padding:"14px 5px",background:planningMode===id?"#fff":"transparent",boxShadow:planningMode===id?"0 3px 12px #30324116":"none",color:C.ink,cursor:"pointer"}}>
+          <strong style={{display:"block",fontSize:14}}>{label}</strong><span style={{display:"block",fontSize:10,color:C.inkSoft,marginTop:4}}>{description}</span>
+        </button>)}
+      </div>
+      {planningMode==="auto" && <section style={{background:"#FCE9E5",borderRadius:24,padding:20,display:"grid",gap:14,marginBottom:18}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12}}>
+          <div><span style={{fontSize:11,fontWeight:800,letterSpacing:1.5,color:"#A65D4E"}}>POINT & SHOOT</span>
+            <h3 style={{fontFamily:FONT_DISPLAY,fontSize:27,lineHeight:1.2,margin:"7px 0"}}>Dinner, handled.</h3>
+            <p style={{fontSize:13,lineHeight:1.6,color:C.inkSoft,margin:0}}>Seven dinners, using what’s in your kitchen first. Shopping and prep update automatically.</p></div>
+          <FoodArt kind="meal" size={112}/>
+        </div>
+        <button onClick={onAutoPlan} style={{border:0,borderRadius:16,background:"#EAA28F",padding:17,color:C.ink,fontSize:16,fontWeight:800,boxShadow:"0 3px 0 #C87865"}}>✦ Plan my 7 dinners →</button>
+        <span style={{fontSize:12,color:C.inkSoft}}>Want breakfast, lunch or a month? Choose Custom. Need serving-by-serving control? Choose Manual.</span>
+      </section>}
+      {planningMode!=="auto" && <section style={{background:"#fff",border:`1px solid ${C.line}`,borderRadius:22,padding:17,marginBottom:16}}>
+        <div style={{display:"flex",alignItems:"center",gap:12}}><FoodArt kind={planningMode==="custom"?"meal":"prep"} size={75}/><div>
+          <strong style={{fontFamily:FONT_DISPLAY,fontSize:22}}>{planningMode==="custom"?"Make it yours":"Every detail, your way"}</strong>
+          <p style={{fontSize:12,color:C.inkSoft,margin:"5px 0 0"}}>{planningMode==="custom"?"Pick the days and meals. We'll handle the rest.":"Set exact servings and open detailed editing only when you need it."}</p>
+        </div></div>
+      </section>}
+      {planningMode==="manual" && <>
       {(totalPax > 0 || dietLabels.length > 0) && (
         <div style={{
           display: "flex", alignItems: "center", gap: 6, marginBottom: 10, fontSize: 11.5,
@@ -2701,6 +2729,8 @@ function GenerateScreen(props) {
         )}
       </div>
 
+      </>}
+      {planningMode!=="auto" && <>
       {/* scope */}
       <SectionLabel>How much to plan</SectionLabel>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
@@ -2718,7 +2748,7 @@ function GenerateScreen(props) {
         </div>
       </div>
 
-      {mealSlots.length > 0 && (
+      {planningMode==="manual" && mealSlots.length > 0 && (
         <div style={{ marginBottom: 18 }}>
           <SectionLabel>How many eating</SectionLabel>
           {["breakfast", "lunch", "dinner"].filter(t => mealSlots.includes(t)).map(t => {
@@ -2783,13 +2813,14 @@ function GenerateScreen(props) {
         <p style={{ fontSize: 12, color: C.clayText, marginTop: 8, fontFamily: FONT_BODY }}>{generateNote}</p>
       )}
 
+      </>}
       {/* Advanced plan detail stays available without flooding Manual mode. */}
-      {grouped && <div style={{margin:"22px 0 0",padding:16,borderRadius:18,background:"#fff",border:`1px solid ${C.line}`}}>
+      {planningMode==="manual" && grouped && <div style={{margin:"22px 0 0",padding:16,borderRadius:18,background:"#fff",border:`1px solid ${C.line}`}}>
         <strong style={{display:"block",fontSize:16}}>Your saved plan is ready</strong>
         <p style={{fontSize:13,color:C.inkSoft,margin:"6px 0 12px"}}>For an easier overview, use My Week. Open detailed editing here only when needed.</p>
         <button onClick={()=>setShowLegacyPlan(v=>!v)} aria-expanded={showLegacyPlan} style={{background:"#F1EFFB",border:0,borderRadius:12,padding:"12px 16px",fontWeight:700,color:C.ink,width:"100%"}}>{showLegacyPlan?"Hide detailed editor ↑":"Open detailed editor ↓"}</button>
       </div>}
-      {grouped && showLegacyPlan && (
+      {planningMode==="manual" && grouped && showLegacyPlan && (
         <div style={{ marginTop: 22 }}>
           {prepList && (prepList.aggregateItems.length > 0 || prepList.perDish.length > 0) && (
             <WeekendPrepCard prepList={prepList} prepChecked={prepChecked} togglePrepChecked={togglePrepChecked} onCompleteComponentBatch={onCompleteComponentBatch} open={prepCardOpen} onToggleOpen={onTogglePrepCard} />
