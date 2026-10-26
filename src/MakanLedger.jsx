@@ -2330,7 +2330,14 @@ export default function MakanLedger() {
               canPostponeMeal={canPostponeMeal}
             />}
           />}
-          {tab === "manual" && (
+          {tab === "manual" && (<>
+            <section style={{margin:"20px 18px 0",padding:18,borderRadius:22,background:"#F1EFFB",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
+              <div><button onClick={()=>setTab("me")} style={{border:0,background:"transparent",padding:"0 0 12px",color:C.inkSoft,fontWeight:700}}>← Back to Me</button>
+              <div style={{fontSize:11,fontWeight:800,letterSpacing:1.6,color:C.inkSoft}}>MANUAL MODE</div>
+              <h2 style={{fontFamily:FONT_DISPLAY,fontSize:26,margin:"7px 0"}}>More control, less clutter.</h2>
+              <p style={{fontSize:13,color:C.inkSoft,lineHeight:1.5,margin:0}}>Choose meals, servings and dates. Your existing recipes and saved plan stay intact.</p></div>
+              <FoodArt kind="prep" size={95}/>
+            </section>
             <GenerateScreen
               scope={scope} setScope={setScope}
               mealSlots={mealSlots} toggleMealSlot={toggleMealSlot}
@@ -2361,7 +2368,7 @@ export default function MakanLedger() {
               prepCardOpen={prepCardOpen}
               onTogglePrepCard={setPrepCardOpen}
             />
-          )}
+          </>)}
           {tab === "prep" && <main style={{ padding: "28px 20px 100px", display: "grid", gap: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 15, borderRadius: 20, background: "#E9F3F8" }}><div><div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1.5, color: C.inkSoft }}>PREP, MADE SIMPLE</div><strong>Little jobs. Big relief.</strong></div><FoodArt kind="prep" size={95}/></div>
             <h2 style={{ fontFamily: FONT_DISPLAY, fontSize: 30, lineHeight: 1.2, margin: 0 }}>A little now. Less later.</h2>
@@ -2516,6 +2523,7 @@ function GenerateScreen(props) {
   const [cookType, setCookType] = useState(() => (new Date().getHours() < 15 ? "lunch" : "dinner"));
   const [cookOffset, setCookOffset] = useState(0);
   const [cookOpen, setCookOpen] = useState(false);
+  const [showLegacyPlan, setShowLegacyPlan] = useState(false);
   const [cookPaxOverride, setCookPaxOverride] = useState(null); // null = follow the lunch/dinner headcount
   const cookPax = cookPaxOverride != null ? cookPaxOverride : (slotPax && slotPax[cookType] != null ? slotPax[cookType] : totalPax);
   const cookList = (cookNowRanked && cookNowRanked[cookType]) || [];
@@ -2775,8 +2783,13 @@ function GenerateScreen(props) {
         <p style={{ fontSize: 12, color: C.clayText, marginTop: 8, fontFamily: FONT_BODY }}>{generateNote}</p>
       )}
 
-      {/* plan display */}
-      {grouped && (
+      {/* Advanced plan detail stays available without flooding Manual mode. */}
+      {grouped && <div style={{margin:"22px 0 0",padding:16,borderRadius:18,background:"#fff",border:`1px solid ${C.line}`}}>
+        <strong style={{display:"block",fontSize:16}}>Your saved plan is ready</strong>
+        <p style={{fontSize:13,color:C.inkSoft,margin:"6px 0 12px"}}>For an easier overview, use My Week. Open detailed editing here only when needed.</p>
+        <button onClick={()=>setShowLegacyPlan(v=>!v)} aria-expanded={showLegacyPlan} style={{background:"#F1EFFB",border:0,borderRadius:12,padding:"12px 16px",fontWeight:700,color:C.ink,width:"100%"}}>{showLegacyPlan?"Hide detailed editor ↑":"Open detailed editor ↓"}</button>
+      </div>}
+      {grouped && showLegacyPlan && (
         <div style={{ marginTop: 22 }}>
           {prepList && (prepList.aggregateItems.length > 0 || prepList.perDish.length > 0) && (
             <WeekendPrepCard prepList={prepList} prepChecked={prepChecked} togglePrepChecked={togglePrepChecked} onCompleteComponentBatch={onCompleteComponentBatch} open={prepCardOpen} onToggleOpen={onTogglePrepCard} />
