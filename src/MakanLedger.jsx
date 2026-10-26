@@ -11,6 +11,7 @@ import { SplashScreen } from "@capacitor/splash-screen";
 // version, the no-ads build ships a version where both calls do nothing —
 // so this file is identical in both builds.
 import { initAds, showInterstitialAd, AdSlot, SiteFooter } from "./ads.js";
+import SimpleWeek from "./SimpleWeek.jsx";
 
 /* ---------------------------------------------------------------
    TOKENS — "kitchen ledger" identity: deep jade + receipt paper,
@@ -23,24 +24,24 @@ import { initAds, showInterstitialAd, AdSlot, SiteFooter } from "./ads.js";
 // renaming every C.jade900 etc. call site across the file would be a much
 // bigger, riskier change for a palette swap that's cosmetic only.
 const C = {
-  jade900: "#4A2A1F",
-  jade700: "#6E4328",
-  jade600: "#8C5A36",
-  paper: "#F7EEDF",
-  paperDim: "#EDE0C8",
-  ink: "#2E2015",
-  inkSoft: "#6B5243",
-  mustard: "#C98A2E",
-  mustardDeep: "#A66E1E",
-  clay: "#B5502F",
-  sage: "#6E8F6A",
-  line: "#DCC9A3",
+  jade900: "#174D3D",
+  jade700: "#276D57",
+  jade600: "#41826B",
+  paper: "#F7FAF8",
+  paperDim: "#E9F1ED",
+  ink: "#163A30",
+  inkSoft: "#617B70",
+  mustard: "#2C8A6B",
+  mustardDeep: "#176B51",
+  clay: "#D17D5C",
+  sage: "#6DA58B",
+  line: "#D8E5DE",
   // Darker variants of clay/sage for use as actual text (labels, error
   // messages, links) — the base tones read fine as backgrounds/icons/dots,
   // but fall short of WCAG AA (4.5:1) for small text on the cream/white
   // surfaces this app uses. Same hue family, just deep enough to read.
-  clayText: "#8F3E1E",
-  sageText: "#3E5A3C",
+  clayText: "#A14F35",
+  sageText: "#2B6D52",
 };
 
 const CATEGORY_DOT = {
@@ -755,7 +756,7 @@ function OnboardingTour({ step, onNext, onBack, onSkip }) {
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 }}>
           <div style={{
             display: "flex", alignItems: "center", justifyContent: "center", width: 34, height: 34,
-            borderRadius: 10, background: "#EFE0CC", flexShrink: 0,
+            borderRadius: 10, background: "#EAF3EE", flexShrink: 0,
           }}>
             <Icon size={17} color={C.jade700} />
           </div>
@@ -809,10 +810,12 @@ export default function MakanLedger() {
   const [tab, setTab] = useState(() => {
     try {
       const saved = sessionStorage.getItem("pmm-tab");
-      return saved && ["home", "generate", "list", "pantry", "library", "import", "household"].includes(saved) ? saved : "home";
+      return saved === "generate" ? "week" : (saved && ["home", "week", "me", "manual", "list", "pantry", "library", "import", "household"].includes(saved) ? saved : "home");
     } catch (e) { return "home"; }
   });
   const [moreOpen, setMoreOpen] = useState(false);
+  const [rescueOpen, setRescueOpen] = useState(false);
+  const [rescueText, setRescueText] = useState("");
   useEffect(() => { try { sessionStorage.setItem("pmm-tab", tab); } catch (e) { /* ignore */ } }, [tab]);
   const [ready, setReady] = useState(false);
   // Desktop side tabs only appear once the app (below the story section) is in view.
@@ -1376,8 +1379,14 @@ export default function MakanLedger() {
     setSkippedDays(prev => prev.filter(d => d < today || d > weekEnd));
     setCheckedItems({});
     setScope("week");
-    setTab("generate");
-    showToast("Your next seven dinners are ready. Tap any dish to see its recipe.");
+    setTab("week");
+    showToast("Seven dinners ready. Shopping and prep are updated.");
+  }
+
+  function movePlannedMeal(uid, date) {
+    const old = plan;
+    setPlan(prev => prev.map(m => m.uid === uid ? { ...m, date } : m));
+    showToast("Moved to another day", () => setPlan(old));
   }
 
   function handleAddOn() {
@@ -2195,23 +2204,23 @@ export default function MakanLedger() {
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .spin { animation: spin 1s linear infinite; }
         .pmm-tabs { display: flex; border-top: 1px solid rgba(235,217,189,0.15); }
-        .pmm-tab { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 2px 7px; background: transparent; border: none; border-bottom: 3px solid transparent; color: #D9BE9C; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 11px; font-weight: 500; -webkit-tap-highlight-color: transparent; cursor: pointer; }
-        .pmm-tab.on { color: #fff; font-weight: 700; border-bottom-color: #C98A2E; }
+        .pmm-tab { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 2px 7px; background: transparent; border: none; border-bottom: 3px solid transparent; color: #B5D8C7; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 11px; font-weight: 500; -webkit-tap-highlight-color: transparent; cursor: pointer; }
+        .pmm-tab.on { color: #fff; font-weight: 700; border-bottom-color: #2C8A6B; }
         .pmm-tab-ic { position: relative; display: flex; }
         .pmm-tab-lb { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-        .pmm-badge { position: absolute; top: -6px; right: -12px; background: #B5502F; color: #fff; font-size: 9.5px; font-weight: 700; border-radius: 999px; padding: 1px 5px; font-family: 'IBM Plex Mono', monospace; }
+        .pmm-badge { position: absolute; top: -6px; right: -12px; background: #D17D5C; color: #fff; font-size: 9.5px; font-weight: 700; border-radius: 999px; padding: 1px 5px; font-family: 'IBM Plex Mono', monospace; }
         .pmm-sitelink { display: none; }
         @media (min-width: 1000px) {
-          .pmm-tabs { position: fixed; top: 96px; left: calc(50% - 280px - 196px); width: 176px; flex-direction: column; gap: 2px; padding: 8px; background: #FBF5EA; border: 1px solid #DCC9A3; border-radius: 14px; z-index: 6; }
+          .pmm-tabs { position: fixed; top: 96px; left: calc(50% - 280px - 196px); width: 176px; flex-direction: column; gap: 2px; padding: 8px; background: #F8FCFA; border: 1px solid #D8E5DE; border-radius: 14px; z-index: 6; }
           .pmm-tabs.away { display: none; }
-          .pmm-tab { flex: none; flex-direction: row; gap: 10px; justify-content: flex-start; font-size: 14px; padding: 10px 12px; border: none; border-radius: 9px; color: #6B5243; }
-          .pmm-tab.on { background: #4A2A1F; color: #fff; }
+          .pmm-tab { flex: none; flex-direction: row; gap: 10px; justify-content: flex-start; font-size: 14px; padding: 10px 12px; border: none; border-radius: 9px; color: #617B70; }
+          .pmm-tab.on { background: #174D3D; color: #fff; }
           .pmm-tab-lb { overflow: visible; }
-          .pmm-sitelink { display: block; color: #6B5243; font-size: 13px; padding: 6px 12px; }
-          .pmm-sitelink:hover { color: #4A2A1F; }
+          .pmm-sitelink { display: block; color: #617B70; font-size: 13px; padding: 6px 12px; }
+          .pmm-sitelink:hover { color: #174D3D; }
         }
         @media (min-width: 700px) {
-          .pmm-backdrop { background: #E6D6B8 !important; }
+          .pmm-backdrop { background: #F0F6F2 !important; }
           .pmm-column { box-shadow: 0 0 0 1px ${C.line}, 0 12px 40px rgba(74,42,31,.18); }
         }
       `}</style>
@@ -2239,17 +2248,11 @@ export default function MakanLedger() {
           </div>
           <nav aria-label="Sections" className={"pmm-tabs" + (atApp ? "" : " away")}>
             <TabButton icon={ChefHat} label="Home" active={tab === "home"} onClick={() => { setTab("home"); setMoreOpen(false); }} />
-            <TabButton icon={Calendar} label="My week" active={tab === "generate"} onClick={() => { setTab("generate"); setMoreOpen(false); }} />
+            <TabButton icon={Calendar} label="My week" active={tab === "week"} onClick={() => { setTab("week"); setMoreOpen(false); }} />
             <TabButton icon={ShoppingCart} label="Shop" active={tab === "list"} onClick={() => { setTab("list"); setMoreOpen(false); }} badge={toBuy.length || null} />
-            <TabButton icon={Users} label="Me" active={moreOpen || ["pantry","library","import","household"].includes(tab)} onClick={() => setMoreOpen(v => !v)} />
+            <TabButton icon={Users} label="Me" active={["me","manual","pantry","library","import","household"].includes(tab)} onClick={() => { setTab("me"); setMoreOpen(false); }} />
           </nav>
-          {moreOpen && <div style={{ background: "#fffaf2", color: C.ink, padding: 14, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-            {[
-              ["Kitchen / leftovers", "pantry"], ["Recipe library", "library"],
-              ["Add a recipe", "import"], ["Household & settings", "household"],
-            ].map(([label, destination]) => <button key={destination} onClick={() => { setTab(destination); setMoreOpen(false); }}
-              style={{ padding: 12, borderRadius: 12, background: C.paper, border: `1px solid ${C.line}`, color: C.ink, fontFamily: FONT_BODY, textAlign: "left" }}>{label}</button>)}
-          </div>}
+
         </div>
 
         {/* CONTENT — normal document flow now, so the page scrolls as a
@@ -2261,13 +2264,67 @@ export default function MakanLedger() {
             <p style={{ color: C.inkSoft, fontSize: 15, lineHeight: 1.65, margin: 0 }}>Seven sensible dinners. One shopping list. A little weekend prep. You can change anything later.</p>
             <button onClick={planMyWeek} style={{ border: "none", borderRadius: 18, background: C.jade900, color: "white", fontSize: 19, fontWeight: 700, padding: "21px 20px", cursor: "pointer" }}>✦ Plan my week</button>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-              <button onClick={() => setTab("pantry")} style={{ padding: 17, borderRadius: 14, border: `1px solid ${C.line}`, background: "#fffaf2", color: C.ink, fontWeight: 600 }}>Use leftovers</button>
-              <button onClick={() => setTab("household")} style={{ padding: 17, borderRadius: 14, border: `1px solid ${C.line}`, background: "#fffaf2", color: C.ink, fontWeight: 600 }}>Adjust preferences</button>
+              <button onClick={() => setRescueOpen(v => !v)} style={{ padding: 17, borderRadius: 14, border: `1px solid ${C.line}`, background: "#F8FCFA", color: C.ink, fontWeight: 600 }}>Use leftovers</button>
+              <button onClick={() => setTab("household")} style={{ padding: 17, borderRadius: 14, border: `1px solid ${C.line}`, background: "#F8FCFA", color: C.ink, fontWeight: 600 }}>Adjust preferences</button>
             </div>
-            {plan.length > 0 && <button onClick={() => setTab("generate")} style={{ background: "transparent", border: "none", padding: 12, color: C.jade700, textDecoration: "underline" }}>View and edit my existing plan</button>}
+            {rescueOpen && <section style={{ background: "#fff", padding: 18, borderRadius: 18, border: `1px solid ${C.line}` }}>
+              <h3 style={{ marginTop: 0 }}>What's left in the fridge?</h3>
+              <p style={{ color: C.inkSoft, fontSize: 13 }}>Type anything — no quantities or inventory tracking needed.</p>
+              <textarea value={rescueText} onChange={e => setRescueText(e.target.value)}
+                placeholder="Half a cabbage, eggs, rice, fishballs…" rows={3}
+                style={{ width: "100%", border: `1px solid ${C.line}`, borderRadius: 12, padding: 12, fontFamily: FONT_BODY }} />
+              {rescueText.trim() && <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
+                {pickableMeals.map(meal => {
+                  const terms = rescueText.toLowerCase().split(/[,;\n]+/).map(x => x.trim()).filter(x => x.length > 2);
+                  const hits = terms.filter(term => (meal.ingredients || []).some(i => i.name.toLowerCase().includes(term) || term.includes(i.name.toLowerCase())));
+                  return { meal, hits };
+                }).filter(x => x.hits.length > 0).sort((a,b) => b.hits.length - a.hits.length).slice(0,5).map(({meal,hits}) =>
+                  <button key={meal.id} onClick={() => { addExtraDish(todayDateStr(), "dinner", meal.id); setTab("week"); }}
+                    style={{ textAlign: "left", padding: 13, borderRadius: 12, border: `1px solid ${C.line}`, background: "#F7FAF8", color: C.ink }}>
+                    <strong>{meal.name}</strong><span style={{ display: "block", fontSize: 12, color: C.inkSoft, marginTop: 4 }}>Uses: {hits.join(", ")} · Add to today's dinner</span>
+                  </button>)}
+                <button onClick={() => setTab("pantry")} style={{ border: 0, background: "none", textAlign: "left", color: C.jade700, padding: 8 }}>Or manage my kitchen stock</button>
+              </div>}
+              <p style={{ color: C.inkSoft, fontSize: 12 }}>Only cook leftovers that have been stored safely; discard anything spoiled or left unrefrigerated too long.</p>
+            </section>}
+            {plan.length > 0 && <button onClick={() => setTab("week")} style={{ background: "transparent", border: "none", padding: 12, color: C.jade700, textDecoration: "underline" }}>View and edit my existing plan</button>}
             <p style={{ color: C.inkSoft, fontSize: 12, lineHeight: 1.5 }}>Your recipes, pantry, household settings and saved plans are still here — under My week and Me.</p>
           </main>}
-          {tab === "generate" && (
+          {tab === "me" && <main style={{ padding: "28px 20px", display: "grid", gap: 13 }}>
+            <h2 style={{ margin: "0 0 4px", fontSize: 29, color: C.ink }}>Your kitchen, your way.</h2>
+            <p style={{ color: C.inkSoft, margin: "0 0 14px" }}>The details are here when you need them. Everyday planning stays simple.</p>
+            {[
+              ["Use leftovers / Kitchen", "pantry", "What you have and what needs using soon"],
+              ["Household & preferences", "household", "Who eats, dietary needs and syncing"],
+              ["My recipes", "library", "Browse and save recipes"],
+              ["Add a recipe", "import", "Keep your own family favourites"],
+              ["Manual planning", "manual", "Breakfast, lunch, monthly plans and advanced controls"],
+            ].map(([label,destination,description]) => <button key={destination} onClick={() => setTab(destination)}
+              style={{ textAlign: "left", background: "#fff", border: `1px solid ${C.line}`, borderRadius: 16, padding: 18, color: C.ink }}>
+              <strong style={{ display: "block", fontSize: 16 }}>{label}</strong>
+              <span style={{ display: "block", marginTop: 5, color: C.inkSoft, fontSize: 13 }}>{description}</span>
+            </button>)}
+          </main>}
+          {tab === "week" && <SimpleWeek
+            plan={plan} skippedDays={skippedDays} onSkip={toggleSkipDay}
+            onSwap={pickMealById} onRemove={removeOne} onMove={movePlannedMeal}
+            onAdd={addExtraDish} pickableMeals={pickableMeals}
+            onGenerate={planMyWeek} pax={targetPax}
+            prepList={[...prepList.aggregateItems, ...prepList.perDish]}
+            prepChecked={prepChecked} onPrepChecked={togglePrepChecked}
+            onOpenKitchen={() => setTab("pantry")} onMarkCooked={markMealCooked}
+            shopping={<ShoppingListScreen
+              toBuyByCategory={toBuyByCategory} haveIt={haveIt}
+              checkedItems={checkedItems} toggleChecked={toggleChecked}
+              checkedCount={checkedCount} totalCount={toBuy.length}
+              extraItems={extraItems} addExtraItem={addExtraItem}
+              removeExtraItem={removeExtraItem} hasPlan={plan.length > 0 || extraItems.length > 0}
+              targetPax={targetPax} onMarkUsed={markPlanUsed}
+              onSwapMeal={swapMealAvoidingIngredient} onPostponeMeal={postponeMeal}
+              canPostponeMeal={canPostponeMeal}
+            />}
+          />}
+          {tab === "manual" && (
             <GenerateScreen
               scope={scope} setScope={setScope}
               mealSlots={mealSlots} toggleMealSlot={toggleMealSlot}
@@ -2479,7 +2536,7 @@ function GenerateScreen(props) {
       {(totalPax > 0 || dietLabels.length > 0) && (
         <div style={{
           display: "flex", alignItems: "center", gap: 6, marginBottom: 10, fontSize: 11.5,
-          color: C.jade700, fontFamily: FONT_MONO, background: "#EFE0CC", borderRadius: 8, padding: "7px 10px",
+          color: C.jade700, fontFamily: FONT_MONO, background: "#EAF3EE", borderRadius: 8, padding: "7px 10px",
         }}>
           <Users size={12} />
           <span>
@@ -3391,7 +3448,7 @@ function AddDishButton({ date, mealType, pickableMeals, onAdd }) {
 function Tag({ text }) {
   return (
     <span style={{
-      fontSize: 10.5, fontWeight: 600, color: C.jade700, background: "#EFE0CC",
+      fontSize: 10.5, fontWeight: 600, color: C.jade700, background: "#EAF3EE",
       borderRadius: 6, padding: "2px 7px", fontFamily: FONT_BODY, textTransform: "capitalize",
     }}>{text}</span>
   );
@@ -3743,7 +3800,7 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
               {loc.label}
               <span style={{
                 fontFamily: FONT_MONO, fontSize: 10, fontWeight: 700, color: C.jade700,
-                background: "#EFE0CC", borderRadius: 999, padding: "1px 7px", textTransform: "none", letterSpacing: 0,
+                background: "#EAF3EE", borderRadius: 999, padding: "1px 7px", textTransform: "none", letterSpacing: 0,
               }}>{grouped[loc.id].length}</span>
             </span>
             <ChevronDown className="chevron" size={15} color={C.jade700} style={{ flexShrink: 0, transition: "transform .15s" }} />
@@ -3873,7 +3930,7 @@ function HouseholdScreen({
                 onClick={() => toggleDiet(opt.id)}
                 style={{
                   textAlign: "left", border: `1.5px solid ${active ? C.jade700 : C.line}`,
-                  background: active ? "#EFE0CC" : "#fff", borderRadius: 12, padding: "12px 14px",
+                  background: active ? "#EAF3EE" : "#fff", borderRadius: 12, padding: "12px 14px",
                   display: "flex", gap: 10, alignItems: "flex-start",
                 }}
               >
@@ -4005,7 +4062,7 @@ function SettingsSection({ title, countLabel, defaultOpen, last, children }) {
           {countLabel && (
             <span style={{
               fontFamily: FONT_MONO, fontSize: 10, fontWeight: 700, color: C.jade700,
-              background: "#EFE0CC", borderRadius: 999, padding: "2px 8px",
+              background: "#EAF3EE", borderRadius: 999, padding: "2px 8px",
             }}>{countLabel}</span>
           )}
         </span>
