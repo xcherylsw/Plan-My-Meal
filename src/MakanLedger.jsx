@@ -814,6 +814,8 @@ export default function MakanLedger() {
     } catch (e) { return "home"; }
   });
   const [moreOpen, setMoreOpen] = useState(false);
+  const [rescueOpen, setRescueOpen] = useState(false);
+  const [rescueText, setRescueText] = useState("");
   useEffect(() => { try { sessionStorage.setItem("pmm-tab", tab); } catch (e) { /* ignore */ } }, [tab]);
   const [ready, setReady] = useState(false);
   // Desktop side tabs only appear once the app (below the story section) is in view.
@@ -2262,9 +2264,29 @@ export default function MakanLedger() {
             <p style={{ color: C.inkSoft, fontSize: 15, lineHeight: 1.65, margin: 0 }}>Seven sensible dinners. One shopping list. A little weekend prep. You can change anything later.</p>
             <button onClick={planMyWeek} style={{ border: "none", borderRadius: 18, background: C.jade900, color: "white", fontSize: 19, fontWeight: 700, padding: "21px 20px", cursor: "pointer" }}>✦ Plan my week</button>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-              <button onClick={() => setTab("pantry")} style={{ padding: 17, borderRadius: 14, border: `1px solid ${C.line}`, background: "#F8FCFA", color: C.ink, fontWeight: 600 }}>Use leftovers</button>
+              <button onClick={() => setRescueOpen(v => !v)} style={{ padding: 17, borderRadius: 14, border: `1px solid ${C.line}`, background: "#F8FCFA", color: C.ink, fontWeight: 600 }}>Use leftovers</button>
               <button onClick={() => setTab("household")} style={{ padding: 17, borderRadius: 14, border: `1px solid ${C.line}`, background: "#F8FCFA", color: C.ink, fontWeight: 600 }}>Adjust preferences</button>
             </div>
+            {rescueOpen && <section style={{ background: "#fff", padding: 18, borderRadius: 18, border: `1px solid ${C.line}` }}>
+              <h3 style={{ marginTop: 0 }}>What's left in the fridge?</h3>
+              <p style={{ color: C.inkSoft, fontSize: 13 }}>Type anything — no quantities or inventory tracking needed.</p>
+              <textarea value={rescueText} onChange={e => setRescueText(e.target.value)}
+                placeholder="Half a cabbage, eggs, rice, fishballs…" rows={3}
+                style={{ width: "100%", border: `1px solid ${C.line}`, borderRadius: 12, padding: 12, fontFamily: FONT_BODY }} />
+              {rescueText.trim() && <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
+                {pickableMeals.map(meal => {
+                  const terms = rescueText.toLowerCase().split(/[,;\n]+/).map(x => x.trim()).filter(x => x.length > 2);
+                  const hits = terms.filter(term => (meal.ingredients || []).some(i => i.name.toLowerCase().includes(term) || term.includes(i.name.toLowerCase())));
+                  return { meal, hits };
+                }).filter(x => x.hits.length > 0).sort((a,b) => b.hits.length - a.hits.length).slice(0,5).map(({meal,hits}) =>
+                  <button key={meal.id} onClick={() => { addExtraDish(todayDateStr(), "dinner", meal.id); setTab("week"); }}
+                    style={{ textAlign: "left", padding: 13, borderRadius: 12, border: `1px solid ${C.line}`, background: "#F7FAF8", color: C.ink }}>
+                    <strong>{meal.name}</strong><span style={{ display: "block", fontSize: 12, color: C.inkSoft, marginTop: 4 }}>Uses: {hits.join(", ")} · Add to today's dinner</span>
+                  </button>)}
+                <button onClick={() => setTab("pantry")} style={{ border: 0, background: "none", textAlign: "left", color: C.jade700, padding: 8 }}>Or manage my kitchen stock</button>
+              </div>}
+              <p style={{ color: C.inkSoft, fontSize: 12 }}>Only cook leftovers that have been stored safely; discard anything spoiled or left unrefrigerated too long.</p>
+            </section>}
             {plan.length > 0 && <button onClick={() => setTab("week")} style={{ background: "transparent", border: "none", padding: 12, color: C.jade700, textDecoration: "underline" }}>View and edit my existing plan</button>}
             <p style={{ color: C.inkSoft, fontSize: 12, lineHeight: 1.5 }}>Your recipes, pantry, household settings and saved plans are still here — under My week and Me.</p>
           </main>}
