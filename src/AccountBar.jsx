@@ -3,7 +3,7 @@ import { signIn, signOut, subscribe, getSnapshot, pullIfStale, joinHousehold, le
 
 // Small floating account control, pinned inside the app's centred column so
 // it sits over the header's right-hand side on phone and laptop alike.
-const INK = "#242832", BROWN = "#242832", OAT = "#F6F3EA", MUSTARD = "#F3C969", LINE = "#E4DED1", CLAY = "#A44B36";
+const INK = "#303241", BROWN = "#303241", OAT = "#F7F7FB", MUSTARD = "#EAA28F", LINE = "#E5E3EE", CLAY = "#A44B36";
 
 export default function AccountBar() {
   const [s, setS] = useState(getSnapshot());
@@ -31,7 +31,7 @@ export default function AccountBar() {
 
   if (!s.configured) return null;
 
-  const dot = { saving: MUSTARD, saved: "#D9B86B", offline: "#9A9184", error: "#E57C66", idle: "#D9B86B" }[s.sync] || "#D9B86B";
+  const dot = { saving: MUSTARD, saved: "#B6B2E0", offline: "#9A9184", error: "#EAA28F", idle: "#B6B2E0" }[s.sync] || "#B6B2E0";
   const label = { saving: "Saving…", saved: "Saved to your account", offline: "Offline — will save when you're back", error: "Couldn't save just now", idle: "Signed in" }[s.sync];
   const initial = (s.user?.name || s.user?.email || "?").trim().charAt(0).toUpperCase();
 
