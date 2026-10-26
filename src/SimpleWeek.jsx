@@ -14,6 +14,7 @@ const dateLabel = (date) => {
 export default function SimpleWeek({ plan, skippedDays, onSkip, onSwap, onRemove, onMove, onAdd, pickableMeals, onGenerate, shopping, prepList, prepChecked, onPrepChecked, onOpenKitchen, onMarkCooked, pax }) {
   const view = "meals";
   const [recipe, setRecipe] = useState(null);
+  const [showAllMeals, setShowAllMeals] = useState(false);
   const [step, setStep] = useState(null);
   const [swapUid, setSwapUid] = useState(null);
   const [adding, setAdding] = useState(null);
@@ -34,12 +35,16 @@ export default function SimpleWeek({ plan, skippedDays, onSkip, onSwap, onRemove
       <p style={{ color: "#67677E", margin: 0, lineHeight: 1.5 }}>Tap a dish to cook, swap or move it.</p></div><FoodArt kind="meal" size={110}/>
     </div>
     {view === "meals" && <>
+      <div style={{ display: "flex", gap: 8, margin: "17px 0", padding: 5, background: "#F1EFFB", borderRadius: 15 }} role="group" aria-label="Meals shown">
+        {[[false,"Dinner plan"],[true,"All meals"]].map(([all,label]) => <button key={label} aria-pressed={showAllMeals===all} onClick={()=>setShowAllMeals(all)} style={{ flex:1, padding:"12px 8px", border:0, borderRadius:12, background:showAllMeals===all?"#fff":"transparent", boxShadow:showAllMeals===all?"0 2px 8px #30324112":"none", color:"#303241", fontWeight:showAllMeals===all?800:600 }}>{label}</button>)}
+      </div>
+      {!showAllMeals && <p style={{fontSize:13,color:"#67677E",margin:"0 0 13px"}}>Showing dinners only. Switch to All meals to see breakfast and lunch from your saved plan.</p>}
       {!hasCurrentPlan && <section style={{ ...ui.card, textAlign: "center", padding: 28 }}><CalendarDays size={30} color="#D98976" />
         <h3>Nothing planned yet</h3><p style={{ color: "#67677E" }}>Get seven dinners in one tap. You can swap any dish afterwards.</p>
         <button style={{ ...ui.button, background: "#EAA28F", color: "#303241" }} onClick={onGenerate}>Plan my week</button></section>}
       <div style={{ display: "grid", gap: 13 }}>
         {dates.map(date => {
-          const meals = plan.filter(m => m.date === date && m.mealType === "dinner");
+          const meals = plan.filter(m => m.date === date && (showAllMeals || m.mealType === "dinner"));
           const other = plan.filter(m => m.date === date && m.mealType !== "dinner");
           const skipped = skippedDays.includes(date);
           return <section key={date} style={{ ...ui.card, opacity: skipped ? .65 : 1 }}>
@@ -47,10 +52,10 @@ export default function SimpleWeek({ plan, skippedDays, onSkip, onSwap, onRemove
               <strong style={{ fontSize: 16 }}>{dateLabel(date)}</strong>
               <button style={actionStyle} onClick={() => onSkip(date)}>{skipped ? "Restore day" : "Skip day"}</button>
             </div>
-            {meals.length === 0 && <button style={ui.button} onClick={() => { setAdding(date); setQuery(""); }}>+ Add dinner</button>}
+            {meals.length === 0 && <div style={{background:"#F7F7FB",padding:14,borderRadius:13,display:"grid",gap:8}}><span style={{color:"#67677E",fontSize:13}}>No {showAllMeals?"meals":"dinner"} planned for this day.</span><button style={ui.button} onClick={() => { setAdding(date); setQuery(""); }}>+ Add dinner</button></div>}
             {meals.map((meal,i) => <div key={meal.uid || i} style={{ borderTop: i ? "1px solid #E5E3EE" : "none", paddingTop: i ? 12 : 0, marginTop: i ? 12 : 0 }}><div style={{ display: "flex", alignItems: "center", gap: 12 }}><FoodArt name={meal.name} size={85}/><div style={{ flex: 1, minWidth: 0 }}>
               <button onClick={() => openRecipe(meal)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, background: "none", border: 0, padding: "0 0 7px", width: "100%", textAlign: "left", color: "#303241", cursor: "pointer" }}>
-                <span><strong style={{ fontSize: 17 }}>{meal.name}</strong><span style={{ display: "block", color: "#67677E", fontSize: 12, marginTop: 4 }}>{meal.cuisine || "Family favourite"} · {meal.time || "—"} min · {meal.pax || pax || 2} servings</span></span><ChevronRight size={19}/></button>
+                <span><span style={{display:"block",fontSize:10,letterSpacing:1.1,fontWeight:800,color:"#A65D4E",textTransform:"uppercase",marginBottom:3}}>{meal.mealType || "Dinner"} · {i===0?"Main":"Dish "+(i+1)}</span><strong style={{ fontSize: 17 }}>{meal.name}</strong><span style={{ display: "block", color: "#67677E", fontSize: 12, marginTop: 4 }}>{meal.cuisine || "Family favourite"} · {meal.time || "—"} min · {meal.pax || pax || 2} servings</span></span><ChevronRight size={19}/></button>
               <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
                 <button style={actionStyle} onClick={() => { setSwapUid(meal.uid); setQuery(""); }}><RefreshCw size={13}/> Swap</button>
                 <button style={actionStyle} onClick={() => setMoveUid(meal.uid)}>Move</button>
@@ -58,7 +63,7 @@ export default function SimpleWeek({ plan, skippedDays, onSkip, onSwap, onRemove
                 <button aria-label={"Remove " + meal.name} style={actionStyle} onClick={() => onRemove(meal.uid)}><Trash2 size={13}/></button>
               </div>
             </div></div></div>)}
-            {other.length > 0 && <p style={{ color: "#67677E", fontSize: 12, marginBottom: 0 }}>Also planned: {other.map(m => m.name).join(", ")}</p>}
+            {!showAllMeals && other.length > 0 && <button onClick={()=>setShowAllMeals(true)} style={{background:"#F1EFFB",color:"#303241",border:0,borderRadius:10,padding:"10px 12px",fontSize:12,marginTop:12,textAlign:"left",width:"100%"}}>☀️ Breakfast / lunch also saved ({other.length}) · Show all meals →</button>}
           </section>;
         })}
       </div>
