@@ -12,6 +12,7 @@ import { SplashScreen } from "@capacitor/splash-screen";
 // so this file is identical in both builds.
 import { initAds, showInterstitialAd, AdSlot, SiteFooter } from "./ads.js";
 import SimpleWeek from "./SimpleWeek.jsx";
+import FoodArt from "./FoodArt.jsx";
 
 /* ---------------------------------------------------------------
    TOKENS — "kitchen ledger" identity: deep jade + receipt paper,
@@ -24,24 +25,24 @@ import SimpleWeek from "./SimpleWeek.jsx";
 // renaming every C.jade900 etc. call site across the file would be a much
 // bigger, riskier change for a palette swap that's cosmetic only.
 const C = {
-  jade900: "#242832",
-  jade700: "#383D48",
-  jade600: "#6E7280",
-  paper: "#F6F3EA",
-  paperDim: "#EFEAE0",
-  ink: "#242832",
+  jade900: "#303241",
+  jade700: "#4A4C60",
+  jade600: "#77788A",
+  paper: "#F7F7FB",
+  paperDim: "#F0EFF7",
+  ink: "#303241",
   inkSoft: "#666A73",
-  mustard: "#F3C969",
-  mustardDeep: "#E6B842",
-  clay: "#E57C66",
-  sage: "#D9B86B",
-  line: "#E4DED1",
+  mustard: "#EAA28F",
+  mustardDeep: "#D98976",
+  clay: "#EAA28F",
+  sage: "#B6B2E0",
+  line: "#E5E3EE",
   // Darker variants of clay/sage for use as actual text (labels, error
   // messages, links) — the base tones read fine as backgrounds/icons/dots,
   // but fall short of WCAG AA (4.5:1) for small text on the cream/white
   // surfaces this app uses. Same hue family, just deep enough to read.
   clayText: "#A44B36",
-  sageText: "#68616A",
+  sageText: "#67677E",
 };
 
 const CATEGORY_DOT = {
@@ -2203,21 +2204,21 @@ export default function MakanLedger() {
         .expandable[open] .chevron { transform: rotate(180deg); }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .spin { animation: spin 1s linear infinite; }
-        .pmm-tabs { display: flex; background: #FFFCF5; border-top: 1px solid #E4DED1; }
+        .pmm-tabs { display: flex; background: #FFFFFF; border-top: 1px solid #E5E3EE; }
         .pmm-tab { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 2px 7px; background: transparent; border: none; border-bottom: 3px solid transparent; color: #666A73; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 11px; font-weight: 500; -webkit-tap-highlight-color: transparent; cursor: pointer; }
-        .pmm-tab.on { color: #242832; font-weight: 700; border-bottom-color: #F3C969; background: #FFF3C9; }
+        .pmm-tab.on { color: #303241; font-weight: 700; border-bottom-color: #EAA28F; background: #FDE9E4; }
         .pmm-tab-ic { position: relative; display: flex; }
         .pmm-tab-lb { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-        .pmm-badge { position: absolute; top: -6px; right: -12px; background: #E57C66; color: #fff; font-size: 9.5px; font-weight: 700; border-radius: 999px; padding: 1px 5px; font-family: 'IBM Plex Mono', monospace; }
+        .pmm-badge { position: absolute; top: -6px; right: -12px; background: #EAA28F; color: #fff; font-size: 9.5px; font-weight: 700; border-radius: 999px; padding: 1px 5px; font-family: 'IBM Plex Mono', monospace; }
         .pmm-sitelink { display: none; }
         @media (min-width: 1000px) {
-          .pmm-tabs { position: fixed; top: 96px; left: calc(50% - 280px - 196px); width: 176px; flex-direction: column; gap: 2px; padding: 8px; background: #FFFCF5; border: 1px solid #E4DED1; border-radius: 14px; z-index: 6; }
+          .pmm-tabs { position: fixed; top: 96px; left: calc(50% - 280px - 196px); width: 176px; flex-direction: column; gap: 2px; padding: 8px; background: #FFFFFF; border: 1px solid #E5E3EE; border-radius: 14px; z-index: 6; }
           .pmm-tabs.away { display: none; }
           .pmm-tab { flex: none; flex-direction: row; gap: 10px; justify-content: flex-start; font-size: 14px; padding: 10px 12px; border: none; border-radius: 9px; color: #666A73; }
-          .pmm-tab.on { background: #FFF3C9; color: #242832; }
+          .pmm-tab.on { background: #FDE9E4; color: #303241; }
           .pmm-tab-lb { overflow: visible; }
           .pmm-sitelink { display: block; color: #666A73; font-size: 13px; padding: 6px 12px; }
-          .pmm-sitelink:hover { color: #242832; }
+          .pmm-sitelink:hover { color: #303241; }
         }
         @media (min-width: 700px) {
           .pmm-backdrop { background: #EFECE5 !important; }
@@ -2240,7 +2241,7 @@ export default function MakanLedger() {
         {/* HEADER — one sticky bar: brand (sign-in pill floats top-right),
             then the section tabs. Tabs live at the top like a normal website,
             so nothing fights the phone's bottom edge or the keyboard. */}
-        <div style={{ background: "#FFFCF5", color: C.ink, position: "sticky", top: 0, zIndex: 5, boxShadow: "0 2px 8px rgba(36,40,50,0.07)" }}>
+        <div style={{ background: "#FFFFFF", color: C.ink, position: "sticky", top: 0, zIndex: 5, boxShadow: "0 2px 8px rgba(36,40,50,0.07)" }}>
           <div style={{ minHeight: 54, display: "flex", alignItems: "center", padding: "0 18px", paddingTop: "env(safe-area-inset-top, 0px)" }}>
             <h1 style={{ fontFamily: FONT_DISPLAY, fontWeight: 700, fontSize: 22, margin: 0, letterSpacing: 0.2 }}>
               Today Cook What
@@ -2260,13 +2261,16 @@ export default function MakanLedger() {
             whole (header/nav stay put via sticky, not by clipping this). */}
         <div style={{ flex: 1, background: C.paper }}>
           {tab === "home" && <main style={{ padding: "36px 22px 30px", display: "grid", gap: 18 }}>
-            <div style={{ fontSize: 12, letterSpacing: 2, color: C.sageText, fontWeight: 700 }}>YOUR KITCHEN, SORTED</div>
-            <h2 style={{ fontFamily: FONT_DISPLAY, fontSize: 38, lineHeight: 1.15, margin: 0, color: C.ink }}>One less thing<br/>to think about.</h2>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, background: "#F1EFFB", borderRadius: 24, padding: "18px 18px 18px 22px" }}>
+              <div><div style={{ fontSize: 11, letterSpacing: 2, color: C.inkSoft, fontWeight: 800 }}>HELLO, DINNER HERO ✦</div><div style={{ fontFamily: FONT_DISPLAY, fontSize: 22, lineHeight: 1.2, marginTop: 10 }}>Less planning.<br/>More yum.</div></div>
+              <FoodArt kind="meal" size={124} />
+            </div>
+            <h2 style={{ fontFamily: FONT_DISPLAY, fontSize: 32, lineHeight: 1.15, margin: 0, color: C.ink }}>What’s cooking this week?</h2>
             <p style={{ color: C.inkSoft, fontSize: 15, lineHeight: 1.65, margin: 0 }}>Seven dinners built around your kitchen, a shopping list for what's missing, and prep already sorted.</p>
-            <button onClick={planMyWeek} style={{ border: "1px solid #E2B33D", borderBottom: "3px solid #D7A524", borderRadius: 18, background: C.mustard, color: C.ink, fontSize: 19, fontWeight: 700, padding: "21px 20px", cursor: "pointer" }}>✦ Plan my week →</button>
+            <button onClick={planMyWeek} style={{ border: "none", boxShadow: "0 5px 0 #CE7E6B", borderRadius: 19, background: C.mustard, color: C.ink, fontSize: 18, fontWeight: 800, padding: "20px", cursor: "pointer" }}>Make my 7-day plan ✨ →</button>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-              <button onClick={() => setRescueOpen(v => !v)} style={{ padding: 17, borderRadius: 14, border: `1px solid ${C.line}`, background: "#FFFCF5", color: C.ink, fontWeight: 600 }}>Use leftovers</button>
-              <button onClick={() => setTab("household")} style={{ padding: 17, borderRadius: 14, border: `1px solid ${C.line}`, background: "#FFFCF5", color: C.ink, fontWeight: 600 }}>Adjust preferences</button>
+              <button onClick={() => setRescueOpen(v => !v)} style={{ padding: 14, borderRadius: 19, border: `1px solid ${C.line}`, background: "#fff", color: C.ink, fontWeight: 700, display: "grid", justifyItems: "center", gap: 5 }}><FoodArt kind="fridge" size={82}/><span>Rescue leftovers</span></button>
+              <button onClick={() => setTab("household")} style={{ padding: 14, borderRadius: 19, border: `1px solid ${C.line}`, background: "#fff", color: C.ink, fontWeight: 700, display: "grid", justifyItems: "center", gap: 5 }}><FoodArt kind="prep" size={82}/><span>Make it yours</span></button>
             </div>
             {rescueOpen && <section style={{ background: "#fff", padding: 18, borderRadius: 18, border: `1px solid ${C.line}` }}>
               <h3 style={{ marginTop: 0 }}>What's left in the fridge?</h3>
@@ -2281,7 +2285,7 @@ export default function MakanLedger() {
                   return { meal, hits };
                 }).filter(x => x.hits.length > 0).sort((a,b) => b.hits.length - a.hits.length).slice(0,5).map(({meal,hits}) =>
                   <button key={meal.id} onClick={() => { addExtraDish(todayDateStr(), "dinner", meal.id); setTab("week"); }}
-                    style={{ textAlign: "left", padding: 13, borderRadius: 12, border: `1px solid ${C.line}`, background: "#F6F3EA", color: C.ink }}>
+                    style={{ textAlign: "left", padding: 13, borderRadius: 12, border: `1px solid ${C.line}`, background: "#F7F7FB", color: C.ink }}>
                     <strong>{meal.name}</strong><span style={{ display: "block", fontSize: 12, color: C.inkSoft, marginTop: 4 }}>Uses: {hits.join(", ")} · Add to today's dinner</span>
                   </button>)}
                 <button onClick={() => setTab("pantry")} style={{ border: 0, background: "none", textAlign: "left", color: C.jade700, padding: 8 }}>Or manage my kitchen stock</button>
@@ -2289,10 +2293,10 @@ export default function MakanLedger() {
               <p style={{ color: C.inkSoft, fontSize: 12 }}>Only cook leftovers that have been stored safely; discard anything spoiled or left unrefrigerated too long.</p>
             </section>}
             {plan.length > 0 && <button onClick={() => setTab("week")} style={{ background: "transparent", border: "none", padding: 12, color: C.jade700, textDecoration: "underline" }}>View and edit my existing plan</button>}
-            <p style={{ color: C.inkSoft, fontSize: 12, lineHeight: 1.5 }}>Your recipes, pantry, household settings and saved plans are still here — under My week and Me.</p>
+            <p style={{ color: C.inkSoft, fontSize: 12, lineHeight: 1.5, textAlign: "center" }}>Made around what’s already in your kitchen. You’re in control.</p>
           </main>}
           {tab === "me" && <main style={{ padding: "28px 20px", display: "grid", gap: 13 }}>
-            <h2 style={{ margin: "0 0 4px", fontSize: 29, color: C.ink }}>Your kitchen, your way.</h2>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#F1EFFB", borderRadius: 20, padding: 16 }}><h2 style={{ margin: 0, fontSize: 28, color: C.ink }}>Your little kitchen HQ.</h2><FoodArt kind="fridge" size={95}/></div>
             <p style={{ color: C.inkSoft, margin: "0 0 14px" }}>The details are here when you need them. Everyday planning stays simple.</p>
             {[
               ["Use leftovers / Kitchen", "pantry", "What you have and what needs using soon"],
@@ -2358,7 +2362,7 @@ export default function MakanLedger() {
             />
           )}
           {tab === "prep" && <main style={{ padding: "28px 20px 100px", display: "grid", gap: 14 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1.5, color: C.inkSoft }}>PREP, MADE SIMPLE</div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 15, borderRadius: 20, background: "#E9F3F8" }}><div><div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1.5, color: C.inkSoft }}>PREP, MADE SIMPLE</div><strong>Little jobs. Big relief.</strong></div><FoodArt kind="prep" size={95}/></div>
             <h2 style={{ fontFamily: FONT_DISPLAY, fontSize: 30, lineHeight: 1.2, margin: 0 }}>A little now. Less later.</h2>
             <p style={{ color: C.inkSoft, lineHeight: 1.6, margin: "0 0 8px" }}>Your checklist follows your current meals and kitchen stock. Tick tasks as you finish them.</p>
             {plan.length === 0 && <button onClick={planMyWeek} style={{ border: 0, borderRadius: 14, background: C.mustard, color: C.ink, padding: 17, fontWeight: 700 }}>Plan my week first</button>}
@@ -2375,6 +2379,7 @@ export default function MakanLedger() {
             </section>}
             <p style={{ fontSize: 12, color: C.inkSoft, lineHeight: 1.6 }}>Keep chilled foods cold and freeze portions you won't use within a safe storage period. Prep only ingredients you can store safely.</p>
           </main>}
+          {tab === "list" && <div style={{ background: "#FDECE8", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 20px" }}><div><strong>Shop smart, cook happy.</strong><div style={{ fontSize: 12, color: C.inkSoft }}>Only what your kitchen needs.</div></div><FoodArt kind="shop" size={92}/></div>}
           {tab === "list" && (
             <ShoppingListScreen
               toBuyByCategory={toBuyByCategory}
