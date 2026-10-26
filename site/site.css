@@ -1,43 +1,73 @@
-:root { --brown:#4A2A1F; --brown2:#6E4328; --oat:#F7EEDF; --oat2:#EDE0C8; --line:#DCC9A3; --mustard:#C98A2E; --mustard2:#A66E1E; --clay:#8F3E1E; --ink:#2E2015; --soft:#6B5243; }
-* { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
-body { margin:0; background:var(--oat); color:var(--ink); font:14.5px/1.65 "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif; }
-a { color:var(--brown2); }
-.top { background:var(--brown); color:var(--oat); }
-.top .in { max-width:880px; margin:0 auto; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-.brand { font:700 21px/1.2 "Fraunces", Georgia, serif; color:var(--oat); text-decoration:none; }
-.top nav { display:flex; gap:16px; align-items:center; flex-wrap:wrap; font-size:13px; }
-.top nav a { color:#EBD9BD; text-decoration:none; }
-.top nav a:hover { text-decoration:underline; }
-.btn { display:inline-block; background:var(--mustard); color:var(--brown) !important; font-weight:700; text-decoration:none !important; padding:11px 20px; border-radius:12px; box-shadow:0 3px 0 var(--mustard2); }
-.top nav a.cur { color:#fff; text-decoration:underline; text-underline-offset:5px; }
-.top nav .btn.small { color:var(--brown); }
-.btn.small { padding:7px 14px; font-size:13px; border-radius:10px; box-shadow:0 2px 0 var(--mustard2); }
-main { max-width:880px; margin:0 auto; padding:28px 20px 48px; }
-h1 { font:700 clamp(24px,5vw,32px)/1.15 "Fraunces", Georgia, serif; color:var(--brown); margin:0 0 14px; }
-h2 { font:600 clamp(19px,3.4vw,22px)/1.25 "Fraunces", Georgia, serif; color:var(--brown); margin:30px 0 8px; }
-h3 { font:600 16px/1.3 "Fraunces", Georgia, serif; color:var(--brown2); margin:24px 0 6px; }
-p, li { max-width:70ch; }
-.lead { font-size:15.5px; color:var(--soft); max-width:60ch; }
-.hero { padding:18px 0 6px; }
-.hero .btn { margin-top:10px; }
-.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; margin:14px 0; }
-.card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px 18px; }
-.card h3 { margin-top:0; }
-.card p { margin:6px 0 0; font-size:13.5px; color:var(--soft); }
-table { border-collapse:collapse; width:100%; background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden; font-size:13.5px; }
-th, td { text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top; }
-th { background:var(--oat2); font-weight:600; }
-tr:last-child td { border-bottom:none; }
-.note { background:var(--oat2); border-left:4px solid var(--mustard); border-radius:8px; padding:12px 14px; margin:18px 0; font-size:16px; }
-.meta { color:var(--soft); font-size:13px; }
-.guides { list-style:none; padding:0; display:grid; gap:12px; }
-.guides li { background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px 18px; }
-.guides a { font:600 20px/1.3 "Fraunces", Georgia, serif; text-decoration:none; }
-.guides p { margin:6px 0 0; color:var(--soft); font-size:13.5px; }
-.ad-slot { margin:28px 0; min-height:0; text-align:center; }
-.ad-slot:empty { display:none; }
-.ad-slot .lbl { font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--soft); margin-bottom:4px; }
-footer { border-top:1px solid var(--line); background:var(--oat2); }
-footer .in { max-width:880px; margin:0 auto; padding:20px; font-size:13px; color:var(--soft); display:flex; gap:16px; flex-wrap:wrap; justify-content:space-between; }
-footer a { color:var(--brown2); }
+:root {
+  --ink:#303241; --soft:#67677E; --coral:#EAA28F; --coral-deep:#C87865;
+  --lilac:#B6B2E0; --paper:#F7F7FB; --line:#E5E3EE; --white:#FFFFFF;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.75 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+a{color:#8B526E;text-underline-offset:3px}
+a:hover{color:#A65D4E}
+a:focus-visible{outline:3px solid #8F86C7;outline-offset:4px;border-radius:5px}
+.top{background:#fff;border-bottom:1px solid var(--line);position:relative;z-index:2}
+.top .in{max-width:960px;margin:auto;padding:17px 22px;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.brand{font:700 clamp(20px,4vw,27px)/1.2 "Fraunces",Georgia,serif;color:var(--ink);text-decoration:none;letter-spacing:-.6px}
+.top nav{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px}
+.top nav a{color:var(--soft);text-decoration:none;padding:9px 12px;border-radius:999px;font-weight:600}
+.top nav a:hover,.top nav a.cur{background:#F1EFFB;color:var(--ink)}
+.top nav a.cur{box-shadow:inset 0 -2px #B6B2E0}
+.top nav a.btn.small{background:#FCE9E5;color:var(--ink);margin-right:5px}
+.btn{display:inline-flex;align-items:center;justify-content:center;background:var(--coral);color:var(--ink)!important;font-weight:700;text-decoration:none!important;padding:12px 20px;border-radius:15px;box-shadow:0 3px 0 var(--coral-deep)}
+.btn.small{padding:9px 13px;font-size:13px;box-shadow:none}
+main{max-width:900px;margin:0 auto;padding:34px 24px 70px}
+main::before{content:"✦  YOUR KITCHEN COMPANION";display:block;color:#8E799B;font-size:11px;font-weight:800;letter-spacing:2px;margin-bottom:16px}
+h1{font:700 clamp(32px,6vw,49px)/1.14 "Fraunces",Georgia,serif;color:var(--ink);letter-spacing:-1.1px;margin:0 0 20px;max-width:18ch}
+h2{font:700 clamp(22px,4vw,27px)/1.3 "Fraunces",Georgia,serif;color:var(--ink);margin:36px 0 12px}
+h3{font:600 19px/1.4 "Fraunces",Georgia,serif;color:var(--ink);margin:26px 0 8px}
+p,li{max-width:72ch}p{margin:0 0 19px}li{padding-left:3px;margin:6px 0}
+.lead{font-size:clamp(16px,2.4vw,19px);line-height:1.7;color:var(--soft);max-width:60ch}
+.hero{padding:10px 0 12px}.hero .btn{margin-top:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:20px 0}
+.card{background:#fff;border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:0 5px 20px #30324108}
+.card h3{margin-top:0}.card p{margin:8px 0 0;font-size:14px;color:var(--soft)}
+table{border-collapse:separate;border-spacing:0;width:100%;background:#fff;border:1px solid var(--line);border-radius:17px;overflow:hidden;font-size:14px}
+th,td{text-align:left;padding:13px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:#F1EFFB;font-weight:700}tr:last-child td{border-bottom:0}
+.note{background:#FCE9E5;border-left:4px solid var(--coral);border-radius:14px;padding:16px 20px;margin:22px 0}
+.meta{color:var(--soft);font-size:13px}
+.guides{list-style:none;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:24px 0}
+.guides li{background:#fff;border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:0 5px 20px #30324108;margin:0}
+.guides li::before{content:"📖";display:block;width:56px;height:56px;background:#F1EFFB;border-radius:17px;text-align:center;line-height:56px;font-size:28px;margin-bottom:16px}
+.guides li:nth-child(2)::before{content:"🥬";background:#FCE9E5}
+.guides li:nth-child(3)::before{content:"🍲";background:#E9F3F8}
+.guides a{font:700 20px/1.4 "Fraunces",Georgia,serif;text-decoration:none;color:var(--ink)}
+.guides p{margin:9px 0 0;color:var(--soft);font-size:14px}
+.ad-slot{margin:28px 0;min-height:0;text-align:center}.ad-slot:empty{display:none}
+.ad-slot .lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);margin-bottom:4px}
+footer{border-top:1px solid var(--line);background:#fff}
+footer .in{max-width:960px;margin:auto;padding:24px;font-size:13px;color:var(--soft);display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between}
+footer a{color:var(--ink)}
+/* A light, original illustrated food motif, shared by every information page. */
+main{position:relative}
+main::after{content:"🍳";position:absolute;right:24px;top:15px;display:grid;place-items:center;font-size:55px;width:108px;height:108px;border-radius:29px;background:#FCE9E5;box-shadow:inset -9px -9px #F7D6CA;transform:rotate(8deg);pointer-events:none}
+main>h1:first-of-type,main>.lead:first-of-type{padding-right:110px}
+@media(max-width:620px){
+  .top .in{padding:16px 18px;gap:12px}
+  .brand{font-size:23px}
+  .top nav{gap:4px;width:100%;overflow-x:auto;flex-wrap:nowrap;padding-bottom:3px}
+  .top nav a{white-space:nowrap;font-size:12px;padding:9px 10px}
+  main{padding:26px 19px 60px}
+  main::after{width:70px;height:70px;font-size:37px;right:18px;top:20px;border-radius:20px}
+  main>h1:first-of-type,main>.lead:first-of-type{padding-right:0}
+  main>h1:first-of-type{max-width:calc(100% - 78px);font-size:clamp(29px,8vw,39px)}
+  .guides{grid-template-columns:1fr}
+  .card{padding:18px}
+}
+
+/* Different friendly illustrations for each public page. */
+body.page-about main::after{content:"🍲";background:#FCE9E5}
+body.page-guides main::after{content:"📚";background:#F1EFFB}
+body.page-privacy main::after{content:"🔒";background:#E9F3F8}
+body.page-contact main::after{content:"💌";background:#FCE9E5}
+body.page-week main::after{content:"🍱";background:#FCE9E5}
+body.page-leftovers main::after{content:"🥕";background:#F1EFFB}
+body.page-diet main::after{content:"🥗";background:#E9F3F8}
