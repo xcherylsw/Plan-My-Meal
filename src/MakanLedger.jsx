@@ -806,7 +806,8 @@ function OnboardingTour({ step, onNext, onBack, onSkip }) {
 export default function MakanLedger() {
   // The tab survives a restart of the app (a family member's change arriving
   // restarts it), so you stay on the screen you were looking at.
-  const [tab, setTab] = useState(() => { try { return sessionStorage.getItem("pmm-tab") || "generate"; } catch (e) { return "generate"; } });
+  const [tab, setTab] = useState(() => { try { return sessionStorage.getItem("pmm-tab") || "home"; } catch (e) { return "home"; } });
+  const [moreOpen, setMoreOpen] = useState(false);
   useEffect(() => { try { sessionStorage.setItem("pmm-tab", tab); } catch (e) { /* ignore */ } }, [tab]);
   const [ready, setReady] = useState(false);
   // Desktop side tabs only appear once the app (below the story section) is in view.
@@ -1351,6 +1352,27 @@ export default function MakanLedger() {
       }
     }
     return { meals: results, shortSlots, worstShortfall };
+  }
+
+  // DSLR Auto: one tap plans seven dinners, without exposing the full generator.
+  // The underlying household, pantry, recipes, shopping and prep state is shared.
+  function planMyWeek() {
+    const { pool } = getPool();
+    if (!pool.length) { showToast("No recipes match your household preferences."); return; }
+    const today = todayDateStr();
+    const { meals } = buildDaySlotsPlan(pool, 7, ["dinner"], today, pantry, {
+      min: household.dishesPerMealMin, max: household.dishesPerMealMax,
+    });
+    const weekEnd = addDaysToDateStr(today, 6);
+    setPlan(prev => [
+      ...prev.filter(m => !m.date || m.date < today || m.date > weekEnd || m.mealType !== "dinner"),
+      ...withSlotPax(meals),
+    ]);
+    setSkippedDays(prev => prev.filter(d => d < today || d > weekEnd));
+    setCheckedItems({});
+    setScope("week");
+    setTab("generate");
+    showToast("Your next seven dinners are ready. Tap any dish to see its recipe.");
   }
 
   function handleAddOn() {
@@ -2208,26 +2230,39 @@ export default function MakanLedger() {
         <div style={{ background: C.jade900, color: C.paper, position: "sticky", top: 0, zIndex: 5, boxShadow: "0 2px 8px rgba(43,26,22,0.18)" }}>
           <div style={{ minHeight: 54, display: "flex", alignItems: "center", padding: "0 18px", paddingTop: "env(safe-area-inset-top, 0px)" }}>
             <h1 style={{ fontFamily: FONT_DISPLAY, fontWeight: 700, fontSize: 22, margin: 0, letterSpacing: 0.2 }}>
-              Plan My Meals 🍚
+              Today Cook What
             </h1>
           </div>
           <nav aria-label="Sections" className={"pmm-tabs" + (atApp ? "" : " away")}>
-            <TabButton icon={ChefHat} label="Generate" active={tab === "generate"} onClick={() => setTab("generate")} badge={(uncookedMealCount + pendingPrepCount) || null} />
-            <TabButton icon={ShoppingCart} label="List" active={tab === "list"} onClick={() => setTab("list")} badge={toBuy.length || null} />
-            <TabButton icon={Package} label="Kitchen" active={tab === "pantry"} onClick={() => setTab("pantry")} />
-            <TabButton icon={BookOpen} label="Library" active={tab === "library"} onClick={() => setTab("library")} />
-            <TabButton icon={BookmarkPlus} label="Add recipe" active={tab === "import"} onClick={() => setTab("import")} />
-            <TabButton icon={Users} label="Household" active={tab === "household"} onClick={() => setTab("household")} />
-            <a href="/about.html" className="pmm-sitelink">About</a>
-            <a href="/guides/" className="pmm-sitelink">Guides</a>
-            <a href="/privacy.html" className="pmm-sitelink">Privacy</a>
-            <a href="/contact.html" className="pmm-sitelink">Contact</a>
+            <TabButton icon={ChefHat} label="Home" active={tab === "home"} onClick={() => { setTab("home"); setMoreOpen(false); }} />
+            <TabButton icon={Calendar} label="My week" active={tab === "generate"} onClick={() => { setTab("generate"); setMoreOpen(false); }} />
+            <TabButton icon={ShoppingCart} label="Shop" active={tab === "list"} onClick={() => { setTab("list"); setMoreOpen(false); }} badge={toBuy.length || null} />
+            <TabButton icon={Users} label="Me" active={moreOpen || ["pantry","library","import","household"].includes(tab)} onClick={() => setMoreOpen(v => !v)} />
           </nav>
+          {moreOpen && <div style={{ background: "#fffaf2", color: C.ink, padding: 14, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            {[
+              ["Kitchen / leftovers", "pantry"], ["Recipe library", "library"],
+              ["Add a recipe", "import"], ["Household & settings", "household"],
+            ].map(([label, destination]) => <button key={destination} onClick={() => { setTab(destination); setMoreOpen(false); }}
+              style={{ padding: 12, borderRadius: 12, background: C.paper, border: `1px solid ${C.line}`, color: C.ink, fontFamily: FONT_BODY, textAlign: "left" }}>{label}</button>)}
+          </div>}
         </div>
 
         {/* CONTENT — normal document flow now, so the page scrolls as a
             whole (header/nav stay put via sticky, not by clipping this). */}
         <div style={{ flex: 1, background: C.paper }}>
+          {tab === "home" && <main style={{ padding: "36px 22px 30px", display: "grid", gap: 18 }}>
+            <div style={{ fontSize: 12, letterSpacing: 2, color: C.sageText, fontWeight: 700 }}>YOUR KITCHEN, SORTED</div>
+            <h2 style={{ fontFamily: FONT_DISPLAY, fontSize: 38, lineHeight: 1.15, margin: 0, color: C.ink }}>One less thing<br/>to think about.</h2>
+            <p style={{ color: C.inkSoft, fontSize: 15, lineHeight: 1.65, margin: 0 }}>Seven sensible dinners. One shopping list. A little weekend prep. You can change anything later.</p>
+            <button onClick={planMyWeek} style={{ border: "none", borderRadius: 18, background: C.jade900, color: "white", fontSize: 19, fontWeight: 700, padding: "21px 20px", cursor: "pointer" }}>✦ Plan my week</button>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <button onClick={() => setTab("pantry")} style={{ padding: 17, borderRadius: 14, border: `1px solid ${C.line}`, background: "#fffaf2", color: C.ink, fontWeight: 600 }}>Use leftovers</button>
+              <button onClick={() => setTab("household")} style={{ padding: 17, borderRadius: 14, border: `1px solid ${C.line}`, background: "#fffaf2", color: C.ink, fontWeight: 600 }}>Adjust preferences</button>
+            </div>
+            {plan.length > 0 && <button onClick={() => setTab("generate")} style={{ background: "transparent", border: "none", padding: 12, color: C.jade700, textDecoration: "underline" }}>View and edit my existing plan</button>}
+            <p style={{ color: C.inkSoft, fontSize: 12, lineHeight: 1.5 }}>Your recipes, pantry, household settings and saved plans are still here — under My week and Me.</p>
+          </main>}
           {tab === "generate" && (
             <GenerateScreen
               scope={scope} setScope={setScope}
