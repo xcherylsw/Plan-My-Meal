@@ -53,16 +53,31 @@ export default function SimpleWeek({ plan, skippedDays, onSkip, onSwap, onRemove
               <button style={actionStyle} onClick={() => onSkip(date)}>{skipped ? "Restore day" : "Skip day"}</button>
             </div>
             {meals.length === 0 && <div style={{background:"#F7F7FB",padding:14,borderRadius:13,display:"grid",gap:8}}><span style={{color:"#67677E",fontSize:13}}>No {showAllMeals?"meals":"dinner"} planned for this day.</span><button style={ui.button} onClick={() => { setAdding(date); setQuery(""); }}>+ Add dinner</button></div>}
-            {meals.map((meal,i) => <div key={meal.uid || i} style={{ borderTop: i ? "1px solid #E5E3EE" : "none", paddingTop: i ? 12 : 0, marginTop: i ? 12 : 0 }}><div style={{ display: "flex", alignItems: "center", gap: 12 }}><FoodArt name={meal.name} size={85}/><div style={{ flex: 1, minWidth: 0 }}>
-              <button onClick={() => openRecipe(meal)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, background: "none", border: 0, padding: "0 0 7px", width: "100%", textAlign: "left", color: "#303241", cursor: "pointer" }}>
-                <span><span style={{display:"block",fontSize:10,letterSpacing:1.1,fontWeight:800,color:"#A65D4E",textTransform:"uppercase",marginBottom:3}}>{meal.mealType || "Dinner"} · {i===0?"Main":"Dish "+(i+1)}</span><strong style={{ fontSize: 17 }}>{meal.name}</strong><span style={{ display: "block", color: "#67677E", fontSize: 12, marginTop: 4 }}>{meal.cuisine || "Family favourite"} · {meal.time || "—"} min · {meal.pax || pax || 2} servings</span></span><ChevronRight size={19}/></button>
-              <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
-                <button style={actionStyle} onClick={() => { setSwapUid(meal.uid); setQuery(""); }}><RefreshCw size={13}/> Swap</button>
-                <button style={actionStyle} onClick={() => setMoveUid(meal.uid)}>Move</button>
-                <button style={actionStyle} onClick={() => onMarkCooked(meal.uid)}>{meal.cooked ? "Cooked ✓" : "Mark cooked"}</button>
-                <button aria-label={"Remove " + meal.name} style={actionStyle} onClick={() => onRemove(meal.uid)}><Trash2 size={13}/></button>
-              </div>
-            </div></div></div>)}
+            {["breakfast","lunch","dinner"].filter(slot=>meals.some(m=>m.mealType===slot)).map(slot => {
+              const slotMeals=meals.filter(m=>m.mealType===slot);
+              return <div key={slot} style={{marginTop:14}}>
+                {showAllMeals && <div style={{fontSize:12,fontWeight:800,letterSpacing:1.3,color:"#A65D4E",textTransform:"uppercase",padding:"9px 0",borderBottom:"1px solid #E5E3EE",marginBottom:12}}>{slot} · {slotMeals.length} {slotMeals.length===1?"dish":"dishes"}</div>}
+                {slotMeals.map((meal,i)=><div key={meal.uid || i} style={{borderTop:i?"1px solid #E5E3EE":"none",paddingTop:i?16:0,marginTop:i?16:0}}>
+                  <div style={{display:"flex",alignItems:"center",gap:12}}>
+                    <FoodArt name={meal.name} size={85}/>
+                    <div style={{flex:1,minWidth:0}}>
+                      <button onClick={()=>openRecipe(meal)} style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,background:"none",border:0,padding:"0 0 7px",width:"100%",textAlign:"left",color:"#303241",cursor:"pointer"}}>
+                        <span><span style={{display:"block",fontSize:10,letterSpacing:1.1,fontWeight:800,color:"#A65D4E",textTransform:"uppercase",marginBottom:3}}>{slot} · {slotMeals.length===1?"Dish":`Dish ${i+1} of ${slotMeals.length}`}</span>
+                          <strong style={{fontSize:17}}>{meal.name}</strong>
+                          <span style={{display:"block",color:"#67677E",fontSize:12,marginTop:4}}>{meal.cuisine||"Family favourite"} · {meal.time||"—"} min · {meal.pax||pax||2} servings</span>
+                        </span><ChevronRight size={19}/>
+                      </button>
+                      <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
+                        <button style={actionStyle} onClick={()=>{setSwapUid(meal.uid);setQuery("");}}><RefreshCw size={13}/> Swap</button>
+                        <button style={actionStyle} onClick={()=>setMoveUid(meal.uid)}>Move</button>
+                        <button style={actionStyle} onClick={()=>onMarkCooked(meal.uid)}>{meal.cooked?"Cooked ✓":"Mark cooked"}</button>
+                        <button aria-label={"Remove "+meal.name} style={actionStyle} onClick={()=>onRemove(meal.uid)}><Trash2 size={13}/></button>
+                      </div>
+                    </div>
+                  </div>
+                </div>)}
+              </div>;
+            })}
             {!showAllMeals && other.length > 0 && <button onClick={()=>setShowAllMeals(true)} style={{background:"#F1EFFB",color:"#303241",border:0,borderRadius:10,padding:"10px 12px",fontSize:12,marginTop:12,textAlign:"left",width:"100%"}}>☀️ Breakfast / lunch also saved ({other.length}) · Show all meals →</button>}
           </section>;
         })}
