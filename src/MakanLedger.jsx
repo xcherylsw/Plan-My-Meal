@@ -556,7 +556,7 @@ function isHeavyDish(meal) {
 const ONE_DISH_KEYWORDS = [
   "laksa", "fried rice", "hor fun", "mee goreng", "noodle soup",
   "nasi lemak", "bibimbap", "donburi", "onigiri", "curry rice",
-  "claypot chicken rice", "prata & egg curry",
+  "claypot chicken rice", "prata & egg curry", "katsu curry", "japanese curry", "chicken rice", "hainanese rice", "biryani", "briyani", "pasta", "spaghetti", "risotto", "rice bowl", "poke bowl", "soba", "udon", "ramen",
 ];
 function isOneDishMeal(meal) {
   if (meal.oneDish === true) return true; // personal/community recipe override
@@ -1253,8 +1253,12 @@ export default function MakanLedger() {
     // hit that same count regardless.
     const minCount = Math.max(1, dishRange?.min ?? dishRange ?? 2);
     const maxCount = Math.max(minCount, dishRange?.max ?? dishRange ?? 2);
-    const useSoonItems = (kitchen || []).filter(k => k.useSoon);
+    const stocked = (kitchen || []).filter(k => k.name && (k.qty == null || Number(k.qty) > 0));
+    const useSoonItems = stocked.filter(k => k.useSoon);
     const usesKitchenStock = (meal) => useSoonItems.some(k => meal.ingredients.some(i => wordMatch(i.name.toLowerCase(), k.name.toLowerCase())));
+    const stockScore = meal => meal.ingredients.reduce((score, ingredient) => score + stocked.reduce((n, item) =>
+      n + (wordMatch(ingredient.name.toLowerCase(), item.name.toLowerCase()) ? (item.useSoon ? 6 : 2) : 0), 0), 0);
+    const kitchenFirstOrder = list => shuffle(list).sort((a,b) => stockScore(a) - stockScore(b));
 
     const results = [];
     let shortSlots = 0; // meal slots that couldn't reach the requested dish count — dish bank ran dry, not a bug
@@ -1267,7 +1271,7 @@ export default function MakanLedger() {
       const rest = useSoonItems.length ? base.filter(m => !usesKitchenStock(m)) : base;
       queues[type] = {
         base, restBase: rest.length ? rest : base,
-        priorityQueue: shuffle(priority), restQueue: shuffle(rest.length ? rest : base),
+        priorityQueue: kitchenFirstOrder(priority), restQueue: kitchenFirstOrder(rest.length ? rest : base),
         // Side-dish pools for pairing: a pure vegetable side (no protein
         // ingredient) to pair with a meat-only main, or vice versa — so a
         // meal can be one all-in-one dish, or two simple ones together.
@@ -1291,7 +1295,7 @@ export default function MakanLedger() {
         if (q.priorityQueue.length > 0) {
           choice = q.priorityQueue.pop();
         } else {
-          if (q.restQueue.length === 0) q.restQueue = shuffle(q.restBase);
+          if (q.restQueue.length === 0) q.restQueue = kitchenFirstOrder(q.restBase);
           choice = q.restQueue.pop();
         }
         const uidBase = choice.id + "-" + dateStr + "-" + type + "-" + Math.random().toString(36).slice(2, 7);
@@ -1311,7 +1315,7 @@ export default function MakanLedger() {
         // meal. Stops early if the side pool runs out before reaching the
         // target — better a short meal than a repeated dish.
         const standalone = isOneDishMeal(choice);
-        const targetCount = standalone ? 1 : (isHeavyDish(choice) ? minCount : maxCount);
+        const targetCount = standalone ? 1 : Math.min(2, (isHeavyDish(choice) ? minCount : maxCount));
         // Egg/tofu are valid mains; don't automatically add a second protein
         // to fried egg when what the household actually wants is greens.
         let needsMeat = !hasRealMeat(choice) && !["egg", "tofu", "vegetarian"].includes(choice.protein);
@@ -1328,7 +1332,7 @@ export default function MakanLedger() {
         // meat or veg) always gets filled in — that's covering a real gap,
         // not optional variety, so it isn't left to chance.
         const isCompleteOnItsOwn = !needsMeat && !needsVeg;
-        const skipBonusPadding = standalone || (isCompleteOnItsOwn && Math.random() < 0.5);
+        const skipBonusPadding = standalone || isCompleteOnItsOwn;
         while (!skipBonusPadding && dishCount < targetCount) {
           let side = null, filledKind = null;
           if (needsMeat) {
@@ -1339,11 +1343,8 @@ export default function MakanLedger() {
             const candidates = q.vegSideBase.filter(m => !usedSideIds.has(m.id));
             if (candidates.length) { side = pickMatchingSide(candidates, choice.cuisine); filledKind = "veg"; }
           }
-          if (!side) {
-            const bonusPool = [...q.vegSideBase, ...q.proteinSideBase].filter(m => !usedSideIds.has(m.id));
-            if (!bonusPool.length) break;
-            side = pickMatchingSide(bonusPool, choice.cuisine);
-          }
+          // No arbitrary bonus side: if the meal is complete, stop rather than pairing two dinners.
+          if (!side) break;
           usedSideIds.add(side.id);
           if (filledKind === "meat") needsMeat = false;
           if (filledKind === "veg") needsVeg = false;
