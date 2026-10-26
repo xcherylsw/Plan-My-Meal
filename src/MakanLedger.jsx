@@ -10,7 +10,7 @@ import { SplashScreen } from "@capacitor/splash-screen";
 // Ads live entirely behind src/ads.js — the ads build ships the real AdMob
 // version, the no-ads build ships a version where both calls do nothing —
 // so this file is identical in both builds.
-import { initAds, showInterstitialAd, AdSlot, SiteFooter, SiteHero } from "./ads.js";
+import { initAds, showInterstitialAd, AdSlot, SiteFooter } from "./ads.js";
 
 /* ---------------------------------------------------------------
    TOKENS — "kitchen ledger" identity: deep jade + receipt paper,
@@ -806,7 +806,12 @@ function OnboardingTour({ step, onNext, onBack, onSkip }) {
 export default function MakanLedger() {
   // The tab survives a restart of the app (a family member's change arriving
   // restarts it), so you stay on the screen you were looking at.
-  const [tab, setTab] = useState(() => { try { return sessionStorage.getItem("pmm-tab") || "home"; } catch (e) { return "home"; } });
+  const [tab, setTab] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem("pmm-tab");
+      return saved && ["home", "generate", "list", "pantry", "library", "import", "household"].includes(saved) ? saved : "home";
+    } catch (e) { return "home"; }
+  });
   const [moreOpen, setMoreOpen] = useState(false);
   useEffect(() => { try { sessionStorage.setItem("pmm-tab", tab); } catch (e) { /* ignore */ } }, [tab]);
   const [ready, setReady] = useState(false);
@@ -2171,7 +2176,6 @@ export default function MakanLedger() {
 
   return (
     <>
-    <SiteHero />
     <div className="pmm-backdrop" style={{ fontFamily: FONT_BODY, background: C.paper, minHeight: "100dvh", display: "flex", justifyContent: "center" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
