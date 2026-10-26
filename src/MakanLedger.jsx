@@ -549,6 +549,20 @@ function isHeavyDish(meal) {
   return meal.ingredients.some(i => i.name.toLowerCase().includes("coconut milk"));
 }
 
+// A complete bowl/plate should not get an arbitrary extra side just to meet
+// a numerical dish target. This also covers future library recipes by name.
+const ONE_DISH_KEYWORDS = [
+  "laksa", "fried rice", "hor fun", "mee goreng", "noodle soup",
+  "nasi lemak", "bibimbap", "donburi", "onigiri", "curry rice",
+  "claypot chicken rice", "prata & egg curry",
+];
+function isOneDishMeal(meal) {
+  if (meal.oneDish === true) return true; // personal/community recipe override
+  if (meal.oneDish === false) return false;
+  const name = meal.name.toLowerCase();
+  return ONE_DISH_KEYWORDS.some(keyword => name.includes(keyword));
+}
+
 function renameForSwap(name, replacementWord) {
   for (const w of NAME_SUB_WORDS) {
     const re = new RegExp("\\b" + w + "\\b", "i");
@@ -1286,8 +1300,11 @@ export default function MakanLedger() {
         // possible, and never repeats a dish already used in this same
         // meal. Stops early if the side pool runs out before reaching the
         // target — better a short meal than a repeated dish.
-        const targetCount = isHeavyDish(choice) ? minCount : maxCount;
-        let needsMeat = !hasRealMeat(choice);
+        const standalone = isOneDishMeal(choice);
+        const targetCount = standalone ? 1 : (isHeavyDish(choice) ? minCount : maxCount);
+        // Egg/tofu are valid mains; don't automatically add a second protein
+        // to fried egg when what the household actually wants is greens.
+        let needsMeat = !hasRealMeat(choice) && !["egg", "tofu", "vegetarian"].includes(choice.protein);
         let needsVeg = !hasCategory(choice, "vegetable");
         const usedSideIds = new Set();
         let dishCount = 1;
@@ -1301,7 +1318,7 @@ export default function MakanLedger() {
         // meat or veg) always gets filled in — that's covering a real gap,
         // not optional variety, so it isn't left to chance.
         const isCompleteOnItsOwn = !needsMeat && !needsVeg;
-        const skipBonusPadding = isCompleteOnItsOwn && Math.random() < 0.5;
+        const skipBonusPadding = standalone || (isCompleteOnItsOwn && Math.random() < 0.5);
         while (!skipBonusPadding && dishCount < targetCount) {
           let side = null, filledKind = null;
           if (needsMeat) {
