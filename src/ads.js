@@ -42,7 +42,7 @@ export function AdSlot() {
 }
 
 export function SiteFooter() {
-  const a = { color: "#383D48", textDecoration: "underline" };
+  const a = { color: "#4A4C60", textDecoration: "underline" };
   return React.createElement("div", { style: { padding: "22px 18px 26px", fontSize: 12, color: "#666A73", textAlign: "center", lineHeight: 1.8 } },
     React.createElement("a", { href: "/about.html", style: a }, "About"), " · ",
     React.createElement("a", { href: "/guides/", style: a }, "Guides"), " · ",
@@ -53,9 +53,9 @@ export function SiteFooter() {
 // Slim bar above the app title: public pages on the left. The sign-in / account
 // control floats over its right-hand side (see AccountBar.jsx).
 export function SiteBar() {
-  const a = { color: "#F9E6AE", textDecoration: "none", fontSize: 12.5, fontWeight: 500 };
+  const a = { color: "#F7D6CA", textDecoration: "none", fontSize: 12.5, fontWeight: 500 };
   return React.createElement("div", {
-    style: { background: "#242832", minHeight: 52, display: "flex", alignItems: "center", gap: 14, padding: "0 18px", flexWrap: "wrap",
+    style: { background: "#303241", minHeight: 52, display: "flex", alignItems: "center", gap: 14, padding: "0 18px", flexWrap: "wrap",
       fontFamily: "'IBM Plex Sans', system-ui, sans-serif" },
   },
     React.createElement("a", { href: "/about.html", style: a }, "About"),
@@ -67,10 +67,10 @@ export function SiteBar() {
 // Plain, visible introduction at the bottom of the Generate screen: tells
 // visitors (and Google's reviewers) what the site is, in real words.
 export function SiteIntro() {
-  const h = { fontFamily: "'Fraunces', Georgia, serif", fontWeight: 600, fontSize: 17, color: "#242832", margin: "0 0 6px" };
+  const h = { fontFamily: "'Fraunces', Georgia, serif", fontWeight: 600, fontSize: 17, color: "#303241", margin: "0 0 6px" };
   const p = { fontSize: 13, lineHeight: 1.6, color: "#666A73", margin: "0 0 10px" };
-  const a = { color: "#383D48", textDecoration: "underline" };
-  return React.createElement("section", { style: { margin: "34px 18px 0", paddingTop: 22, borderTop: "1px dashed #E4DED1", fontFamily: "'IBM Plex Sans', system-ui, sans-serif" } },
+  const a = { color: "#4A4C60", textDecoration: "underline" };
+  return React.createElement("section", { style: { margin: "34px 18px 0", paddingTop: 22, borderTop: "1px dashed #E5E3EE", fontFamily: "'IBM Plex Sans', system-ui, sans-serif" } },
     React.createElement("h2", { style: h }, "What is Plan My Meals?"),
     React.createElement("p", { style: p }, "A free meal planner for households that cook at home. It plans the week's breakfasts, lunches and dinners, builds a shopping list that already subtracts what's in your kitchen, and scales every amount to the number of people eating each meal."),
     React.createElement("p", { style: p }, "Halal, vegetarian and soft-food settings adjust the dishes automatically. Sign in with Google to keep your plans on every device and share them with your family, who then see the same plan and shopping list."),
@@ -89,7 +89,7 @@ export function SiteHero() {
     ["3", "Shop only what's missing", "The shopping list subtracts what's already in your kitchen, so nothing gets bought twice."],
   ];
   const css = `
-    .pmm-hero{background:#242832;color:#F6F3EA;font-family:'IBM Plex Sans',system-ui,sans-serif}
+    .pmm-hero{background:#303241;color:#F7F7FB;font-family:'IBM Plex Sans',system-ui,sans-serif}
     .pmm-hero a{color:inherit}
     .pmm-hero .in{max-width:880px;margin:0 auto;padding:0 20px}
     .pmm-hero .bar{display:flex;align-items:center;gap:20px;flex-wrap:wrap;min-height:54px;padding-top:6px}
@@ -97,17 +97,17 @@ export function SiteHero() {
     .pmm-hero .links{display:flex;gap:16px;font-size:13px;color:#A1A2A9;width:100%;order:3;padding-bottom:6px}
     .pmm-hero .links a{text-decoration:none}.pmm-hero .links a:hover{text-decoration:underline;color:#fff}
     .pmm-hero h1{font:700 clamp(28px,6vw,44px)/1.12 'Fraunces',Georgia,serif;margin:34px 0 12px;max-width:22ch}
-    .pmm-hero .sub{font-size:15.5px;line-height:1.6;color:#F9E6AE;max-width:54ch;margin:0 0 22px}
+    .pmm-hero .sub{font-size:15.5px;line-height:1.6;color:#F7D6CA;max-width:54ch;margin:0 0 22px}
     .pmm-hero .cta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:34px}
-    .pmm-hero .b1{background:#F3C969;color:#fff;font-weight:700;font-size:14.5px;padding:11px 20px;border-radius:12px;text-decoration:none;box-shadow:0 3px 0 #A6D1BD}
-    .pmm-hero .b2{border:1.5px solid rgba(235,217,189,.45);font-size:14.5px;padding:10px 18px;border-radius:12px;text-decoration:none;color:#F6F3EA}
+    .pmm-hero .b1{background:#EAA28F;color:#fff;font-weight:700;font-size:14.5px;padding:11px 20px;border-radius:12px;text-decoration:none;box-shadow:0 3px 0 #A6D1BD}
+    .pmm-hero .b2{border:1.5px solid rgba(235,217,189,.45);font-size:14.5px;padding:10px 18px;border-radius:12px;text-decoration:none;color:#F7F7FB}
     .pmm-hero .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding-bottom:30px}
     .pmm-hero .st{background:rgba(247,238,223,.07);border:1px solid rgba(235,217,189,.18);border-radius:14px;padding:14px 16px}
-    .pmm-hero .st b.n{display:inline-flex;width:24px;height:24px;border-radius:50%;background:#F3C969;color:#fff;font-size:12.5px;align-items:center;justify-content:center;margin-bottom:8px}
+    .pmm-hero .st b.n{display:inline-flex;width:24px;height:24px;border-radius:50%;background:#EAA28F;color:#fff;font-size:12.5px;align-items:center;justify-content:center;margin-bottom:8px}
     .pmm-hero .st h2{font:600 16px 'Fraunces',Georgia,serif;margin:0 0 4px}
     .pmm-hero .st p{font-size:13px;line-height:1.55;color:#A1A2A9;margin:0}
     .pmm-hero .fine{font-size:13px;line-height:1.6;color:#A1A2A9;padding:0 0 22px;max-width:70ch}
-    .pmm-hero .fine h2{font:600 15px 'Fraunces',Georgia,serif;color:#F6F3EA;margin:0 0 4px}
+    .pmm-hero .fine h2{font:600 15px 'Fraunces',Georgia,serif;color:#F7F7FB;margin:0 0 4px}
     @media(max-width:700px){.pmm-hero .steps{grid-template-columns:1fr}.pmm-hero h1{margin-top:24px}}
   `;
   return h("header", { className: "pmm-hero" },
