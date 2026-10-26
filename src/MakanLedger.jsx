@@ -24,24 +24,24 @@ import SimpleWeek from "./SimpleWeek.jsx";
 // renaming every C.jade900 etc. call site across the file would be a much
 // bigger, riskier change for a palette swap that's cosmetic only.
 const C = {
-  jade900: "#174D3D",
-  jade700: "#276D57",
-  jade600: "#41826B",
-  paper: "#F7FAF8",
-  paperDim: "#E9F1ED",
-  ink: "#163A30",
-  inkSoft: "#617B70",
-  mustard: "#2C8A6B",
-  mustardDeep: "#176B51",
-  clay: "#D17D5C",
-  sage: "#6DA58B",
-  line: "#D8E5DE",
+  jade900: "#242832",
+  jade700: "#383D48",
+  jade600: "#6E7280",
+  paper: "#F6F3EA",
+  paperDim: "#EFEAE0",
+  ink: "#242832",
+  inkSoft: "#666A73",
+  mustard: "#F3C969",
+  mustardDeep: "#E6B842",
+  clay: "#E57C66",
+  sage: "#D9B86B",
+  line: "#E4DED1",
   // Darker variants of clay/sage for use as actual text (labels, error
   // messages, links) — the base tones read fine as backgrounds/icons/dots,
   // but fall short of WCAG AA (4.5:1) for small text on the cream/white
   // surfaces this app uses. Same hue family, just deep enough to read.
-  clayText: "#A14F35",
-  sageText: "#2B6D52",
+  clayText: "#A44B36",
+  sageText: "#68616A",
 };
 
 const CATEGORY_DOT = {
@@ -810,7 +810,7 @@ export default function MakanLedger() {
   const [tab, setTab] = useState(() => {
     try {
       const saved = sessionStorage.getItem("pmm-tab");
-      return saved === "generate" ? "week" : (saved && ["home", "week", "me", "manual", "list", "pantry", "library", "import", "household"].includes(saved) ? saved : "home");
+      return saved === "generate" ? "week" : (saved && ["home", "week", "prep", "me", "manual", "list", "pantry", "library", "import", "household"].includes(saved) ? saved : "home");
     } catch (e) { return "home"; }
   });
   const [moreOpen, setMoreOpen] = useState(false);
@@ -2203,24 +2203,24 @@ export default function MakanLedger() {
         .expandable[open] .chevron { transform: rotate(180deg); }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .spin { animation: spin 1s linear infinite; }
-        .pmm-tabs { display: flex; border-top: 1px solid rgba(235,217,189,0.15); }
-        .pmm-tab { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 2px 7px; background: transparent; border: none; border-bottom: 3px solid transparent; color: #B5D8C7; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 11px; font-weight: 500; -webkit-tap-highlight-color: transparent; cursor: pointer; }
-        .pmm-tab.on { color: #fff; font-weight: 700; border-bottom-color: #2C8A6B; }
+        .pmm-tabs { display: flex; background: #FFFCF5; border-top: 1px solid #E4DED1; }
+        .pmm-tab { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 2px 7px; background: transparent; border: none; border-bottom: 3px solid transparent; color: #666A73; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 11px; font-weight: 500; -webkit-tap-highlight-color: transparent; cursor: pointer; }
+        .pmm-tab.on { color: #242832; font-weight: 700; border-bottom-color: #F3C969; background: #FFF3C9; }
         .pmm-tab-ic { position: relative; display: flex; }
         .pmm-tab-lb { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-        .pmm-badge { position: absolute; top: -6px; right: -12px; background: #D17D5C; color: #fff; font-size: 9.5px; font-weight: 700; border-radius: 999px; padding: 1px 5px; font-family: 'IBM Plex Mono', monospace; }
+        .pmm-badge { position: absolute; top: -6px; right: -12px; background: #E57C66; color: #fff; font-size: 9.5px; font-weight: 700; border-radius: 999px; padding: 1px 5px; font-family: 'IBM Plex Mono', monospace; }
         .pmm-sitelink { display: none; }
         @media (min-width: 1000px) {
-          .pmm-tabs { position: fixed; top: 96px; left: calc(50% - 280px - 196px); width: 176px; flex-direction: column; gap: 2px; padding: 8px; background: #F8FCFA; border: 1px solid #D8E5DE; border-radius: 14px; z-index: 6; }
+          .pmm-tabs { position: fixed; top: 96px; left: calc(50% - 280px - 196px); width: 176px; flex-direction: column; gap: 2px; padding: 8px; background: #FFFCF5; border: 1px solid #E4DED1; border-radius: 14px; z-index: 6; }
           .pmm-tabs.away { display: none; }
-          .pmm-tab { flex: none; flex-direction: row; gap: 10px; justify-content: flex-start; font-size: 14px; padding: 10px 12px; border: none; border-radius: 9px; color: #617B70; }
-          .pmm-tab.on { background: #174D3D; color: #fff; }
+          .pmm-tab { flex: none; flex-direction: row; gap: 10px; justify-content: flex-start; font-size: 14px; padding: 10px 12px; border: none; border-radius: 9px; color: #666A73; }
+          .pmm-tab.on { background: #FFF3C9; color: #242832; }
           .pmm-tab-lb { overflow: visible; }
-          .pmm-sitelink { display: block; color: #617B70; font-size: 13px; padding: 6px 12px; }
-          .pmm-sitelink:hover { color: #174D3D; }
+          .pmm-sitelink { display: block; color: #666A73; font-size: 13px; padding: 6px 12px; }
+          .pmm-sitelink:hover { color: #242832; }
         }
         @media (min-width: 700px) {
-          .pmm-backdrop { background: #F0F6F2 !important; }
+          .pmm-backdrop { background: #EFECE5 !important; }
           .pmm-column { box-shadow: 0 0 0 1px ${C.line}, 0 12px 40px rgba(74,42,31,.18); }
         }
       `}</style>
@@ -2240,16 +2240,17 @@ export default function MakanLedger() {
         {/* HEADER — one sticky bar: brand (sign-in pill floats top-right),
             then the section tabs. Tabs live at the top like a normal website,
             so nothing fights the phone's bottom edge or the keyboard. */}
-        <div style={{ background: C.jade900, color: C.paper, position: "sticky", top: 0, zIndex: 5, boxShadow: "0 2px 8px rgba(43,26,22,0.18)" }}>
+        <div style={{ background: "#FFFCF5", color: C.ink, position: "sticky", top: 0, zIndex: 5, boxShadow: "0 2px 8px rgba(36,40,50,0.07)" }}>
           <div style={{ minHeight: 54, display: "flex", alignItems: "center", padding: "0 18px", paddingTop: "env(safe-area-inset-top, 0px)" }}>
             <h1 style={{ fontFamily: FONT_DISPLAY, fontWeight: 700, fontSize: 22, margin: 0, letterSpacing: 0.2 }}>
               Today Cook What
             </h1>
           </div>
-          <nav aria-label="Sections" className={"pmm-tabs" + (atApp ? "" : " away")}>
+          <nav aria-label="Sections" className="pmm-tabs">
             <TabButton icon={ChefHat} label="Home" active={tab === "home"} onClick={() => { setTab("home"); setMoreOpen(false); }} />
             <TabButton icon={Calendar} label="My week" active={tab === "week"} onClick={() => { setTab("week"); setMoreOpen(false); }} />
             <TabButton icon={ShoppingCart} label="Shop" active={tab === "list"} onClick={() => { setTab("list"); setMoreOpen(false); }} badge={toBuy.length || null} />
+            <TabButton icon={Check} label="Prep" active={tab === "prep"} onClick={() => { setTab("prep"); setMoreOpen(false); }} badge={pendingPrepCount || null} />
             <TabButton icon={Users} label="Me" active={["me","manual","pantry","library","import","household"].includes(tab)} onClick={() => { setTab("me"); setMoreOpen(false); }} />
           </nav>
 
@@ -2261,11 +2262,11 @@ export default function MakanLedger() {
           {tab === "home" && <main style={{ padding: "36px 22px 30px", display: "grid", gap: 18 }}>
             <div style={{ fontSize: 12, letterSpacing: 2, color: C.sageText, fontWeight: 700 }}>YOUR KITCHEN, SORTED</div>
             <h2 style={{ fontFamily: FONT_DISPLAY, fontSize: 38, lineHeight: 1.15, margin: 0, color: C.ink }}>One less thing<br/>to think about.</h2>
-            <p style={{ color: C.inkSoft, fontSize: 15, lineHeight: 1.65, margin: 0 }}>Seven sensible dinners. One shopping list. A little weekend prep. You can change anything later.</p>
-            <button onClick={planMyWeek} style={{ border: "none", borderRadius: 18, background: C.jade900, color: "white", fontSize: 19, fontWeight: 700, padding: "21px 20px", cursor: "pointer" }}>✦ Plan my week</button>
+            <p style={{ color: C.inkSoft, fontSize: 15, lineHeight: 1.65, margin: 0 }}>Seven dinners built around your kitchen, a shopping list for what's missing, and prep already sorted.</p>
+            <button onClick={planMyWeek} style={{ border: "1px solid #E2B33D", borderBottom: "3px solid #D7A524", borderRadius: 18, background: C.mustard, color: C.ink, fontSize: 19, fontWeight: 700, padding: "21px 20px", cursor: "pointer" }}>✦ Plan my week →</button>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-              <button onClick={() => setRescueOpen(v => !v)} style={{ padding: 17, borderRadius: 14, border: `1px solid ${C.line}`, background: "#F8FCFA", color: C.ink, fontWeight: 600 }}>Use leftovers</button>
-              <button onClick={() => setTab("household")} style={{ padding: 17, borderRadius: 14, border: `1px solid ${C.line}`, background: "#F8FCFA", color: C.ink, fontWeight: 600 }}>Adjust preferences</button>
+              <button onClick={() => setRescueOpen(v => !v)} style={{ padding: 17, borderRadius: 14, border: `1px solid ${C.line}`, background: "#FFFCF5", color: C.ink, fontWeight: 600 }}>Use leftovers</button>
+              <button onClick={() => setTab("household")} style={{ padding: 17, borderRadius: 14, border: `1px solid ${C.line}`, background: "#FFFCF5", color: C.ink, fontWeight: 600 }}>Adjust preferences</button>
             </div>
             {rescueOpen && <section style={{ background: "#fff", padding: 18, borderRadius: 18, border: `1px solid ${C.line}` }}>
               <h3 style={{ marginTop: 0 }}>What's left in the fridge?</h3>
@@ -2280,7 +2281,7 @@ export default function MakanLedger() {
                   return { meal, hits };
                 }).filter(x => x.hits.length > 0).sort((a,b) => b.hits.length - a.hits.length).slice(0,5).map(({meal,hits}) =>
                   <button key={meal.id} onClick={() => { addExtraDish(todayDateStr(), "dinner", meal.id); setTab("week"); }}
-                    style={{ textAlign: "left", padding: 13, borderRadius: 12, border: `1px solid ${C.line}`, background: "#F7FAF8", color: C.ink }}>
+                    style={{ textAlign: "left", padding: 13, borderRadius: 12, border: `1px solid ${C.line}`, background: "#F6F3EA", color: C.ink }}>
                     <strong>{meal.name}</strong><span style={{ display: "block", fontSize: 12, color: C.inkSoft, marginTop: 4 }}>Uses: {hits.join(", ")} · Add to today's dinner</span>
                   </button>)}
                 <button onClick={() => setTab("pantry")} style={{ border: 0, background: "none", textAlign: "left", color: C.jade700, padding: 8 }}>Or manage my kitchen stock</button>
@@ -2356,6 +2357,24 @@ export default function MakanLedger() {
               onTogglePrepCard={setPrepCardOpen}
             />
           )}
+          {tab === "prep" && <main style={{ padding: "28px 20px 100px", display: "grid", gap: 14 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1.5, color: C.inkSoft }}>PREP, MADE SIMPLE</div>
+            <h2 style={{ fontFamily: FONT_DISPLAY, fontSize: 30, lineHeight: 1.2, margin: 0 }}>A little now. Less later.</h2>
+            <p style={{ color: C.inkSoft, lineHeight: 1.6, margin: "0 0 8px" }}>Your checklist follows your current meals and kitchen stock. Tick tasks as you finish them.</p>
+            {plan.length === 0 && <button onClick={planMyWeek} style={{ border: 0, borderRadius: 14, background: C.mustard, color: C.ink, padding: 17, fontWeight: 700 }}>Plan my week first</button>}
+            {[...prepList.aggregateItems, ...prepList.perDish].length === 0 && plan.length > 0 && <p>No preparation needed for this plan.</p>}
+            {[...prepList.aggregateItems, ...prepList.perDish].map(item => <label key={item.key} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: 16, background: "#fff", border: `1px solid ${C.line}`, borderRadius: 14 }}>
+              <input type="checkbox" checked={!!prepChecked[item.key]} disabled={item.ready === false} onChange={() => togglePrepChecked(item.key, item.ready, item.label)} style={{ marginTop: 4, width: 19, height: 19, accentColor: C.ink }} />
+              <span><strong style={{ display: "block" }}>{item.label}</strong>{item.hint && <span style={{ display: "block", color: C.inkSoft, fontSize: 12, marginTop: 5 }}>{item.hint}</span>}{item.ready === false && <span style={{ display: "block", color: C.clayText, fontSize: 12, marginTop: 5 }}>Buy ingredients first</span>}</span>
+            </label>)}
+            {prepList.makeItems.length > 0 && <section style={{ padding: 17, borderRadius: 15, background: "#fff", border: `1px solid ${C.line}` }}>
+              <h3 style={{ marginTop: 0 }}>Batch components</h3>
+              {prepList.makeItems.map(item => <button key={item.key} onClick={() => completeComponentBatch(item)} disabled={!item.ready} style={{ width: "100%", display: "flex", gap: 10, textAlign: "left", padding: 12, marginTop: 8, background: C.paper, border: `1px solid ${C.line}`, borderRadius: 10, color: C.ink }}>
+                <span>{prepChecked[item.key] ? "☑" : "☐"}</span><span>{item.label}</span>
+              </button>)}
+            </section>}
+            <p style={{ fontSize: 12, color: C.inkSoft, lineHeight: 1.6 }}>Keep chilled foods cold and freeze portions you won't use within a safe storage period. Prep only ingredients you can store safely.</p>
+          </main>}
           {tab === "list" && (
             <ShoppingListScreen
               toBuyByCategory={toBuyByCategory}

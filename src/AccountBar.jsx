@@ -3,7 +3,7 @@ import { signIn, signOut, subscribe, getSnapshot, pullIfStale, joinHousehold, le
 
 // Small floating account control, pinned inside the app's centred column so
 // it sits over the header's right-hand side on phone and laptop alike.
-const INK = "#163A30", BROWN = "#174D3D", OAT = "#F7FAF8", MUSTARD = "#CBEADD", LINE = "#D8E5DE", CLAY = "#A14F35";
+const INK = "#242832", BROWN = "#242832", OAT = "#F6F3EA", MUSTARD = "#F3C969", LINE = "#E4DED1", CLAY = "#A44B36";
 
 export default function AccountBar() {
   const [s, setS] = useState(getSnapshot());
@@ -31,7 +31,7 @@ export default function AccountBar() {
 
   if (!s.configured) return null;
 
-  const dot = { saving: MUSTARD, saved: "#6DA58B", offline: "#9A9184", error: "#D17D5C", idle: "#6DA58B" }[s.sync] || "#6DA58B";
+  const dot = { saving: MUSTARD, saved: "#D9B86B", offline: "#9A9184", error: "#E57C66", idle: "#D9B86B" }[s.sync] || "#D9B86B";
   const label = { saving: "Saving…", saved: "Saved to your account", offline: "Offline — will save when you're back", error: "Couldn't save just now", idle: "Signed in" }[s.sync];
   const initial = (s.user?.name || s.user?.email || "?").trim().charAt(0).toUpperCase();
 
@@ -75,17 +75,17 @@ export default function AccountBar() {
               boxShadow: "0 8px 24px rgba(74,42,31,.2)", padding: 12, fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
             }}>
               <div style={{ fontWeight: 700, fontSize: 13, color: INK, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.user.name || s.user.email}</div>
-              {s.user.name && <div style={{ fontSize: 11.5, color: "#617B70", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.user.email}</div>}
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, fontSize: 11.5, color: "#617B70" }}>
+              {s.user.name && <div style={{ fontSize: 11.5, color: "#666A73", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.user.email}</div>}
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, fontSize: 11.5, color: "#666A73" }}>
                 <span style={{ width: 8, height: 8, borderRadius: 999, background: dot, flexShrink: 0 }} /> {label}
               </div>
               {s.household && s.household.members.length > 0 && (
                 <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${LINE}` }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "#617B70", letterSpacing: 0.5, textTransform: "uppercase" }}>Your household</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#666A73", letterSpacing: 0.5, textTransform: "uppercase" }}>Your household</div>
                   <div style={{ fontSize: 12, color: INK, marginTop: 4, lineHeight: 1.45 }}>
                     {s.household.members.map(m => m.name).join(", ")}
                   </div>
-                  <div style={{ fontSize: 11, color: "#617B70", marginTop: 8 }}>{isOwner ? "Family need this code and an invite below:" : "Household code:"}</div>
+                  <div style={{ fontSize: 11, color: "#666A73", marginTop: 8 }}>{isOwner ? "Family need this code and an invite below:" : "Household code:"}</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
                     <code style={{ flex: 1, background: OAT, border: `1px solid ${LINE}`, borderRadius: 8, padding: "6px 8px", fontSize: 14, fontWeight: 700, letterSpacing: 1, color: BROWN, textAlign: "center" }}>{s.household.id}</code>
                     <button onClick={async () => {
@@ -98,8 +98,8 @@ export default function AccountBar() {
               )}
               {isOwner && s.household && (
                 <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${LINE}` }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "#617B70", letterSpacing: 0.5, textTransform: "uppercase" }}>Who can join</div>
-                  <div style={{ fontSize: 11, color: "#617B70", marginTop: 4, lineHeight: 1.4 }}>Only the Google emails you add here can join, and they still need the code. Use the exact email they sign in with.</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#666A73", letterSpacing: 0.5, textTransform: "uppercase" }}>Who can join</div>
+                  <div style={{ fontSize: 11, color: "#666A73", marginTop: 4, lineHeight: 1.4 }}>Only the Google emails you add here can join, and they still need the code. Use the exact email they sign in with.</div>
                   {invites.map(em => (
                     <div key={em} style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6, fontSize: 12, color: INK }}>
                       <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{em}</span>
@@ -128,7 +128,7 @@ export default function AccountBar() {
                 </div>
               ) : (
                 <div style={{ marginTop: 10 }}>
-                  <div style={{ fontSize: 11, color: "#617B70", lineHeight: 1.4 }}>Enter the code from your family. This replaces the plans on this device with the household's.</div>
+                  <div style={{ fontSize: 11, color: "#666A73", lineHeight: 1.4 }}>Enter the code from your family. This replaces the plans on this device with the household's.</div>
                   <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
                     <input value={code} onChange={e => setCode(e.target.value)} placeholder="ABCD-2345" autoCapitalize="characters" autoCorrect="off" spellCheck={false}
                       style={{ flex: 1, minWidth: 0, border: `1px solid ${LINE}`, borderRadius: 8, padding: "7px 8px", fontSize: 14, letterSpacing: 1, textTransform: "uppercase", fontFamily: "'IBM Plex Mono', monospace" }} />
