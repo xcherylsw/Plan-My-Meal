@@ -62,3 +62,12 @@ main>h1:first-of-type,main>.lead:first-of-type{padding-right:110px}
   .guides{grid-template-columns:1fr}
   .card{padding:18px}
 }
+
+/* Different friendly illustrations for each public page. */
+body.page-about main::after{content:"🍲";background:#FCE9E5}
+body.page-guides main::after{content:"📚";background:#F1EFFB}
+body.page-privacy main::after{content:"🔒";background:#E9F3F8}
+body.page-contact main::after{content:"💌";background:#FCE9E5}
+body.page-week main::after{content:"🍱";background:#FCE9E5}
+body.page-leftovers main::after{content:"🥕";background:#F1EFFB}
+body.page-diet main::after{content:"🥗";background:#E9F3F8}
