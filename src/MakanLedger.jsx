@@ -1267,7 +1267,8 @@ export default function MakanLedger() {
     let worstShortfall = 0;
     const queues = {};
     slots.forEach(type => {
-      const sub = pool.filter(m => !m.side && !m.isComponent && m.mealTypes.includes(type));
+      const slotPool = pool.filter(m => !m.isComponent && m.mealTypes.includes(type));
+      const sub = slotPool.filter(m => !m.side);
       const base = sub.length ? sub : pool.filter(m => !m.side && !m.isComponent);
       const priority = useSoonItems.length ? base.filter(usesKitchenStock) : [];
       const rest = useSoonItems.length ? base.filter(m => !usesKitchenStock(m)) : base;
@@ -1285,8 +1286,8 @@ export default function MakanLedger() {
         // either) could get pulled in as someone else's "side", stacking
         // two full rice-and-all dinners onto one slot instead of one light
         // pairing.
-        vegSideBase: base.filter(m => m.side && hasCategory(m, "vegetable") && !hasCategory(m, "protein")),
-        proteinSideBase: base.filter(m => m.side && hasRealMeat(m) && !hasCategory(m, "vegetable")),
+        vegSideBase: slotPool.filter(m => m.side && hasCategory(m, "vegetable") && !hasCategory(m, "protein")),
+        proteinSideBase: slotPool.filter(m => m.side && hasRealMeat(m) && !hasCategory(m, "vegetable")),
       };
     });
     for (let d = 0; d < daysCount; d++) {
