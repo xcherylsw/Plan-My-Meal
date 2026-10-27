@@ -1708,6 +1708,15 @@ export default function MakanLedger() {
     showToast(`Added ${choice.name} to today's ${mealType}`, () => setPlan(prev => prev.filter(m => m.uid !== uid)));
   }
 
+  // Fridge Rescue is intentionally a scratchpad, not a permanent inventory ledger.
+  // Only user-selected recipes enter the saved plan; typing never changes pantry stock.
+  const rescueIngredients = rescueText.split(/[,;\n]+/).map(x => x.trim().toLowerCase().replace(/^(?:half|some|a few|a little|leftover|leftovers|one|two|three|\\d+|\\d+g|\\d+kg)\\s+/i, "")).filter(Boolean);
+  const rescueMatches = rescueIngredients.length ? getPool().pool.filter(m => !m.side).map(meal => {
+    const matched = meal.ingredients.filter(i => rescueIngredients.some(term => wordMatch(i.name.toLowerCase(), term) || i.name.toLowerCase().includes(term)));
+    const useSoon = matched.filter(i => pantry.some(k => k.useSoon && wordMatch(k.name.toLowerCase(), i.name.toLowerCase()))).length;
+    return { meal, matched, score: matched.length * 4 + useSoon * 3 };
+  }).filter(r => r.matched.length > 0).sort((a,b) => b.score - a.score || a.meal.time - b.meal.time).slice(0,6) : [];
+
   // How many batches of each component recipe (sambal, curry roux, a spice
   // paste — something made from scratch, never planned as its own meal) this
   // plan's dishes actually call for, beyond what's already sitting in the
@@ -2269,6 +2278,24 @@ export default function MakanLedger() {
               <h2 style={{fontFamily:FONT_DISPLAY,fontSize:27,margin:"8px 0"}}>What shall we cook?</h2>
               <p style={{fontSize:13,color:C.inkSoft,lineHeight:1.5,margin:0}}>Auto for effortless dinners. Custom for quick changes. Manual for full control.</p></div>
               <FoodArt kind="meal" size={105}/>
+            </section>
+            <section style={{margin:"16px 18px 0",border:"1px solid #E5E3EE",borderRadius:20,background:"#fff",padding:16}}>
+              <button onClick={()=>setRescueOpen(v=>!v)} aria-expanded={rescueOpen} style={{display:"flex",width:"100%",justifyContent:"space-between",alignItems:"center",border:0,background:"transparent",color:C.ink,textAlign:"left",fontWeight:800,fontSize:16,padding:0}}>
+                <span>🥕 Use leftovers · Fridge Rescue</span><span>{rescueOpen?"−":"+"}</span>
+              </button>
+              <p style={{color:C.inkSoft,fontSize:12,margin:"7px 0 0"}}>Tell us what needs using. No need to update your pantry.</p>
+              {rescueOpen && <div style={{display:"grid",gap:12,marginTop:14}}>
+                <textarea value={rescueText} onChange={e=>setRescueText(e.target.value)} rows={3} placeholder="e.g. half cabbage, eggs, leftover rice, fishballs" aria-label="Leftover ingredients" style={{border:"1px solid #D8D6E3",borderRadius:12,padding:12,fontFamily:"inherit",fontSize:14,resize:"vertical"}}/>
+                {rescueIngredients.length>0 && <div aria-live="polite" style={{display:"grid",gap:9}}>
+                  <strong style={{fontSize:13}}>Ideas using your ingredients</strong>
+                  {rescueMatches.length===0 ? <p style={{fontSize:13,color:C.inkSoft}}>No matching recipes yet. Try a simpler ingredient name, or add a family recipe under Me.</p> :
+                    rescueMatches.map(({meal,matched})=><div key={meal.id} style={{display:"flex",alignItems:"center",gap:9,background:"#F7F7FB",borderRadius:13,padding:9}}>
+                      <FoodArt name={meal.name} size={57}/><div style={{flex:1,minWidth:0}}><strong style={{fontSize:13}}>{meal.name}</strong><div style={{fontSize:11,color:C.inkSoft}}>Uses {matched.map(i=>i.name).join(", ")}</div></div>
+                      <button onClick={()=>{cookNow(meal.id,"dinner",slotPax.dinner);setTab("week");}} style={{border:0,borderRadius:10,padding:"10px 12px",background:"#EAA28F",fontWeight:800,color:C.ink}}>Plan</button>
+                    </div>)}
+                  <p style={{fontSize:11,color:C.inkSoft}}>Suggestions may need other ingredients. Check the recipe and food freshness before cooking; refrigerate leftovers promptly.</p>
+                </div>}
+              </div>}
             </section>
             <GenerateScreen
               scope={scope} setScope={setScope}
