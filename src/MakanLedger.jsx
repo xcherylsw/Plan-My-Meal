@@ -4631,7 +4631,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
       )}
 
       {!libraryEdit && <p style={{background:"#F1EFFB",borderRadius:12,padding:"12px 14px",fontSize:12.5,color:C.inkSoft}}>🔒 Your recipes stay in your own collection. Saving here never publishes to the Community Library.</p>}
-      <SectionLabel>My private recipes ({myRecipes.length})</SectionLabel>
+      {!libraryEdit && <SectionLabel>My private recipes ({myRecipes.length})</SectionLabel>}
       {myRecipes.length === 0 ? (
         <p style={{ fontSize: 12.5, color: C.inkSoft }}>Nothing saved yet — recipes you import will show up here, and get mixed into future generated plans.</p>
       ) : (
