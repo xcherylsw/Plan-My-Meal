@@ -52,7 +52,7 @@ body {background:#F7F7FB;color:#303241;}
 .top nav a.cur {color:#A65D4E;border-bottom:2px solid #EAA28F;}
 .btn {background:#EAA28F;color:#303241!important;box-shadow:none;border-radius:14px;}
 .btn:hover {background:#E39480;}
-main {background:transparent;}
+main {background:#fff;border:1px solid #E5E3EE;border-radius:22px;margin-top:22px;margin-bottom:24px;padding:32px 30px;max-width:880px;}
 h1,h2,h3 {color:#303241;}
 a {color:#8F586A;}
-@media(max-width:620px){.top .in{padding:16px 18px}.brand{font-size:21px}.top nav{gap:10px 16px}.top nav .btn{padding:9px 13px}.top nav a{font-size:13px}}
+@media(max-width:620px){main{margin:14px 12px 22px;padding:24px 20px;border-radius:18px}.top .in{padding:16px 18px}.brand{font-size:21px}.top nav{gap:10px 16px}.top nav .btn{padding:9px 13px}.top nav a{font-size:13px}}
