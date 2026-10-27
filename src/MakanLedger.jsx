@@ -3964,10 +3964,9 @@ function HouseholdScreen({
 
   return (
     <div style={{ padding: "24px 18px 36px",background:"#FAF7F2",minHeight:"70vh" }}>
-      <h2 style={{fontFamily:FONT_DISPLAY,fontSize:30,margin:"0 0 6px"}}>Household & preferences</h2>
-      <p style={{fontSize:13,color:C.inkSoft,margin:"0 0 18px"}}>{totalPax} people · {household.dishesPerMealMin}–{household.dishesPerMealMax} dishes per meal</p>
+      <div style={{background:"linear-gradient(125deg,#534A72,#82769F)",color:"#fff",borderRadius:24,padding:"26px 22px",marginBottom:18,position:"relative",overflow:"hidden"}}><div style={{position:"absolute",right:-10,top:5,fontSize:96,opacity:.16,pointerEvents:"none"}}>🏡</div><div style={{fontSize:11,fontWeight:800,letterSpacing:2,color:"#EAE4FF",marginBottom:9}}>MADE FOR YOUR TABLE</div><h2 style={{fontFamily:FONT_DISPLAY,fontSize:32,lineHeight:1.1,margin:"0 0 12px",maxWidth:250}}>Everyone eats happy.</h2><div style={{fontSize:13,lineHeight:1.6,color:"#F4F0FF"}}>{totalPax} people · {household.dishesPerMealMin}–{household.dishesPerMealMax} dishes per meal</div></div>
       <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:18}}>{[`${household.adults} adults`,`${household.kids} kids`,`${household.elderly} elderly`].filter(x=>!x.startsWith("0 ")).map(x=><span key={x} style={{background:"#fff",border:"1px solid #E9E3DF",borderRadius:999,padding:"8px 12px",fontSize:13,fontWeight:700}}>{x}</span>)}</div>
-      <details style={{background:"#fff",borderRadius:20,padding:16,marginBottom:14,border:"1px solid #E9E3DF",boxShadow:"0 5px 18px rgba(47,42,51,.04)"}}><summary style={{fontWeight:800,fontSize:16,cursor:"pointer",marginBottom:10}}>People & portions · {totalPax} people</summary>
+      <details style={{background:"#fff",borderRadius:18,padding:"16px 18px",marginBottom:14,border:"1px solid #E9E3DF"}}><summary style={{fontWeight:800,fontSize:15,cursor:"pointer"}}>Adjust people & portions <span style={{float:"right",color:"#887A91"}}>＋</span></summary><div style={{paddingTop:18}}>
       <SectionLabel>Who's eating</SectionLabel>
       <Stepper label="Adults" value={household.adults} min={0} max={12} onChange={v => setHouseholdCount("adults", v)} />
       <Stepper label="Kids" value={household.kids} min={0} max={12} onChange={v => setHouseholdCount("kids", v)} />
@@ -3999,8 +3998,7 @@ function HouseholdScreen({
           ? <>Set the same number for both to always aim for exactly {household.dishesPerMealMax} dish{household.dishesPerMealMax > 1 ? "es" : ""}. A couple might just want one all-in-one dish; a bigger household eating family-style might set both to 4 or 5.</>
           : <>A big family eating family-style can set a range like {household.dishesPerMealMin}–{household.dishesPerMealMax}. Rich, already-filling mains (curry, rendang, and the like) aim for the low end since they don't need much padding out; lighter mains aim for the high end so the table still gets the variety.</>}
       </p>
-
-      </details>
+      </div></details>
       <SettingsSection
         title="Dietary needs"
         countLabel={household.diets.length ? `${household.diets.length} set` : null}
@@ -4384,8 +4382,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
 
   return (
     <div style={{ padding: "24px 18px 36px",background:"#FAF7F2",minHeight:"70vh" }}>
-      <h2 style={{fontFamily:FONT_DISPLAY,fontSize:30,margin:"0 0 5px"}}>My cookbook</h2>
-      <p style={{fontSize:13,color:C.inkSoft,margin:"0 0 18px"}}>{myRecipes.length} saved recipes · Your own cooking collection</p>
+      <div style={{background:"linear-gradient(125deg,#8F554D,#C88B79)",color:"#fff",borderRadius:24,padding:"25px 22px",marginBottom:20,position:"relative",overflow:"hidden"}}><div style={{position:"absolute",right:-10,top:-10,fontSize:105,opacity:.19,pointerEvents:"none"}}>📖</div><div style={{fontSize:11,fontWeight:800,letterSpacing:2,color:"#FFE5D8",marginBottom:9}}>YOUR FAMILY FAVOURITES</div><h2 style={{fontFamily:FONT_DISPLAY,fontSize:33,lineHeight:1.1,margin:"0 0 11px",maxWidth:240}}>Recipes worth keeping.</h2><div style={{fontSize:13,color:"#FFF3EC"}}>{myRecipes.length} saved recipes · Private to you</div></div>
       <p style={{fontSize:13,color:C.inkSoft,margin:"0 0 12px"}}>Your saved recipes, ready when you need them.</p>
 
       {!draft && (
@@ -4837,11 +4834,7 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
 
   return (
     <div style={{ padding: "24px 18px 36px",background:"#FAF7F2",minHeight:"70vh" }}>
-      <h2 style={{fontFamily:FONT_DISPLAY,fontSize:30,margin:"0 0 6px"}}>{isAdmin ? "Admin studio" : "Discover recipes"}</h2>
-      <p style={{fontSize:13,color:C.inkSoft,margin:"0 0 18px"}}>{items.length ? `${items.length} recipes to explore` : "A shared cookbook, growing together"}</p>
-      <p style={{ fontSize: 11.5, color: C.inkSoft, marginTop: -4, marginBottom: 12, lineHeight: 1.5 }}>
-        Recipes shared with everyone, with credit to where they came from. Tap "Add to my recipes" and the generator starts using it.
-      </p>
+      <div style={{background:"linear-gradient(125deg,#354E60,#6A8A94)",color:"#fff",borderRadius:24,padding:"25px 22px",marginBottom:20,position:"relative",overflow:"hidden"}}><div style={{position:"absolute",right:-12,top:-12,fontSize:106,opacity:.17,pointerEvents:"none"}}>🍲</div><div style={{fontSize:11,fontWeight:800,letterSpacing:2,color:"#DDEFF3",marginBottom:9}}>{isAdmin ? "CURATE THE COLLECTION" : "A WORLD OF GOOD FOOD"}</div><h2 style={{fontFamily:FONT_DISPLAY,fontSize:33,lineHeight:1.1,margin:"0 0 11px",maxWidth:250}}>{isAdmin ? "Your recipe studio." : "Find your next favourite."}</h2><div style={{fontSize:13,color:"#EDF6F7"}}>{items.length ? `${items.length} recipes to explore` : "A shared cookbook, growing together"}</div></div>
 
       {isAdmin && (
         <button onClick={onNew} style={{ width: "100%", background: "#E9A28F", border: "none", borderRadius: 16, padding: "15px 0", color: C.jade900, fontFamily: FONT_BODY, fontWeight: 700, fontSize: 13, marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
