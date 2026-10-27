@@ -2568,8 +2568,8 @@ function GenerateScreen(props) {
             <p style={{fontSize:13,lineHeight:1.6,color:C.inkSoft,margin:0}}>Seven dinners, using what’s in your kitchen first. Shopping and prep update automatically.</p></div>
           <FoodArt kind="meal" size={112}/>
         </div>
-        <button onClick={onAutoPlan} style={{border:0,borderRadius:16,background:"#EAA28F",padding:17,color:C.ink,fontSize:16,fontWeight:800,boxShadow:"0 3px 0 #C87865"}}>{hasWeekPlan ? "↻ Refresh my 7 dinners →" : "✦ Plan my 7 dinners →"}</button>
-        <span style={{fontSize:12,color:C.inkSoft,textAlign:"center"}}>{hasWeekPlan ? "Your current dinners will be kept until you confirm a refresh." : "No setup needed · You can swap any dish later"}</span>
+        <button onClick={onAutoPlan} style={{border:0,borderRadius:16,background:"#EAA28F",padding:17,color:C.ink,fontSize:16,fontWeight:800,boxShadow:"0 3px 0 #C87865"}}>{hasWeekPlan ? "↻ Refresh my 7 dinners →" : "🍳 Plan my 7 dinners →"}</button>
+        <span style={{fontSize:12,color:C.inkSoft,textAlign:"center"}}>{hasWeekPlan ? "Your current dinners will be kept until you confirm a refresh." : "Get 7 dinner ideas in one tap. Your shopping list and prep tasks will be created automatically."}</span>
       </section>}
       <section style={{marginBottom:18}} aria-label="More planning options">
         <div style={{fontSize:13,fontWeight:800,marginBottom:10,color:C.ink}}>Want more control?</div>
