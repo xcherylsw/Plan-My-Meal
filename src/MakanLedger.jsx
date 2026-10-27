@@ -3787,6 +3787,7 @@ function Checkbox({ checked }) {
 function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUseSoon, updatePantryLocation, clearAllUseSoon, newPantryName, setNewPantryName, newPantryCategory, setNewPantryCategory, newPantryLocation, setNewPantryLocation, newPantryQuantity, setNewPantryQuantity, newPantryUnit, setNewPantryUnit, newPantryUseSoon, setNewPantryUseSoon, addPantryItem }) {
   const [addingIngredient, setAddingIngredient] = useState(false);
   const [pantrySearch, setPantrySearch] = useState("");
+  const [editingPantryId, setEditingPantryId] = useState(null);
   const grouped = useMemo(() => {
     const map = {};
     pantry.forEach(p => { const loc = p.location || "pantry"; (map[loc] = map[loc] || []).push(p); });
@@ -3897,11 +3898,12 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
                     <CategoryDot category={item.category} />
                     <span style={{ fontSize: 13, color: C.ink, fontFamily: FONT_BODY, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.name}</span>
                   </div>
-                  <button onClick={() => removePantryItem(item.id)} style={{ color: C.inkSoft, flexShrink: 0 }}>
-                    <Trash2 size={14} />
+                  <button aria-label={`Edit ${item.name}`} aria-expanded={editingPantryId === item.id} onClick={() => setEditingPantryId(v => v === item.id ? null : item.id)} style={{ color: C.ink, flexShrink: 0, border: "1px solid #E9E3DF", borderRadius: 10, padding: "7px 10px", fontSize: 12, fontWeight: 700 }}>
+                    {editingPantryId === item.id ? "Done" : "Edit"}
                   </button>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
+                <div style={{ fontSize: 12, color: C.inkSoft }}>{item.quantity != null ? `${item.quantity} ${item.unit || ""}` : "Always on hand"}{item.useSoon ? " · Use soon" : ""}</div>
+                {editingPantryId === item.id && <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
                   <button
                     onClick={() => toggleUseSoon(item.id)}
                     style={{
@@ -3932,7 +3934,8 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
                   ) : (
                     <span style={{ fontSize: 10, color: C.inkSoft, fontFamily: FONT_MONO, fontStyle: "italic" }}>always have</span>
                   )}
-                </div>
+                  <button onClick={() => { removePantryItem(item.id); setEditingPantryId(null); }} style={{ fontSize: 12, color: C.clayText, padding: "6px 8px" }}>Remove ingredient</button>
+                </div>}
               </div>
             ))}
           </div>
