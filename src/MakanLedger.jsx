@@ -2336,11 +2336,10 @@ export default function MakanLedger() {
               ["Household & preferences", "household", "People, portions and dietary preferences"],
               ["My cookbook", "import", "Your saved family recipes and cooking steps"],
               ["Discover recipes", "library", "Explore recipes from the community"],
-              ["Add a recipe", "import", "Save a family favourite"],
               ...(isAdmin ? [["Admin Studio", "admin", "Review and publish community recipes"]] : []),
-            ].map(([label,destination,description]) => <button key={destination} onClick={() => setTab(destination)}
+            ].map(([label,destination,description]) => <button key={label} onClick={() => setTab(destination)}
               style={{ textAlign: "left", background: "#fff", border: "1px solid #E9E3DF", borderRadius: 20, padding: "20px 18px", color: C.ink, boxShadow:"0 5px 18px rgba(47,42,51,.04)" }}>
-              <strong style={{ display: "block", fontSize: 16 }}>{label}</strong>
+              <strong style={{ display: "block", fontSize: 17, fontFamily:FONT_DISPLAY }}>{label}</strong>
               <span style={{ display: "block", marginTop: 5, color: C.inkSoft, fontSize: 13 }}>{description}</span>
             </button>)}
           </main>}
@@ -4366,10 +4365,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
     <div style={{ padding: "18px 18px 28px" }}>
       <h2 style={{fontFamily:FONT_DISPLAY,fontSize:28,margin:"0 0 5px"}}>My cookbook</h2>
       <p style={{fontSize:13,color:C.inkSoft,margin:"0 0 18px"}}>{myRecipes.length} saved recipes · Your own cooking collection</p>
-      <SectionLabel>Add a recipe</SectionLabel>
-      <p style={{ fontSize: 11.5, color: C.inkSoft, marginTop: -4, marginBottom: 12 }}>
-        Have the recipe open wherever you're reading it from, then fill in the fields below yourself.
-      </p>
+      <p style={{fontSize:13,color:C.inkSoft,margin:"0 0 12px"}}>Save a family favourite, or open one of your recipes below.</p>
 
       {!draft && (
         <button
@@ -4379,7 +4375,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
             color: C.jade900, fontFamily: FONT_BODY, fontWeight: 700, fontSize: 13.5, marginBottom: 18,
           }}
         >
-          Start filling in the recipe
+          ＋ Add a recipe
         </button>
       )}
 
@@ -4651,7 +4647,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
         </div>
       )}
 
-      {!libraryEdit && <p style={{background:"#F1EFFB",borderRadius:12,padding:"12px 14px",fontSize:12.5,color:C.inkSoft}}>🔒 Your recipes stay in your own collection. Saving here never publishes to the Community Library.</p>}
+      {!libraryEdit && <p style={{background:"#F1EFFB",borderRadius:12,padding:"12px 14px",fontSize:12.5,color:C.inkSoft}}>🔒 Private collection · Only you can see these recipes. They are never published automatically.</p>}
       {!libraryEdit && <SectionLabel>My private recipes ({myRecipes.length})</SectionLabel>}
       {myRecipes.length === 0 ? (
         <p style={{ fontSize: 12.5, color: C.inkSoft }}>Nothing saved yet — recipes you import will show up here, and get mixed into future generated plans.</p>
@@ -4708,6 +4704,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
 function SavedRecipeCard({ recipe, onDelete, onEdit, defaultPax }) {
   const [pax, setPax] = useState(defaultPax);
   const [actionsOpen, setActionsOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   return (
     <div style={{ background: "#fff", border: "1px solid #E9E3DF", borderRadius: 22, padding: "18px 16px", boxShadow:"0 5px 18px rgba(47,42,51,.04)" }}>
@@ -4739,7 +4736,8 @@ function SavedRecipeCard({ recipe, onDelete, onEdit, defaultPax }) {
         <div style={{flexShrink:0,position:"relative"}}><button aria-label="Recipe options" aria-expanded={actionsOpen} onClick={()=>setActionsOpen(v=>!v)} style={{border:"1px solid #E9E3DF",background:"#FAF7F2",borderRadius:12,padding:"8px 12px",fontWeight:800,color:C.ink}}>•••</button>{actionsOpen && <div style={{display:"grid",gap:6,marginTop:6}}><button onClick={()=>{setActionsOpen(false);onEdit();}} style={{padding:8,borderRadius:10,background:"#F1EFFB",color:C.ink}}>Edit</button><button onClick={()=>{setActionsOpen(false);onDelete();}} style={{padding:8,borderRadius:10,background:"#FBE9E3",color:C.clayText}}>Delete</button></div>}</div>
       </div>
 
-      {recipe.baseServings ? (
+      <button onClick={()=>setDetailsOpen(v=>!v)} aria-expanded={detailsOpen} style={{width:"100%",marginTop:14,display:"flex",justifyContent:"space-between",alignItems:"center",background:"#FAF7F2",border:"1px solid #E9E3DF",borderRadius:13,padding:"12px 14px",fontSize:14,fontWeight:750,color:C.ink}}><span>{detailsOpen?"Hide recipe":"View ingredients & cooking steps"}</span><ChevronDown size={17} style={{transform:detailsOpen?"rotate(180deg)":"none",transition:"transform .2s"}} /></button>
+      {detailsOpen && <div style={{paddingTop:12}}>{recipe.baseServings ? (
         <div style={{ marginTop: 10 }}>
           <Stepper label="Servings" value={pax} min={1} max={20} onChange={setPax} />
         </div>
@@ -4762,7 +4760,7 @@ function SavedRecipeCard({ recipe, onDelete, onEdit, defaultPax }) {
           </div>
           <StepsList steps={recipe.steps} />
         </div>
-      )}
+      )}</div>}
     </div>
   );
 }
