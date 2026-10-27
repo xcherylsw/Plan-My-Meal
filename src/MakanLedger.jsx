@@ -2568,13 +2568,13 @@ function GenerateScreen(props) {
             <p style={{fontSize:13,lineHeight:1.6,color:C.inkSoft,margin:0}}>Seven dinners, using what’s in your kitchen first. Shopping and prep update automatically.</p></div>
           <FoodArt kind="meal" size={112}/>
         </div>
-        <button onClick={onAutoPlan} style={{border:0,borderRadius:16,background:"#EAA28F",padding:17,color:C.ink,fontSize:16,fontWeight:800,boxShadow:"0 3px 0 #C87865"}}>{hasWeekPlan ? "↻ Refresh my 7 dinners →" : "✦ Plan my 7 dinners →"}</button>
-        <span style={{fontSize:12,color:C.inkSoft,textAlign:"center"}}>{hasWeekPlan ? "Your current dinners will be kept until you confirm a refresh." : "No setup needed · You can swap any dish later"}</span>
+        <button onClick={onAutoPlan} style={{border:0,borderRadius:16,background:"#EAA28F",padding:17,color:C.ink,fontSize:16,fontWeight:800,boxShadow:"0 3px 0 #C87865"}}>{hasWeekPlan ? "↻ Refresh my 7 dinners →" : "🍳 Plan my 7 dinners →"}</button>
+        <span style={{fontSize:12,color:C.inkSoft,textAlign:"center"}}>{hasWeekPlan ? "Your current dinners will be kept until you confirm a refresh." : "Get 7 dinner ideas in one tap. Your shopping list and prep tasks will be created automatically."}</span>
       </section>}
       <section style={{marginBottom:18}} aria-label="More planning options">
-        <div style={{fontSize:13,fontWeight:800,marginBottom:10,color:C.ink}}>Want more control?</div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:10}}>
-          {[["custom","🎛 Custom","Choose days and meals"],["manual","⚙ Manual","Plan dish by dish"]].map(([id,label,description])=><button key={id} onClick={()=>setPlanningMode(planningMode===id?"auto":id)} aria-pressed={planningMode===id} style={{textAlign:"left",minWidth:0,border:planningMode===id?"2px solid #EAA28F":"1px solid #E5E3EE",borderRadius:16,padding:"14px 12px",background:planningMode===id?"#F1EFFB":"#fff",color:C.ink,cursor:"pointer"}}>
+        <div style={{fontSize:13,fontWeight:800,marginBottom:10,color:C.ink}}>Need a different plan?</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr",gap:10}}>
+          {[["custom","🎛 Custom","Choose days and meals"]].map(([id,label,description])=><button key={id} onClick={()=>setPlanningMode(planningMode===id?"auto":id)} aria-pressed={planningMode===id} style={{textAlign:"left",minWidth:0,border:planningMode===id?"2px solid #EAA28F":"1px solid #E5E3EE",borderRadius:16,padding:"14px 12px",background:planningMode===id?"#F1EFFB":"#fff",color:C.ink,cursor:"pointer"}}>
             <strong style={{display:"block",fontSize:15}}>{label}</strong><span style={{display:"block",fontSize:12,color:C.inkSoft,marginTop:5}}>{description}</span>
           </button>)}
         </div>
