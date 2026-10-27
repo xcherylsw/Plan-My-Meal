@@ -1710,7 +1710,7 @@ export default function MakanLedger() {
 
   // Fridge Rescue is intentionally a scratchpad, not a permanent inventory ledger.
   // Only user-selected recipes enter the saved plan; typing never changes pantry stock.
-  const rescueIngredients = rescueText.split(/[,;\n]+/).map(x => x.trim().toLowerCase().replace(/^(?:half|some|a few|a little|leftover|leftovers|one|two|three|\\d+|\\d+g|\\d+kg)\\s+/i, "")).filter(Boolean);
+  const rescueIngredients = rescueText.split(/[,;\n]+/).map(x => x.trim().toLowerCase().replace(/^(?:half|some|a few|a little|leftover|leftovers|one|two|three)[ ]+/i, "").trim()).filter(Boolean);
   const rescueMatches = rescueIngredients.length ? getPool().pool.filter(m => !m.side).map(meal => {
     const matched = meal.ingredients.filter(i => rescueIngredients.some(term => wordMatch(i.name.toLowerCase(), term) || i.name.toLowerCase().includes(term)));
     const useSoon = matched.filter(i => pantry.some(k => k.useSoon && wordMatch(k.name.toLowerCase(), i.name.toLowerCase()))).length;
