@@ -3965,7 +3965,7 @@ function HouseholdScreen({
   return (
     <div style={{ padding: "24px 18px 36px",background:"#FAF7F2",minHeight:"70vh" }}>
       <div style={{background:"linear-gradient(125deg,#534A72,#82769F)",color:"#fff",borderRadius:24,padding:"26px 22px",marginBottom:18,position:"relative",overflow:"hidden"}}><div style={{position:"absolute",right:-10,top:5,fontSize:96,opacity:.16,pointerEvents:"none"}}>🏡</div><div style={{fontSize:11,fontWeight:800,letterSpacing:2,color:"#EAE4FF",marginBottom:9}}>MADE FOR YOUR TABLE</div><h2 style={{fontFamily:FONT_DISPLAY,fontSize:32,lineHeight:1.1,margin:"0 0 12px",maxWidth:250}}>Everyone eats happy.</h2><div style={{fontSize:13,lineHeight:1.6,color:"#F4F0FF"}}>{totalPax} people · {household.dishesPerMealMin}–{household.dishesPerMealMax} dishes per meal</div></div>
-      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:18}}>{[`${household.adults} adults`,`${household.kids} kids`,`${household.elderly} elderly`].filter(x=>!x.startsWith("0 ")).map(x=><span key={x} style={{background:"#fff",border:"1px solid #E9E3DF",borderRadius:999,padding:"8px 12px",fontSize:13,fontWeight:700}}>{x}</span>)}</div>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:18}}>{[`${household.adults} adults`,`${household.kids} kids`,`${household.elderly} elderly`].filter(x=>!x.startsWith("0 ")).map(x=><span key={x} style={{background:"#F2EBF6",border:"1px solid #E6DAEF",borderRadius:999,padding:"10px 14px",fontSize:13,fontWeight:700,color:"#584B70"}}>{x}</span>)}</div>
       <details style={{background:"#fff",borderRadius:18,padding:"16px 18px",marginBottom:14,border:"1px solid #E9E3DF"}}><summary style={{fontWeight:800,fontSize:15,cursor:"pointer"}}>Adjust people & portions <span style={{float:"right",color:"#887A91"}}>＋</span></summary><div style={{paddingTop:18}}>
       <SectionLabel>Who's eating</SectionLabel>
       <Stepper label="Adults" value={household.adults} min={0} max={12} onChange={v => setHouseholdCount("adults", v)} />
@@ -4383,13 +4383,13 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
   return (
     <div style={{ padding: "24px 18px 36px",background:"#FAF7F2",minHeight:"70vh" }}>
       <div style={{background:"linear-gradient(125deg,#8F554D,#C88B79)",color:"#fff",borderRadius:24,padding:"25px 22px",marginBottom:20,position:"relative",overflow:"hidden"}}><div style={{position:"absolute",right:-10,top:-10,fontSize:105,opacity:.19,pointerEvents:"none"}}>📖</div><div style={{fontSize:11,fontWeight:800,letterSpacing:2,color:"#FFE5D8",marginBottom:9}}>YOUR FAMILY FAVOURITES</div><h2 style={{fontFamily:FONT_DISPLAY,fontSize:33,lineHeight:1.1,margin:"0 0 11px",maxWidth:240}}>Recipes worth keeping.</h2><div style={{fontSize:13,color:"#FFF3EC"}}>{myRecipes.length} saved recipes · Private to you</div></div>
-      <p style={{fontSize:13,color:C.inkSoft,margin:"0 0 12px"}}>Your saved recipes, ready when you need them.</p>
+      {!draft && <p style={{fontSize:13,color:C.inkSoft,margin:"0 0 12px"}}>Your saved recipes, ready when you need them.</p>}
 
       {!draft && (
         <button
           onClick={() => setDraft(blankDraft())}
           style={{
-            width: "100%", background: "#E9A28F", border: "none", borderRadius: 16, padding: "15px 0",boxShadow:"0 5px 16px rgba(180,107,86,.12)",
+            width: "100%", background: "#FFF5EE", border: "1.5px dashed #CB9D8C", borderRadius: 16, padding: "15px 0",
             color: C.jade900, fontFamily: FONT_BODY, fontWeight: 700, fontSize: 13.5, marginBottom: 18,
           }}
         >
@@ -4868,7 +4868,7 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
           {shown.map(r => (
             <div key={r.id} style={{ background: "#fff", border: "1px solid #E9E3DF", borderRadius: 22, padding: 16, marginBottom: 14, boxShadow:"0 5px 18px rgba(47,42,51,.04)" }}>
               <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                {r.photo && <img src={r.photo} alt="" style={{ width: 80, height: 80, borderRadius: 16, objectFit: "cover", flexShrink: 0, border: `1px solid ${C.line}` }} />}
+                {r.photo ? <img src={r.photo} alt="" style={{ width: 96, height: 96, borderRadius: 16, objectFit: "cover", flexShrink: 0, border: `1px solid ${C.line}` }} /> : <div aria-hidden="true" style={{width:80,height:88,borderRadius:16,flexShrink:0,display:"grid",placeItems:"center",background:"linear-gradient(135deg,#FBE5D8,#F5EBD9)",fontSize:39}}>🍽️</div>}
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <div style={{ fontFamily: FONT_DISPLAY, fontWeight: 700, fontSize: 20, color: C.ink, lineHeight:1.25 }}>{r.name}</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
