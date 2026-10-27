@@ -892,7 +892,7 @@ export default function MakanLedger() {
     try { const items = await loadLibrary(); setLibrary({ items, status: "ready", error: "" }); }
     catch (e) { setLibrary(l => ({ ...l, status: "error", error: "Couldn't load the library. Check your connection and try again." })); }
   }, []);
-  useEffect(() => { if (tab === "library" && library.status === "idle") refreshLibrary(); }, [tab, library.status, refreshLibrary]);
+  useEffect(() => { if ((tab === "library" || (tab === "admin" && isAdmin)) && library.status === "idle") refreshLibrary(); }, [tab, isAdmin, library.status, refreshLibrary]);
 
   // Lightweight toast/snackbar — the one place actions like "fix this meal",
   // "eat later instead", or a pantry merge that couldn't combine cleanly get
@@ -2149,7 +2149,7 @@ export default function MakanLedger() {
   // is what lets a saved recipe actually be edited instead of only
   // delete-then-re-add.
   function saveRecipe(recipe) {
-    if (libraryEdit) { publishLibraryRecipe(recipe, recipeDraft); return; }
+    if (libraryEdit) { if (!isAdmin) { showToast("Only admins can publish community recipes."); return; } publishLibraryRecipe(recipe, recipeDraft); return; }
     if (recipe.id) {
       setMyRecipes(prev => prev.map(r => r.id === recipe.id ? { ...recipe } : r));
     } else {
@@ -2160,6 +2160,8 @@ export default function MakanLedger() {
     setMyRecipes(prev => prev.filter(r => r.id !== id));
   }
   async function publishLibraryRecipe(recipe, draftBackup) {
+    if (!isAdmin) { showToast("Only admins can publish community recipes."); return; }
+    if (!window.confirm(`Publish "${recipe.name}" to the public Community Library? Everyone can view it. This does not publish your private recipe collection.`)) return;
     try {
       await saveLibraryRecipe(recipe);
       setLibraryEdit(false);
@@ -2302,9 +2304,10 @@ export default function MakanLedger() {
             {[
               ["Use leftovers / Kitchen", "pantry", "What you have and what needs using soon"],
               ["Household & preferences", "household", "Who eats, dietary needs and syncing"],
-              ["My recipes", "library", "Browse and save recipes"],
+              ["My recipes", "import", "Your private recipes and drafts"],
+              ["Community library", "library", "Browse shared recipes"],
               ["Add a recipe", "import", "Keep your own family favourites"],
-              ["Manual planning", "manual", "Breakfast, lunch, monthly plans and advanced controls"],
+              ...(isAdmin ? [["Admin Studio", "admin", "Review and publish community recipes"]] : []),
             ].map(([label,destination,description]) => <button key={destination} onClick={() => setTab(destination)}
               style={{ textAlign: "left", background: "#fff", border: `1px solid ${C.line}`, borderRadius: 16, padding: 18, color: C.ink }}>
               <strong style={{ display: "block", fontSize: 16 }}>{label}</strong>
@@ -2425,9 +2428,9 @@ export default function MakanLedger() {
               addPantryItem={addPantryItem}
             />
           )}
-          {tab === "library" && (
+          {(tab === "library" || (tab === "admin" && isAdmin)) && (
             <LibraryScreen
-              library={library} isAdmin={isAdmin} configured={cloudSnapshot().configured} myRecipes={myRecipes}
+              library={library} isAdmin={isAdmin && tab === "admin"} configured={cloudSnapshot().configured} myRecipes={myRecipes}
               onAdd={addFromLibrary} onRefresh={refreshLibrary} onDelete={removeLibraryRecipe}
               onNew={() => { setRecipeDraft(null); setLibraryEdit(true); setLibraryIntent({}); setTab("import"); }}
               onEdit={(r) => { setRecipeDraft(null); setLibraryEdit(true); setLibraryIntent({ recipe: r }); setTab("import"); }}
@@ -4627,7 +4630,8 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
         </div>
       )}
 
-      <SectionLabel>Your saved recipes ({myRecipes.length})</SectionLabel>
+      {!libraryEdit && <p style={{background:"#F1EFFB",borderRadius:12,padding:"12px 14px",fontSize:12.5,color:C.inkSoft}}>🔒 Your recipes stay in your own collection. Saving here never publishes to the Community Library.</p>}
+      <SectionLabel>My private recipes ({myRecipes.length})</SectionLabel>
       {myRecipes.length === 0 ? (
         <p style={{ fontSize: 12.5, color: C.inkSoft }}>Nothing saved yet — recipes you import will show up here, and get mixed into future generated plans.</p>
       ) : (
@@ -4794,7 +4798,7 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
 
   return (
     <div style={{ padding: "18px 18px 28px" }}>
-      <SectionLabel>Recipe library</SectionLabel>
+      <SectionLabel>{isAdmin ? "Admin Studio · Community Library" : "Community Library"}</SectionLabel>
       <p style={{ fontSize: 11.5, color: C.inkSoft, marginTop: -4, marginBottom: 12, lineHeight: 1.5 }}>
         Recipes shared with everyone, with credit to where they came from. Tap "Add to my recipes" and the generator starts using it.
       </p>
