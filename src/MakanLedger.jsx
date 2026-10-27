@@ -833,6 +833,7 @@ export default function MakanLedger() {
   const [myRecipes, setMyRecipes] = useState([]);
   const [household, setHousehold] = useState({ adults: 2, kids: 0, elderly: 0, dishesPerMealMin: 2, dishesPerMealMax: 2, diets: [], preferredCuisines: [], preferredProteins: [], dislikedIngredients: [] });
   const [plan, setPlan] = useState([]);
+  const [justGeneratedWeek, setJustGeneratedWeek] = useState(false);
   const [checkedItems, setCheckedItems] = useState({});
   const [extraItems, setExtraItems] = useState([]);
   const [prepChecked, setPrepChecked] = useState({});
@@ -1370,10 +1371,12 @@ export default function MakanLedger() {
     const { pool } = getPool();
     if (!pool.length) { showToast("No recipes match your household preferences."); return; }
     const today = todayDateStr();
+    const weekEnd = addDaysToDateStr(today, 6);
+    const existingDinners = plan.filter(m => m.mealType === "dinner" && m.date >= today && m.date <= weekEnd);
+    if (existingDinners.length && !window.confirm("Replace your existing dinners for the next 7 days? Your breakfast and lunch plans will stay as they are.")) return;
     const { meals } = buildDaySlotsPlan(pool, 7, ["dinner"], today, pantry, {
       min: household.dishesPerMealMin, max: household.dishesPerMealMax,
     });
-    const weekEnd = addDaysToDateStr(today, 6);
     setPlan(prev => [
       ...prev.filter(m => !m.date || m.date < today || m.date > weekEnd || m.mealType !== "dinner"),
       ...withSlotPax(meals),
@@ -1381,8 +1384,9 @@ export default function MakanLedger() {
     setSkippedDays(prev => prev.filter(d => d < today || d > weekEnd));
     setCheckedItems({});
     setScope("week");
+    setJustGeneratedWeek(true);
     setTab("week");
-    showToast("Seven dinners ready. Shopping and prep are updated.");
+    showToast("Your 7 dinners are ready! Tap Swap to change any dish.");
   }
 
   function movePlannedMeal(uid, date) {
@@ -2303,6 +2307,7 @@ export default function MakanLedger() {
               prepCardOpen={prepCardOpen}
               onTogglePrepCard={setPrepCardOpen}
               onAutoPlan={planMyWeek}
+              hasWeekPlan={plan.some(m => m.mealType === "dinner" && m.date >= todayDateStr() && m.date <= addDaysToDateStr(todayDateStr(), 6))}
             />            <section style={{margin:"16px 18px 0",border:"1px solid #E5E3EE",borderRadius:20,background:"#fff",padding:16}}>
               <button onClick={()=>setRescueOpen(v=>!v)} aria-expanded={rescueOpen} style={{display:"flex",width:"100%",justifyContent:"space-between",alignItems:"center",border:0,background:"transparent",color:C.ink,textAlign:"left",fontWeight:800,fontSize:16,padding:0}}>
                 <span>🥕 Use leftovers · Fridge Rescue</span><span>{rescueOpen?"−":"+"}</span>
@@ -2339,7 +2344,7 @@ export default function MakanLedger() {
               <span style={{ display: "block", marginTop: 5, color: C.inkSoft, fontSize: 13 }}>{description}</span>
             </button>)}
           </main>}
-          {tab === "week" && <SimpleWeek
+          {tab === "week" && <><div style={{padding:"0 18px"}}>{justGeneratedWeek && <div role="status" style={{margin:"16px 0",padding:16,background:"#F1EFFB",borderRadius:16,border:"1px solid #DCD7F0"}}><strong>✨ Your 7 dinners are ready!</strong><p style={{margin:"6px 0 10px",fontSize:13,color:C.inkSoft}}>This is your week. Swap a dish, skip a day or add another dish whenever you like.</p><button onClick={()=>setJustGeneratedWeek(false)} style={{background:"#EAA28F",border:0,borderRadius:10,padding:"9px 16px",fontWeight:700,color:C.ink}}>Got it</button></div>}</div><SimpleWeek
             plan={plan} skippedDays={skippedDays} onSkip={toggleSkipDay}
             onSwap={pickMealById} onRemove={removeOne} onMove={movePlannedMeal}
             onAdd={addExtraDish} pickableMeals={pickableMeals}
@@ -2505,7 +2510,7 @@ function GenerateScreen(props) {
     onAddOn, onRedo, generateNote, grouped, onRegenerate, onPickMeal, pickableMeals, rawPickableMeals, onAddExtraDish, onReapplyHousehold, onRemove, household,
     cookNowRanked, onGenerateOne, onCookNow, pantryCount, todayDishes, slotPax, onSetSlotPax, onSetMealPax,
     skippedDays, toggleSkipDay, onMarkCooked,
-    prepList, prepChecked, togglePrepChecked, onCompleteComponentBatch, prepCardOpen, onTogglePrepCard, onAutoPlan,
+    prepList, prepChecked, togglePrepChecked, onCompleteComponentBatch, prepCardOpen, onTogglePrepCard, onAutoPlan, hasWeekPlan,
   } = props;
 
   const totalPax = household.adults + household.kids + household.elderly;
@@ -2563,7 +2568,8 @@ function GenerateScreen(props) {
             <p style={{fontSize:13,lineHeight:1.6,color:C.inkSoft,margin:0}}>Seven dinners, using what’s in your kitchen first. Shopping and prep update automatically.</p></div>
           <FoodArt kind="meal" size={112}/>
         </div>
-        <button onClick={onAutoPlan} style={{border:0,borderRadius:16,background:"#EAA28F",padding:17,color:C.ink,fontSize:16,fontWeight:800,boxShadow:"0 3px 0 #C87865"}}>✦ Plan my 7 dinners →</button>
+        <button onClick={onAutoPlan} style={{border:0,borderRadius:16,background:"#EAA28F",padding:17,color:C.ink,fontSize:16,fontWeight:800,boxShadow:"0 3px 0 #C87865"}}>{hasWeekPlan ? "↻ Refresh my 7 dinners →" : "✦ Plan my 7 dinners →"}</button>
+        <span style={{fontSize:12,color:C.inkSoft,textAlign:"center"}}>{hasWeekPlan ? "Your current dinners will be kept until you confirm a refresh." : "No setup needed · You can swap any dish later"}</span>
       </section>}
       <section style={{marginBottom:18}} aria-label="More planning options">
         <div style={{fontSize:13,fontWeight:800,marginBottom:10,color:C.ink}}>Want more control?</div>
