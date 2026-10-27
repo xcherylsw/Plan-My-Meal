@@ -2409,7 +2409,7 @@ export default function MakanLedger() {
               <button onClick={()=>setTab("me")} style={{display:"inline-flex",alignItems:"center",gap:7,background:"transparent",border:0,color:C.ink,fontWeight:750,fontSize:14,padding:"8px 0",marginBottom:10}}>
                 <span aria-hidden="true">←</span> Back to Me
               </button>
-              <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4,scrollbarWidth:"thin"}}>
+              <div style={{display:"flex",gap:8,flexWrap:"wrap",paddingBottom:4}}>
                 {[["pantry","My kitchen"],["household","Household"],["import","My cookbook"],["library","Discover"],...(isAdmin?[["admin","Admin"]]:[])].map(([id,label])=>(
                   <button key={id} onClick={()=>setTab(id)} aria-current={tab===id?"page":undefined} style={{flexShrink:0,border:tab===id?"1px solid #D88D79":"1px solid #E9E3DF",background:tab===id?"#FCE5DE":"#fff",color:C.ink,borderRadius:999,padding:"10px 13px",fontSize:13,fontWeight:tab===id?800:600}}>
                     {label}
@@ -3787,6 +3787,7 @@ function Checkbox({ checked }) {
 function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUseSoon, updatePantryLocation, clearAllUseSoon, newPantryName, setNewPantryName, newPantryCategory, setNewPantryCategory, newPantryLocation, setNewPantryLocation, newPantryQuantity, setNewPantryQuantity, newPantryUnit, setNewPantryUnit, newPantryUseSoon, setNewPantryUseSoon, addPantryItem }) {
   const [addingIngredient, setAddingIngredient] = useState(false);
   const [pantrySearch, setPantrySearch] = useState("");
+  const [editingPantryId, setEditingPantryId] = useState(null);
   const grouped = useMemo(() => {
     const map = {};
     pantry.forEach(p => { const loc = p.location || "pantry"; (map[loc] = map[loc] || []).push(p); });
@@ -3897,11 +3898,12 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
                     <CategoryDot category={item.category} />
                     <span style={{ fontSize: 13, color: C.ink, fontFamily: FONT_BODY, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.name}</span>
                   </div>
-                  <button onClick={() => removePantryItem(item.id)} style={{ color: C.inkSoft, flexShrink: 0 }}>
-                    <Trash2 size={14} />
+                  <button aria-label={`Edit ${item.name}`} aria-expanded={editingPantryId === item.id} onClick={() => setEditingPantryId(v => v === item.id ? null : item.id)} style={{ color: C.ink, flexShrink: 0, border: "1px solid #E9E3DF", borderRadius: 10, padding: "7px 10px", fontSize: 12, fontWeight: 700 }}>
+                    {editingPantryId === item.id ? "Done" : "Edit"}
                   </button>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
+                <div style={{ fontSize: 12, color: C.inkSoft }}>{item.quantity != null ? `${item.quantity} ${item.unit || ""}` : "Always on hand"}{item.useSoon ? " · Use soon" : ""}</div>
+                {editingPantryId === item.id && <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
                   <button
                     onClick={() => toggleUseSoon(item.id)}
                     style={{
@@ -3932,7 +3934,8 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
                   ) : (
                     <span style={{ fontSize: 10, color: C.inkSoft, fontFamily: FONT_MONO, fontStyle: "italic" }}>always have</span>
                   )}
-                </div>
+                  <button onClick={() => { removePantryItem(item.id); setEditingPantryId(null); }} style={{ fontSize: 12, color: C.clayText, padding: "6px 8px" }}>Remove ingredient</button>
+                </div>}
               </div>
             ))}
           </div>
@@ -4384,7 +4387,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
     <div style={{ padding: "24px 18px 36px",background:"#FAF7F2",minHeight:"70vh" }}>
       <h2 style={{fontFamily:FONT_DISPLAY,fontSize:30,margin:"0 0 5px"}}>My cookbook</h2>
       <p style={{fontSize:13,color:C.inkSoft,margin:"0 0 18px"}}>{myRecipes.length} saved recipes · Your own cooking collection</p>
-      <p style={{fontSize:13,color:C.inkSoft,margin:"0 0 12px"}}>Save a family favourite, or open one of your recipes below.</p>
+      <p style={{fontSize:13,color:C.inkSoft,margin:"0 0 12px"}}>Your saved recipes, ready when you need them.</p>
 
       {!draft && (
         <button
@@ -4400,6 +4403,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
 
       {error && <p style={{ fontSize: 11.5, color: C.clayText, marginBottom: 12 }}>{error}</p>}
 
+      {draft && <button onClick={handleCancelDraft} style={{border:"1px solid #E9E3DF",borderRadius:12,padding:"10px 14px",marginBottom:12,background:"#fff",fontWeight:700}}>← Back to saved recipes</button>}
       {draft && (
         <div style={{ background: "#fff", border: "1px solid #E9E3DF", borderRadius: 22, padding: 18, marginBottom: 20,boxShadow:"0 5px 18px rgba(47,42,51,.04)" }}>
           {libraryEdit && (
@@ -4666,9 +4670,9 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
         </div>
       )}
 
-      {!libraryEdit && <p style={{background:"#F1EFFB",borderRadius:12,padding:"12px 14px",fontSize:12.5,color:C.inkSoft}}>🔒 Private collection · Only you can see these recipes. They are never published automatically.</p>}
-      {!libraryEdit && <SectionLabel>My private recipes ({myRecipes.length})</SectionLabel>}
-      {myRecipes.length === 0 ? (
+      {!draft && !libraryEdit && <p style={{background:"#F1EFFB",borderRadius:12,padding:"12px 14px",fontSize:12.5,color:C.inkSoft}}>🔒 Private collection · Only you can see these recipes. They are never published automatically.</p>}
+      {!draft && !libraryEdit && <SectionLabel>My private recipes ({myRecipes.length})</SectionLabel>}
+      {!draft && (myRecipes.length === 0 ? (
         <p style={{ fontSize: 12.5, color: C.inkSoft }}>Nothing saved yet — recipes you import will show up here, and get mixed into future generated plans.</p>
       ) : (
         <>
@@ -4715,7 +4719,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
             </div>
           )}
         </>
-      )}
+      ))}
     </div>
   );
 }
