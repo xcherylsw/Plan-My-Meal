@@ -1262,12 +1262,14 @@ export default function MakanLedger() {
     const kitchenFirstOrder = list => shuffle(list).sort((a,b) => stockScore(a) - stockScore(b));
 
     const results = [];
+    if (!pool.some(m => !m.side && !m.isComponent)) return { meals: [], shortSlots: daysCount * slots.length, worstShortfall: maxCount };
     let shortSlots = 0; // meal slots that couldn't reach the requested dish count — dish bank ran dry, not a bug
     let worstShortfall = 0;
     const queues = {};
     slots.forEach(type => {
-      const sub = pool.filter(m => m.mealTypes.includes(type));
-      const base = sub.length ? sub : pool;
+      const slotPool = pool.filter(m => !m.isComponent && m.mealTypes.includes(type));
+      const sub = slotPool.filter(m => !m.side);
+      const base = sub.length ? sub : pool.filter(m => !m.side && !m.isComponent);
       const priority = useSoonItems.length ? base.filter(usesKitchenStock) : [];
       const rest = useSoonItems.length ? base.filter(m => !usesKitchenStock(m)) : base;
       queues[type] = {
@@ -1284,8 +1286,8 @@ export default function MakanLedger() {
         // either) could get pulled in as someone else's "side", stacking
         // two full rice-and-all dinners onto one slot instead of one light
         // pairing.
-        vegSideBase: base.filter(m => m.side && hasCategory(m, "vegetable") && !hasCategory(m, "protein")),
-        proteinSideBase: base.filter(m => m.side && hasRealMeat(m) && !hasCategory(m, "vegetable")),
+        vegSideBase: slotPool.filter(m => m.side && hasCategory(m, "vegetable") && !hasCategory(m, "protein")),
+        proteinSideBase: slotPool.filter(m => m.side && hasRealMeat(m) && !hasCategory(m, "vegetable")),
       };
     });
     for (let d = 0; d < daysCount; d++) {
@@ -1369,7 +1371,7 @@ export default function MakanLedger() {
   // The underlying household, pantry, recipes, shopping and prep state is shared.
   function planMyWeek() {
     const { pool } = getPool();
-    if (!pool.length) { showToast("No recipes match your household preferences."); return; }
+    if (!pool.some(m => !m.side && !m.isComponent)) { showToast("No complete main dishes match your household preferences."); return; }
     const today = todayDateStr();
     const weekEnd = addDaysToDateStr(today, 6);
     const existingDinners = plan.filter(m => m.mealType === "dinner" && m.date >= today && m.date <= weekEnd);
@@ -1500,9 +1502,10 @@ export default function MakanLedger() {
     if (!meal) return;
     const prevPlan = plan;
     const { pool } = getPool();
-    let source = pool.filter(p => p.id !== meal.id && (!meal.mealType || p.mealTypes.includes(meal.mealType)));
-    if (!source.length) source = pool.filter(p => p.id !== meal.id);
-    if (!source.length) source = pool;
+    let source = pool.filter(p => p.id !== meal.id && p.side === !!meal.side && (!meal.mealType || p.mealTypes.includes(meal.mealType)));
+    if (!source.length) source = pool.filter(p => p.id !== meal.id && p.side === !!meal.side);
+    if (!source.length) source = pool.filter(p => p.side === !!meal.side);
+    if (!source.length) { showToast("No suitable replacement dish available."); return; }
     const choice = source[Math.floor(Math.random() * source.length)];
     setPlan(prevPlan.map(m => m.uid === uid ? { ...choice, uid: m.uid, date: m.date, mealType: m.mealType, pax: m.pax } : m));
     showToast(`Swapped ${meal.name} for ${choice.name}`, () => setPlan(prevPlan));
@@ -1523,6 +1526,7 @@ export default function MakanLedger() {
     const source = useOriginal ? rawPickableMeals : getPool().pool;
     const choice = source.find(p => p.id === chosenId);
     if (!choice) return;
+    if (!!choice.side !== !!meal.side) { showToast("Choose a main dish to replace a main, or a side to replace a side."); return; }
     const prevPlan = plan;
     setPlan(prevPlan.map(m => m.uid === uid ? { ...choice, uid: m.uid, date: m.date, mealType: m.mealType, pax: m.pax } : m));
     showToast(`Set to ${choice.name}`, () => setPlan(prevPlan));
