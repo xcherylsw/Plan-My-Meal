@@ -833,6 +833,7 @@ export default function MakanLedger() {
   const [myRecipes, setMyRecipes] = useState([]);
   const [household, setHousehold] = useState({ adults: 2, kids: 0, elderly: 0, dishesPerMealMin: 2, dishesPerMealMax: 2, diets: [], preferredCuisines: [], preferredProteins: [], dislikedIngredients: [] });
   const [plan, setPlan] = useState([]);
+  const [justGeneratedWeek, setJustGeneratedWeek] = useState(false);
   const [checkedItems, setCheckedItems] = useState({});
   const [extraItems, setExtraItems] = useState([]);
   const [prepChecked, setPrepChecked] = useState({});
@@ -1370,10 +1371,12 @@ export default function MakanLedger() {
     const { pool } = getPool();
     if (!pool.length) { showToast("No recipes match your household preferences."); return; }
     const today = todayDateStr();
+    const weekEnd = addDaysToDateStr(today, 6);
+    const existingDinners = plan.filter(m => m.mealType === "dinner" && m.date >= today && m.date <= weekEnd);
+    if (existingDinners.length && !window.confirm("Replace your existing dinners for the next 7 days? Your breakfast and lunch plans will stay as they are.")) return;
     const { meals } = buildDaySlotsPlan(pool, 7, ["dinner"], today, pantry, {
       min: household.dishesPerMealMin, max: household.dishesPerMealMax,
     });
-    const weekEnd = addDaysToDateStr(today, 6);
     setPlan(prev => [
       ...prev.filter(m => !m.date || m.date < today || m.date > weekEnd || m.mealType !== "dinner"),
       ...withSlotPax(meals),
@@ -1381,8 +1384,9 @@ export default function MakanLedger() {
     setSkippedDays(prev => prev.filter(d => d < today || d > weekEnd));
     setCheckedItems({});
     setScope("week");
+    setJustGeneratedWeek(true);
     setTab("week");
-    showToast("Seven dinners ready. Shopping and prep are updated.");
+    showToast("Your 7 dinners are ready! Tap Swap to change any dish.");
   }
 
   function movePlannedMeal(uid, date) {
@@ -2273,30 +2277,6 @@ export default function MakanLedger() {
             whole (header/nav stay put via sticky, not by clipping this). */}
         <div style={{ flex: 1, background: C.paper }}>
           {tab === "home" && (<>
-            <section style={{margin:"20px 18px 0",padding:18,borderRadius:22,background:"#F1EFFB",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12}}>
-              <div><div style={{fontSize:11,fontWeight:800,letterSpacing:1.5,color:C.inkSoft}}>YOUR KITCHEN, YOUR WAY ✦</div>
-              <h2 style={{fontFamily:FONT_DISPLAY,fontSize:27,margin:"8px 0"}}>What shall we cook?</h2>
-              <p style={{fontSize:13,color:C.inkSoft,lineHeight:1.5,margin:0}}>Auto for effortless dinners. Custom for quick changes. Manual for full control.</p></div>
-              <FoodArt kind="meal" size={105}/>
-            </section>
-            <section style={{margin:"16px 18px 0",border:"1px solid #E5E3EE",borderRadius:20,background:"#fff",padding:16}}>
-              <button onClick={()=>setRescueOpen(v=>!v)} aria-expanded={rescueOpen} style={{display:"flex",width:"100%",justifyContent:"space-between",alignItems:"center",border:0,background:"transparent",color:C.ink,textAlign:"left",fontWeight:800,fontSize:16,padding:0}}>
-                <span>🥕 Use leftovers · Fridge Rescue</span><span>{rescueOpen?"−":"+"}</span>
-              </button>
-              <p style={{color:C.inkSoft,fontSize:12,margin:"7px 0 0"}}>Tell us what needs using. No need to update your pantry.</p>
-              {rescueOpen && <div style={{display:"grid",gap:12,marginTop:14}}>
-                <textarea value={rescueText} onChange={e=>setRescueText(e.target.value)} rows={3} placeholder="e.g. half cabbage, eggs, leftover rice, fishballs" aria-label="Leftover ingredients" style={{border:"1px solid #D8D6E3",borderRadius:12,padding:12,fontFamily:"inherit",fontSize:14,resize:"vertical"}}/>
-                {rescueIngredients.length>0 && <div aria-live="polite" style={{display:"grid",gap:9}}>
-                  <strong style={{fontSize:13}}>Ideas using your ingredients</strong>
-                  {rescueMatches.length===0 ? <p style={{fontSize:13,color:C.inkSoft}}>No matching recipes yet. Try a simpler ingredient name, or add a family recipe under Me.</p> :
-                    rescueMatches.map(({meal,matched})=><div key={meal.id} style={{display:"flex",alignItems:"center",gap:9,background:"#F7F7FB",borderRadius:13,padding:9}}>
-                      <FoodArt name={meal.name} size={57}/><div style={{flex:1,minWidth:0}}><strong style={{fontSize:13}}>{meal.name}</strong><div style={{fontSize:11,color:C.inkSoft}}>Uses {matched.map(i=>i.name).join(", ")}</div></div>
-                      <button onClick={()=>{cookNow(meal.id,"dinner",slotPax.dinner);setTab("week");}} style={{border:0,borderRadius:10,padding:"10px 12px",background:"#EAA28F",fontWeight:800,color:C.ink}}>Plan</button>
-                    </div>)}
-                  <p style={{fontSize:11,color:C.inkSoft}}>Suggestions may need other ingredients. Check the recipe and food freshness before cooking; refrigerate leftovers promptly.</p>
-                </div>}
-              </div>}
-            </section>
             <GenerateScreen
               scope={scope} setScope={setScope}
               mealSlots={mealSlots} toggleMealSlot={toggleMealSlot}
@@ -2327,7 +2307,26 @@ export default function MakanLedger() {
               prepCardOpen={prepCardOpen}
               onTogglePrepCard={setPrepCardOpen}
               onAutoPlan={planMyWeek}
-            />
+              hasWeekPlan={plan.some(m => m.mealType === "dinner" && m.date >= todayDateStr() && m.date <= addDaysToDateStr(todayDateStr(), 6))}
+            />            <section style={{margin:"16px 18px 0",border:"1px solid #E5E3EE",borderRadius:20,background:"#fff",padding:16}}>
+              <button onClick={()=>setRescueOpen(v=>!v)} aria-expanded={rescueOpen} style={{display:"flex",width:"100%",justifyContent:"space-between",alignItems:"center",border:0,background:"transparent",color:C.ink,textAlign:"left",fontWeight:800,fontSize:16,padding:0}}>
+                <span>🥕 Use leftovers · Fridge Rescue</span><span>{rescueOpen?"−":"+"}</span>
+              </button>
+              <p style={{color:C.inkSoft,fontSize:12,margin:"7px 0 0"}}>Tell us what needs using. No need to update your pantry.</p>
+              {rescueOpen && <div style={{display:"grid",gap:12,marginTop:14}}>
+                <textarea value={rescueText} onChange={e=>setRescueText(e.target.value)} rows={3} placeholder="e.g. half cabbage, eggs, leftover rice, fishballs" aria-label="Leftover ingredients" style={{border:"1px solid #D8D6E3",borderRadius:12,padding:12,fontFamily:"inherit",fontSize:14,resize:"vertical"}}/>
+                {rescueIngredients.length>0 && <div aria-live="polite" style={{display:"grid",gap:9}}>
+                  <strong style={{fontSize:13}}>Ideas using your ingredients</strong>
+                  {rescueMatches.length===0 ? <p style={{fontSize:13,color:C.inkSoft}}>No matching recipes yet. Try a simpler ingredient name, or add a family recipe under Me.</p> :
+                    rescueMatches.map(({meal,matched})=><div key={meal.id} style={{display:"flex",alignItems:"center",gap:9,background:"#F7F7FB",borderRadius:13,padding:9}}>
+                      <FoodArt name={meal.name} size={57}/><div style={{flex:1,minWidth:0}}><strong style={{fontSize:13}}>{meal.name}</strong><div style={{fontSize:11,color:C.inkSoft}}>Uses {matched.map(i=>i.name).join(", ")}</div></div>
+                      <button onClick={()=>{cookNow(meal.id,"dinner",slotPax.dinner);setTab("week");}} style={{border:0,borderRadius:10,padding:"10px 12px",background:"#EAA28F",fontWeight:800,color:C.ink}}>Plan</button>
+                    </div>)}
+                  <p style={{fontSize:11,color:C.inkSoft}}>Suggestions may need other ingredients. Check the recipe and food freshness before cooking; refrigerate leftovers promptly.</p>
+                </div>}
+              </div>}
+            </section>
+
           </>)}
           {tab === "me" && <main style={{ padding: "28px 20px", display: "grid", gap: 13 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#F1EFFB", borderRadius: 20, padding: 16 }}><h2 style={{ margin: 0, fontSize: 28, color: C.ink }}>Your little kitchen HQ.</h2><FoodArt kind="fridge" size={95}/></div>
@@ -2345,7 +2344,7 @@ export default function MakanLedger() {
               <span style={{ display: "block", marginTop: 5, color: C.inkSoft, fontSize: 13 }}>{description}</span>
             </button>)}
           </main>}
-          {tab === "week" && <SimpleWeek
+          {tab === "week" && <><div style={{padding:"0 18px"}}>{justGeneratedWeek && <div role="status" style={{margin:"16px 0",padding:16,background:"#F1EFFB",borderRadius:16,border:"1px solid #DCD7F0"}}><strong>✨ Your 7 dinners are ready!</strong><p style={{margin:"6px 0 10px",fontSize:13,color:C.inkSoft}}>This is your week. Swap a dish, skip a day or add another dish whenever you like.</p><button onClick={()=>setJustGeneratedWeek(false)} style={{background:"#EAA28F",border:0,borderRadius:10,padding:"9px 16px",fontWeight:700,color:C.ink}}>Got it</button></div>}</div><SimpleWeek
             plan={plan} skippedDays={skippedDays} onSkip={toggleSkipDay}
             onSwap={pickMealById} onRemove={removeOne} onMove={movePlannedMeal}
             onAdd={addExtraDish} pickableMeals={pickableMeals}
@@ -2363,7 +2362,7 @@ export default function MakanLedger() {
               onSwapMeal={swapMealAvoidingIngredient} onPostponeMeal={postponeMeal}
               canPostponeMeal={canPostponeMeal}
             />}
-          />}
+          /></>}
           {tab === "prep" && <main style={{ padding: "28px 20px 100px", display: "grid", gap: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 15, borderRadius: 20, background: "#E9F3F8" }}><div><div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1.5, color: C.inkSoft }}>PREP, MADE SIMPLE</div><strong>Little jobs. Big relief.</strong></div><FoodArt kind="prep" size={95}/></div>
             <h2 style={{ fontFamily: FONT_DISPLAY, fontSize: 30, lineHeight: 1.2, margin: 0 }}>A little now. Less later.</h2>
@@ -2511,7 +2510,7 @@ function GenerateScreen(props) {
     onAddOn, onRedo, generateNote, grouped, onRegenerate, onPickMeal, pickableMeals, rawPickableMeals, onAddExtraDish, onReapplyHousehold, onRemove, household,
     cookNowRanked, onGenerateOne, onCookNow, pantryCount, todayDishes, slotPax, onSetSlotPax, onSetMealPax,
     skippedDays, toggleSkipDay, onMarkCooked,
-    prepList, prepChecked, togglePrepChecked, onCompleteComponentBatch, prepCardOpen, onTogglePrepCard, onAutoPlan,
+    prepList, prepChecked, togglePrepChecked, onCompleteComponentBatch, prepCardOpen, onTogglePrepCard, onAutoPlan, hasWeekPlan,
   } = props;
 
   const totalPax = household.adults + household.kids + household.elderly;
@@ -2562,25 +2561,24 @@ function GenerateScreen(props) {
 
   return (
     <div style={{ padding: "18px 18px 28px", maxWidth: 760, margin: "0 auto", color:C.ink }}>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:8,marginBottom:18,background:"#F1EFFB",padding:6,borderRadius:19}} role="group" aria-label="Planning mode">
-        {[
-          ["auto","✨ Auto","One tap"],
-          ["custom","🎛 Custom","Quick tweaks"],
-          ["manual","⚙ Manual","Full control"]
-        ].map(([id,label,description])=><button key={id} onClick={()=>setPlanningMode(id)} aria-pressed={planningMode===id} style={{minWidth:0,border:0,borderRadius:15,padding:"14px 5px",background:planningMode===id?"#fff":"transparent",boxShadow:planningMode===id?"0 3px 12px #30324116":"none",color:C.ink,cursor:"pointer"}}>
-          <strong style={{display:"block",fontSize:14}}>{label}</strong><span style={{display:"block",fontSize:10,color:C.inkSoft,marginTop:4}}>{description}</span>
-        </button>)}
-      </div>
-      {planningMode==="auto" && <section style={{background:"#FCE9E5",borderRadius:24,padding:20,display:"grid",gap:14,marginBottom:18}}>
+      {<section style={{background:"#FCE9E5",borderRadius:24,padding:20,display:"grid",gap:14,marginBottom:18}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12}}>
           <div><span style={{fontSize:11,fontWeight:800,letterSpacing:1.5,color:"#A65D4E"}}>POINT & SHOOT</span>
             <h3 style={{fontFamily:FONT_DISPLAY,fontSize:27,lineHeight:1.2,margin:"7px 0"}}>Dinner, handled.</h3>
             <p style={{fontSize:13,lineHeight:1.6,color:C.inkSoft,margin:0}}>Seven dinners, using what’s in your kitchen first. Shopping and prep update automatically.</p></div>
           <FoodArt kind="meal" size={112}/>
         </div>
-        <button onClick={onAutoPlan} style={{border:0,borderRadius:16,background:"#EAA28F",padding:17,color:C.ink,fontSize:16,fontWeight:800,boxShadow:"0 3px 0 #C87865"}}>✦ Plan my 7 dinners →</button>
-        <span style={{fontSize:12,color:C.inkSoft}}>Want breakfast, lunch or a month? Choose Custom. Need serving-by-serving control? Choose Manual.</span>
+        <button onClick={onAutoPlan} style={{border:0,borderRadius:16,background:"#EAA28F",padding:17,color:C.ink,fontSize:16,fontWeight:800,boxShadow:"0 3px 0 #C87865"}}>{hasWeekPlan ? "↻ Refresh my 7 dinners →" : "✦ Plan my 7 dinners →"}</button>
+        <span style={{fontSize:12,color:C.inkSoft,textAlign:"center"}}>{hasWeekPlan ? "Your current dinners will be kept until you confirm a refresh." : "No setup needed · You can swap any dish later"}</span>
       </section>}
+      <section style={{marginBottom:18}} aria-label="More planning options">
+        <div style={{fontSize:13,fontWeight:800,marginBottom:10,color:C.ink}}>Want more control?</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:10}}>
+          {[["custom","🎛 Custom","Choose days and meals"],["manual","⚙ Manual","Plan dish by dish"]].map(([id,label,description])=><button key={id} onClick={()=>setPlanningMode(planningMode===id?"auto":id)} aria-pressed={planningMode===id} style={{textAlign:"left",minWidth:0,border:planningMode===id?"2px solid #EAA28F":"1px solid #E5E3EE",borderRadius:16,padding:"14px 12px",background:planningMode===id?"#F1EFFB":"#fff",color:C.ink,cursor:"pointer"}}>
+            <strong style={{display:"block",fontSize:15}}>{label}</strong><span style={{display:"block",fontSize:12,color:C.inkSoft,marginTop:5}}>{description}</span>
+          </button>)}
+        </div>
+      </section>
       {planningMode!=="auto" && <section style={{background:"#fff",border:`1px solid ${C.line}`,borderRadius:22,padding:17,marginBottom:16}}>
         <div style={{display:"flex",alignItems:"center",gap:12}}><FoodArt kind={planningMode==="custom"?"meal":"prep"} size={75}/><div>
           <strong style={{fontFamily:FONT_DISPLAY,fontSize:22}}>{planningMode==="custom"?"Make it yours":"Every detail, your way"}</strong>
