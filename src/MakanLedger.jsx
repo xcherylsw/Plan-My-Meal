@@ -4414,44 +4414,15 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
             </div>
           </div>
 
-          <label style={labelStyle}>Recipe name</label>
+          {!libraryEdit && <p style={{background:"#F1EFFB",borderRadius:12,padding:12,fontSize:12,color:C.ink}}>🔒 Just for you · Saving here never publishes your recipe.</p>}
+          <label style={labelStyle}>What’s the dish called?</label>
           <input
             value={draft.name}
             onChange={e => setDraft(prev => ({ ...prev, name: e.target.value }))}
             style={fieldStyle}
           />
 
-          <label style={labelStyle}>Cuisine</label>
-          <input
-            value={draft.cuisine}
-            onChange={e => setDraft(prev => ({ ...prev, cuisine: e.target.value }))}
-            placeholder="e.g. Mediterranean, Vietnamese…"
-            list="cuisine-suggestions"
-            style={fieldStyle}
-          />
-          <datalist id="cuisine-suggestions">
-            {cuisineSuggestions.map(c => <option key={c} value={c} />)}
-          </datalist>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10, marginTop: -4 }}>
-            {CUISINES.map(c => (
-              <Chip key={c} active={draft.cuisine === c} onClick={() => setDraft(prev => ({ ...prev, cuisine: c }))}>{c}</Chip>
-            ))}
-          </div>
-
-          <label style={labelStyle}>Protein</label>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
-            {PROTEINS.map(p => (
-              <Chip key={p} active={draft.protein === p} onClick={() => setDraft(prev => ({ ...prev, protein: p }))}>{p}</Chip>
-            ))}
-          </div>
-
-
-          <TimeInput minutes={draft.time} onChange={v => setDraft(prev => ({ ...prev, time: v }))} />
-          {!draft.isComponent && (
-            <Stepper label="This recipe serves (as shown)" value={draft.baseServings} min={1} max={20} onChange={v => setDraft(prev => ({ ...prev, baseServings: v }))} />
-          )}
-
-          <label style={{ ...labelStyle, marginTop: 4 }}>Ingredients (at {draft.baseServings} servings)</label>
+          <label style={{ ...labelStyle, marginTop: 4 }}>What goes into it? ({draft.baseServings} servings)</label>
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 8 }}>
             {draft.ingredients.map(item => (
               <div key={item.id} style={{ border: `1px solid ${item.componentId ? C.jade600 : C.line}`, borderRadius: 9, padding: 8, background: item.componentId ? "#F2F6EE" : "transparent" }}>
@@ -4540,7 +4511,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
             </div>
           ) : null}
 
-          <label style={labelStyle}>How to cook</label>
+          <label style={labelStyle}>How do you cook it?</label>
           <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 8 }}>
             {draft.steps.map((s, i) => (
               <div key={i} style={{ display: "flex", gap: 6, alignItems: "flex-start" }}>
@@ -4559,6 +4530,39 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
           <button onClick={addDraftStep} style={{ display: "flex", alignItems: "center", gap: 5, color: C.jade700, fontSize: 12, fontWeight: 600, marginBottom: 14 }}>
             <Plus size={13} /> Add step
           </button>
+
+          <details style={{border:"1px solid #E5E3EE",borderRadius:14,padding:"12px 14px",marginBottom:16,background:"#F7F7FB"}}>
+            <summary style={{fontWeight:700,cursor:"pointer",color:C.ink}}>⚙ More details (optional) · Cuisine, protein, time and tags</summary>
+            <div style={{paddingTop:14}}>
+          <label style={labelStyle}>Cuisine</label>
+          <input
+            value={draft.cuisine}
+            onChange={e => setDraft(prev => ({ ...prev, cuisine: e.target.value }))}
+            placeholder="e.g. Mediterranean, Vietnamese…"
+            list="cuisine-suggestions"
+            style={fieldStyle}
+          />
+          <datalist id="cuisine-suggestions">
+            {cuisineSuggestions.map(c => <option key={c} value={c} />)}
+          </datalist>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10, marginTop: -4 }}>
+            {CUISINES.map(c => (
+              <Chip key={c} active={draft.cuisine === c} onClick={() => setDraft(prev => ({ ...prev, cuisine: c }))}>{c}</Chip>
+            ))}
+          </div>
+
+          <label style={labelStyle}>Protein</label>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+            {PROTEINS.map(p => (
+              <Chip key={p} active={draft.protein === p} onClick={() => setDraft(prev => ({ ...prev, protein: p }))}>{p}</Chip>
+            ))}
+          </div>
+
+
+          <TimeInput minutes={draft.time} onChange={v => setDraft(prev => ({ ...prev, time: v }))} />
+          {!draft.isComponent && (
+            <Stepper label="This recipe serves (as shown)" value={draft.baseServings} min={1} max={20} onChange={v => setDraft(prev => ({ ...prev, baseServings: v }))} />
+          )}
 
           {!draft.isComponent && (
             <>
@@ -4604,6 +4608,8 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
           <input value={draft.videoUrl || ""} onChange={e => setDraft(prev => ({ ...prev, videoUrl: e.target.value }))}
             placeholder="Link to the original video" inputMode="url" style={{ ...fieldStyle, marginBottom: 12 }} />
 
+            </div>
+          </details>
           {error && <p style={{ fontSize: 11.5, color: C.clayText, marginBottom: 8 }}>{error}</p>}
 
           <button
