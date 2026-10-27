@@ -2409,7 +2409,7 @@ export default function MakanLedger() {
               <button onClick={()=>setTab("me")} style={{display:"inline-flex",alignItems:"center",gap:7,background:"transparent",border:0,color:C.ink,fontWeight:750,fontSize:14,padding:"8px 0",marginBottom:10}}>
                 <span aria-hidden="true">←</span> Back to Me
               </button>
-              <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4,scrollbarWidth:"thin"}}>
+              <div style={{display:"flex",gap:8,flexWrap:"wrap",paddingBottom:4}}>
                 {[["pantry","My kitchen"],["household","Household"],["import","My cookbook"],["library","Discover"],...(isAdmin?[["admin","Admin"]]:[])].map(([id,label])=>(
                   <button key={id} onClick={()=>setTab(id)} aria-current={tab===id?"page":undefined} style={{flexShrink:0,border:tab===id?"1px solid #D88D79":"1px solid #E9E3DF",background:tab===id?"#FCE5DE":"#fff",color:C.ink,borderRadius:999,padding:"10px 13px",fontSize:13,fontWeight:tab===id?800:600}}>
                     {label}
