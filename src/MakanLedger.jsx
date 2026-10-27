@@ -2328,18 +2328,18 @@ export default function MakanLedger() {
             </section>
 
           </>)}
-          {tab === "me" && <main style={{ padding: "28px 20px", display: "grid", gap: 13 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#F1EFFB", borderRadius: 20, padding: 16 }}><h2 style={{ margin: 0, fontSize: 28, color: C.ink }}>Your little kitchen HQ.</h2><FoodArt kind="fridge" size={95}/></div>
-            <p style={{ color: C.inkSoft, margin: "0 0 14px" }}>The details are here when you need them. Everyday planning stays simple.</p>
+          {tab === "me" && <main style={{ padding: "24px 20px", display: "grid", gap: 14, background:"#FAF7F2", minHeight:"65vh" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#F1EFFB", borderRadius: 20, padding: 16 }}><h2 style={{ margin: 0, fontSize: 28, color: C.ink }}>Your kitchen, your way.</h2><FoodArt kind="fridge" size={95}/></div>
+            <p style={{ color: C.inkSoft, margin: "0 0 14px" }}>Everything behind your meals, neatly in one place.</p>
             {[
-              ["Use leftovers / Kitchen", "pantry", "What you have and what needs using soon"],
-              ["Household & preferences", "household", "Who eats, dietary needs and syncing"],
-              ["My recipes", "import", "Your private recipes and drafts"],
-              ["Community library", "library", "Browse shared recipes"],
-              ["Add a recipe", "import", "Keep your own family favourites"],
+              ["My kitchen", "pantry", "Pantry, fridge and freezer · ingredients on hand"],
+              ["Household & preferences", "household", "People, portions and dietary preferences"],
+              ["My cookbook", "import", "Your saved family recipes and cooking steps"],
+              ["Discover recipes", "library", "Explore recipes from the community"],
+              ["Add a recipe", "import", "Save a family favourite"],
               ...(isAdmin ? [["Admin Studio", "admin", "Review and publish community recipes"]] : []),
             ].map(([label,destination,description]) => <button key={destination} onClick={() => setTab(destination)}
-              style={{ textAlign: "left", background: "#fff", border: `1px solid ${C.line}`, borderRadius: 16, padding: 18, color: C.ink }}>
+              style={{ textAlign: "left", background: "#fff", border: "1px solid #E9E3DF", borderRadius: 20, padding: "20px 18px", color: C.ink, boxShadow:"0 5px 18px rgba(47,42,51,.04)" }}>
               <strong style={{ display: "block", fontSize: 16 }}>{label}</strong>
               <span style={{ display: "block", marginTop: 5, color: C.inkSoft, fontSize: 13 }}>{description}</span>
             </button>)}
@@ -3768,6 +3768,7 @@ function Checkbox({ checked }) {
    PANTRY SCREEN
 ------------------------------------------------------------------*/
 function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUseSoon, updatePantryLocation, clearAllUseSoon, newPantryName, setNewPantryName, newPantryCategory, setNewPantryCategory, newPantryLocation, setNewPantryLocation, newPantryQuantity, setNewPantryQuantity, newPantryUnit, setNewPantryUnit, newPantryUseSoon, setNewPantryUseSoon, addPantryItem }) {
+  const [addingIngredient, setAddingIngredient] = useState(false);
   const grouped = useMemo(() => {
     const map = {};
     pantry.forEach(p => { const loc = p.location || "pantry"; (map[loc] = map[loc] || []).push(p); });
@@ -3783,7 +3784,8 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
         <Sparkles size={12} style={{ flexShrink: 0 }} />
         <span>Bought a discount haul? Log it here first — Generate then builds your plan around what you've already got.</span>
       </div>
-      <SectionLabel>Add to your kitchen</SectionLabel>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,gap:12}}><div><h2 style={{fontFamily:FONT_DISPLAY,fontSize:28,margin:"0 0 3px"}}>My kitchen</h2><span style={{fontSize:13,color:C.inkSoft}}>{pantry.length} ingredients on hand</span></div><button onClick={()=>setAddingIngredient(v=>!v)} aria-expanded={addingIngredient} style={{background:"#E9A28F",border:0,borderRadius:14,padding:"12px 14px",fontWeight:800,color:C.ink}}>{addingIngredient?"Close":"＋ Add"}</button></div>
+      {addingIngredient && <div style={{background:"#fff",border:"1px solid #E9E3DF",borderRadius:20,padding:16,marginBottom:20}}><SectionLabel>Add an ingredient</SectionLabel>
       <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
         <input
           value={newPantryName}
@@ -3838,8 +3840,9 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
         ))}
       </div>
 
+      </div>}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <SectionLabel>Your kitchen ({pantry.length})</SectionLabel>
+        <SectionLabel>Stored ingredients ({pantry.length})</SectionLabel>
         {pantry.some(p => p.useSoon) && (
           <button onClick={clearAllUseSoon} style={{ fontSize: 10.5, color: C.clayText, fontWeight: 700, marginBottom: 8 }}>
             Clear all "use soon"
@@ -3942,6 +3945,9 @@ function HouseholdScreen({
 
   return (
     <div style={{ padding: "18px 18px 28px" }}>
+      <h2 style={{fontFamily:FONT_DISPLAY,fontSize:28,margin:"0 0 6px"}}>Household & preferences</h2>
+      <p style={{fontSize:13,color:C.inkSoft,margin:"0 0 18px"}}>{totalPax} people · {household.dishesPerMealMin}–{household.dishesPerMealMax} dishes per meal</p>
+      <details style={{background:"#fff",borderRadius:20,padding:16,marginBottom:14,border:"1px solid #E9E3DF"}}><summary style={{fontWeight:800,fontSize:16,cursor:"pointer",marginBottom:10}}>People & portions · {totalPax} people</summary>
       <SectionLabel>Who's eating</SectionLabel>
       <Stepper label="Adults" value={household.adults} min={0} max={12} onChange={v => setHouseholdCount("adults", v)} />
       <Stepper label="Kids" value={household.kids} min={0} max={12} onChange={v => setHouseholdCount("kids", v)} />
@@ -3974,6 +3980,7 @@ function HouseholdScreen({
           : <>A big family eating family-style can set a range like {household.dishesPerMealMin}–{household.dishesPerMealMax}. Rich, already-filling mains (curry, rendang, and the like) aim for the low end since they don't need much padding out; lighter mains aim for the high end so the table still gets the variety.</>}
       </p>
 
+      </details>
       <SettingsSection
         title="Dietary needs"
         countLabel={household.diets.length ? `${household.diets.length} set` : null}
@@ -4357,6 +4364,8 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
 
   return (
     <div style={{ padding: "18px 18px 28px" }}>
+      <h2 style={{fontFamily:FONT_DISPLAY,fontSize:28,margin:"0 0 5px"}}>My cookbook</h2>
+      <p style={{fontSize:13,color:C.inkSoft,margin:"0 0 18px"}}>{myRecipes.length} saved recipes · Your own cooking collection</p>
       <SectionLabel>Add a recipe</SectionLabel>
       <p style={{ fontSize: 11.5, color: C.inkSoft, marginTop: -4, marginBottom: 12 }}>
         Have the recipe open wherever you're reading it from, then fill in the fields below yourself.
@@ -4698,20 +4707,21 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
 
 function SavedRecipeCard({ recipe, onDelete, onEdit, defaultPax }) {
   const [pax, setPax] = useState(defaultPax);
+  const [actionsOpen, setActionsOpen] = useState(false);
 
   return (
-    <div style={{ background: "#fff", border: `1px solid ${C.line}`, borderRadius: 12, padding: "12px 14px" }}>
+    <div style={{ background: "#fff", border: "1px solid #E9E3DF", borderRadius: 22, padding: "18px 16px", boxShadow:"0 5px 18px rgba(47,42,51,.04)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
         <div style={{ display: "flex", gap: 10, minWidth: 0 }}>
           {recipe.photo && (
             <img
               src={recipe.photo}
               alt=""
-              style={{ width: 48, height: 48, borderRadius: 9, objectFit: "cover", flexShrink: 0, border: `1px solid ${C.line}` }}
+              style={{ width: 72, height: 72, borderRadius: 16, objectFit: "cover", flexShrink: 0, border: `1px solid ${C.line}` }}
             />
           )}
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontFamily: FONT_DISPLAY, fontWeight: 600, fontSize: 15, color: C.ink }}>{recipe.name}</div>
+            <div style={{ fontFamily: FONT_DISPLAY, fontWeight: 700, fontSize: 20, color: C.ink, lineHeight:1.25 }}>{recipe.name}</div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3, flexWrap: "wrap" }}>
               <Tag text={recipe.cuisine} />
               <Tag text={recipe.protein} />
@@ -4726,10 +4736,7 @@ function SavedRecipeCard({ recipe, onDelete, onEdit, defaultPax }) {
             <CreditLine r={recipe} />
           </div>
         </div>
-        <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
-          <IconBtn onClick={onEdit} title="Edit this recipe"><Pencil size={13} /></IconBtn>
-          <IconBtn onClick={onDelete} title="Remove"><Trash2 size={13} /></IconBtn>
-        </div>
+        <div style={{flexShrink:0,position:"relative"}}><button aria-label="Recipe options" aria-expanded={actionsOpen} onClick={()=>setActionsOpen(v=>!v)} style={{border:"1px solid #E9E3DF",background:"#FAF7F2",borderRadius:12,padding:"8px 12px",fontWeight:800,color:C.ink}}>•••</button>{actionsOpen && <div style={{display:"grid",gap:6,marginTop:6}}><button onClick={()=>{setActionsOpen(false);onEdit();}} style={{padding:8,borderRadius:10,background:"#F1EFFB",color:C.ink}}>Edit</button><button onClick={()=>{setActionsOpen(false);onDelete();}} style={{padding:8,borderRadius:10,background:"#FBE9E3",color:C.clayText}}>Delete</button></div>}</div>
       </div>
 
       {recipe.baseServings ? (
@@ -4810,7 +4817,8 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
 
   return (
     <div style={{ padding: "18px 18px 28px" }}>
-      <SectionLabel>{isAdmin ? "Admin Studio · Community Library" : "Community Library"}</SectionLabel>
+      <h2 style={{fontFamily:FONT_DISPLAY,fontSize:28,margin:"0 0 6px"}}>{isAdmin ? "Admin studio" : "Discover recipes"}</h2>
+      <p style={{fontSize:13,color:C.inkSoft,margin:"0 0 18px"}}>{items.length ? `${items.length} recipes to explore` : "A shared cookbook, growing together"}</p>
       <p style={{ fontSize: 11.5, color: C.inkSoft, marginTop: -4, marginBottom: 12, lineHeight: 1.5 }}>
         Recipes shared with everyone, with credit to where they came from. Tap "Add to my recipes" and the generator starts using it.
       </p>
@@ -4831,7 +4839,7 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
           <button onClick={onRefresh} style={{ fontSize: 12, fontWeight: 700, color: C.jade700, textDecoration: "underline" }}>Try again</button>
         </div>
       ) : items.length === 0 ? (
-        <p style={{ fontSize: 12.5, color: C.inkSoft }}>The library is empty for now. {isAdmin ? "Add the first recipe with the button above." : "Check back soon — recipes are added regularly."}</p>
+        <p style={{ fontSize: 12.5, color: C.inkSoft }}>Our cookbook is just getting started. {isAdmin ? "Add the first recipe above to bring it to life." : "New recipes will appear here when they are shared."}</p>
       ) : (
         <>
           {items.length > 5 && (
