@@ -3797,12 +3797,11 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
 
   return (
     <div style={{ padding: "22px 18px 32px", background:"#FAF7F2", minHeight:"70vh" }}>
-      <div style={{
-        display: "flex", alignItems: "center", gap: 6, marginBottom: 12, fontSize: 11, color: C.jade700,
-        fontFamily: FONT_MONO, background: "#EAEFE3", borderRadius: 8, padding: "7px 10px", lineHeight: 1.4,
-      }}>
-        <Sparkles size={12} style={{ flexShrink: 0 }} />
-        <span>Bought a discount haul? Log it here first — Generate then builds your plan around what you've already got.</span>
+      <div style={{background:"linear-gradient(125deg,#294B3F,#456D55 65%,#779477)",borderRadius:24,padding:"25px 22px",color:"#fff",marginBottom:22,position:"relative",overflow:"hidden",boxShadow:"0 12px 28px rgba(36,68,53,.16)"}}>
+        <div style={{position:"absolute",right:-20,top:-28,fontSize:116,opacity:.18,transform:"rotate(-16deg)",pointerEvents:"none"}}>🥬</div>
+        <div style={{fontSize:11,letterSpacing:2.2,fontWeight:800,color:"#D9EBCF",marginBottom:10}}>YOUR LITTLE FOOD HAVEN</div>
+        <div style={{fontFamily:FONT_DISPLAY,fontSize:34,lineHeight:1.08,maxWidth:230,marginBottom:12}}>Good food starts here.</div>
+        <div style={{fontSize:13,color:"#F1F4EA",maxWidth:265,lineHeight:1.6}}>{pantry.length} ingredients ready for your next meal · {pantry.filter(p=>p.useSoon).length} to use soon</div>
       </div>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,gap:12}}><div><h2 style={{fontFamily:FONT_DISPLAY,fontSize:28,margin:"0 0 3px"}}>My kitchen</h2><span style={{fontSize:13,color:C.inkSoft}}>{pantry.length} ingredients on hand</span></div><button onClick={()=>setAddingIngredient(v=>!v)} aria-expanded={addingIngredient} style={{background:"#E9A28F",border:0,borderRadius:14,padding:"12px 14px",fontWeight:800,color:C.ink}}>{addingIngredient?"Close":"＋ Add"}</button></div>
       {addingIngredient && <div style={{background:"#fff",border:"1px solid #E9E3DF",borderRadius:20,padding:16,marginBottom:20}}><SectionLabel>Add an ingredient</SectionLabel>
@@ -3870,13 +3869,13 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
           </button>
         )}
       </div>
-      <p style={{ fontSize: 12.5, color: C.inkSoft, marginTop: -4, marginBottom: 16 }}>Find ingredients by storage location. Mark anything you want to use first.</p>
+      {pantry.some(p=>p.useSoon) && <div style={{background:"#FFF0E7",border:"1px solid #F4D4C6",borderRadius:18,padding:"15px 17px",marginBottom:18}}><div style={{fontWeight:800,fontSize:13,color:"#A7533D",marginBottom:7}}>✦ Cook these first</div><div style={{display:"flex",flexWrap:"wrap",gap:7}}>{pantry.filter(p=>p.useSoon).map(p=><span key={p.id} style={{background:"#fff",borderRadius:999,padding:"7px 11px",fontSize:12,fontWeight:650}}>{p.name}</span>)}</div></div>}
 
       {LOCATIONS.filter(loc => visibleGrouped[loc.id]?.length).map(loc => (
-        <details className="expandable" key={loc.id} open style={{ marginBottom: 16, background:"#fff",borderRadius:20,padding:12,border:"1px solid #E9E3DF" }}>
+        <details className="expandable" key={loc.id} open style={{ marginBottom: 14, background:"#fff",borderRadius:20,padding:"7px 15px",border:"1px solid #ECE5DD",boxShadow:"0 5px 18px rgba(65,47,34,.035)" }}>
           <summary style={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
-            background: "#FAF7F2", borderRadius: 14, padding: "12px 14px", marginBottom: 8,
+            background: "#fff", borderRadius: 14, padding: "14px 2px", marginBottom: 0,
           }}>
             <span style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: FONT_MONO, fontSize: 11, fontWeight: 700, color: C.jade700, textTransform: "uppercase", letterSpacing: 0.6 }}>
               {loc.label}
@@ -3887,22 +3886,22 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
             </span>
             <ChevronDown className="chevron" size={15} color={C.jade700} style={{ flexShrink: 0, transition: "transform .15s" }} />
           </summary>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
             {visibleGrouped[loc.id].map(item => (
               <div key={item.id} style={{
-                display: "flex", flexDirection: "column", gap: 6,
-                background: "#fff", border: `1px solid ${C.line}`, borderRadius: 9, padding: "8px 10px",
+                display: "flex", flexDirection: "column", gap: 3,
+                background: "#fff", borderBottom: "1px solid #F0EBE5", borderRadius: 0, padding: "11px 2px",
               }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
                   <div style={{ display: "flex", alignItems: "center", minWidth: 0, gap: 6 }}>
                     <CategoryDot category={item.category} />
                     <span style={{ fontSize: 13, color: C.ink, fontFamily: FONT_BODY, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.name}</span>
                   </div>
-                  <button aria-label={`Edit ${item.name}`} aria-expanded={editingPantryId === item.id} onClick={() => setEditingPantryId(v => v === item.id ? null : item.id)} style={{ color: C.ink, flexShrink: 0, border: "1px solid #E9E3DF", borderRadius: 10, padding: "7px 10px", fontSize: 12, fontWeight: 700 }}>
-                    {editingPantryId === item.id ? "Done" : "Edit"}
+                  <button aria-label={`Edit ${item.name}`} aria-expanded={editingPantryId === item.id} onClick={() => setEditingPantryId(v => v === item.id ? null : item.id)} style={{ color: "#806C61", flexShrink: 0, border: "none",background:editingPantryId===item.id?"#F7EEE9":"transparent",borderRadius:999,padding:"7px 10px",fontSize:17,fontWeight:700 }}>
+                    {editingPantryId === item.id ? "✓" : "›"}
                   </button>
                 </div>
-                <div style={{ fontSize: 12, color: C.inkSoft }}>{item.quantity != null ? `${item.quantity} ${item.unit || ""}` : "Always on hand"}{item.useSoon ? " · Use soon" : ""}</div>
+                <div style={{ fontSize: 11.5, color: C.inkSoft,paddingLeft:17 }}>{item.quantity != null ? `${item.quantity} ${item.unit || ""}` : "Always on hand"}{item.useSoon ? " · ✦ Use soon" : ""}</div>
                 {editingPantryId === item.id && <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
                   <button
                     onClick={() => toggleUseSoon(item.id)}
