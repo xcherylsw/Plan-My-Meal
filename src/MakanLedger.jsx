@@ -2362,7 +2362,7 @@ export default function MakanLedger() {
               onSwapMeal={swapMealAvoidingIngredient} onPostponeMeal={postponeMeal}
               canPostponeMeal={canPostponeMeal}
             />}
-          />}
+          /></>}
           {tab === "prep" && <main style={{ padding: "28px 20px 100px", display: "grid", gap: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 15, borderRadius: 20, background: "#E9F3F8" }}><div><div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1.5, color: C.inkSoft }}>PREP, MADE SIMPLE</div><strong>Little jobs. Big relief.</strong></div><FoodArt kind="prep" size={95}/></div>
             <h2 style={{ fontFamily: FONT_DISPLAY, fontSize: 30, lineHeight: 1.2, margin: 0 }}>A little now. Less later.</h2>
