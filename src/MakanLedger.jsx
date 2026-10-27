@@ -4136,6 +4136,7 @@ function SettingsSection({ title, countLabel, defaultOpen, last, children }) {
 
 function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, setDraft, libraryEdit, setLibraryEdit, libraryIntent, clearLibraryIntent }) {
   const [error, setError] = useState("");
+  const [ingredientPaste, setIngredientPaste] = useState("");
 
   const householdPax = household.adults + household.kids + household.elderly;
 
@@ -4259,6 +4260,18 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
   }
   function removeDraftPhoto() {
     setDraft(prev => ({ ...prev, photo: null }));
+  }
+
+  function addPastedIngredients() {
+    const lines = ingredientPaste.split(/\r?\n|;/).map(x => x.trim()).filter(Boolean);
+    if (!lines.length) return;
+    const items = lines.map((line, i) => {
+      const match = line.match(/^(\d+(?:\.\d+)?|\d+\/\d+)\s*(kg|g|ml|l|tbsp|tsp|cups?|pcs?|pieces?|cloves?)?\s+(.+)$/i);
+      const amount = match ? (match[1].includes("/") ? Number(match[1].split("/")[0]) / Number(match[1].split("/")[1]) : Number(match[1])) : null;
+      return { id: "paste-" + Date.now() + "-" + i, name: match ? match[3].trim() : line, category: "other", amount, unit: match ? (match[2] || "") : "", componentId: null };
+    });
+    setDraft(prev => ({ ...prev, ingredients: [...prev.ingredients.filter(i => i.name.trim()), ...items] }));
+    setIngredientPaste("");
   }
 
   function handleSave() {
@@ -4423,6 +4436,10 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
           />
 
           <label style={{ ...labelStyle, marginTop: 4 }}>What goes into it? ({draft.baseServings} servings)</label>
+          <p style={{fontSize:12,color:C.inkSoft,margin:"0 0 8px"}}>Paste ingredients, one per line. Review quantities before saving.</p>
+          <textarea value={ingredientPaste} onChange={e=>setIngredientPaste(e.target.value)} rows={3} placeholder={"500g chicken\n2 tbsp soy sauce\n3 cloves garlic"} style={{...fieldStyle,resize:"vertical"}} />
+          <button onClick={addPastedIngredients} disabled={!ingredientPaste.trim()} style={{border:0,borderRadius:10,background:"#F1EFFB",padding:"10px 14px",marginBottom:12,fontWeight:700,color:C.ink,opacity:ingredientPaste.trim()?1:.5}}>Add pasted ingredients</button>
+          <p style={{fontSize:11,color:C.inkSoft,margin:"0 0 8px"}}>Or add and edit ingredients individually:</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 8 }}>
             {draft.ingredients.map(item => (
               <div key={item.id} style={{ border: `1px solid ${item.componentId ? C.jade600 : C.line}`, borderRadius: 9, padding: 8, background: item.componentId ? "#F2F6EE" : "transparent" }}>
