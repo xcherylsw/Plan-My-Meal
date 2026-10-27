@@ -5,6 +5,14 @@ on:
     branches: [main]
   workflow_dispatch: {}
 
+# Only one production release at a time; newer pushes supersede older queued runs.
+concurrency:
+  group: firebase-hosting-production
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
