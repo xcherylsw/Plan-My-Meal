@@ -3768,14 +3768,16 @@ function Checkbox({ checked }) {
 ------------------------------------------------------------------*/
 function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUseSoon, updatePantryLocation, clearAllUseSoon, newPantryName, setNewPantryName, newPantryCategory, setNewPantryCategory, newPantryLocation, setNewPantryLocation, newPantryQuantity, setNewPantryQuantity, newPantryUnit, setNewPantryUnit, newPantryUseSoon, setNewPantryUseSoon, addPantryItem }) {
   const [addingIngredient, setAddingIngredient] = useState(false);
+  const [pantrySearch, setPantrySearch] = useState("");
   const grouped = useMemo(() => {
     const map = {};
     pantry.forEach(p => { const loc = p.location || "pantry"; (map[loc] = map[loc] || []).push(p); });
     return map;
   }, [pantry]);
+  const visibleGrouped = Object.fromEntries(Object.entries(grouped).map(([location, items]) => [location, items.filter(item => item.name.toLowerCase().includes(pantrySearch.trim().toLowerCase()))]));
 
   return (
-    <div style={{ padding: "18px 18px 28px" }}>
+    <div style={{ padding: "22px 18px 32px", background:"#FAF7F2", minHeight:"70vh" }}>
       <div style={{
         display: "flex", alignItems: "center", gap: 6, marginBottom: 12, fontSize: 11, color: C.jade700,
         fontFamily: FONT_MONO, background: "#EAEFE3", borderRadius: 8, padding: "7px 10px", lineHeight: 1.4,
@@ -3840,6 +3842,7 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
       </div>
 
       </div>}
+      <input aria-label="Search your ingredients" placeholder="Search your ingredients…" value={pantrySearch} onChange={e=>setPantrySearch(e.target.value)} style={{...fieldStyle,background:"#fff",borderRadius:14,padding:"12px 14px",marginBottom:16}} />
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <SectionLabel>Stored ingredients ({pantry.length})</SectionLabel>
         {pantry.some(p => p.useSoon) && (
@@ -3853,23 +3856,23 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
         Tap "use soon" on anything you want the generator to prioritize using up first.
       </p>
 
-      {LOCATIONS.filter(loc => grouped[loc.id]?.length).map(loc => (
-        <details className="expandable" key={loc.id} open style={{ marginBottom: 16 }}>
+      {LOCATIONS.filter(loc => visibleGrouped[loc.id]?.length).map(loc => (
+        <details className="expandable" key={loc.id} open style={{ marginBottom: 16, background:"#fff",borderRadius:20,padding:12,border:"1px solid #E9E3DF" }}>
           <summary style={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
-            background: C.paperDim, borderRadius: 10, padding: "8px 10px", marginBottom: 8,
+            background: "#FAF7F2", borderRadius: 14, padding: "12px 14px", marginBottom: 8,
           }}>
             <span style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: FONT_MONO, fontSize: 11, fontWeight: 700, color: C.jade700, textTransform: "uppercase", letterSpacing: 0.6 }}>
               {loc.label}
               <span style={{
                 fontFamily: FONT_MONO, fontSize: 10, fontWeight: 700, color: C.jade700,
                 background: "#EAF3EE", borderRadius: 999, padding: "1px 7px", textTransform: "none", letterSpacing: 0,
-              }}>{grouped[loc.id].length}</span>
+              }}>{visibleGrouped[loc.id].length}</span>
             </span>
             <ChevronDown className="chevron" size={15} color={C.jade700} style={{ flexShrink: 0, transition: "transform .15s" }} />
           </summary>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {grouped[loc.id].map(item => (
+            {visibleGrouped[loc.id].map(item => (
               <div key={item.id} style={{
                 display: "flex", flexDirection: "column", gap: 6,
                 background: "#fff", border: `1px solid ${C.line}`, borderRadius: 9, padding: "8px 10px",
@@ -3983,7 +3986,7 @@ function HouseholdScreen({
       <SettingsSection
         title="Dietary needs"
         countLabel={household.diets.length ? `${household.diets.length} set` : null}
-        defaultOpen={household.diets.length > 0}
+        defaultOpen={false}
       >
         <p style={{ fontSize: 11.5, color: C.inkSoft, marginTop: 0, marginBottom: 12 }}>
           These apply to every plan you generate — meals get swapped or filtered to fit.
@@ -4015,7 +4018,7 @@ function HouseholdScreen({
       <SettingsSection
         title="Ingredients to avoid"
         countLabel={household.dislikedIngredients.length ? `${household.dislikedIngredients.length} excluded` : null}
-        defaultOpen={household.dislikedIngredients.length > 0}
+        defaultOpen={false}
       >
         <p style={{ fontSize: 11.5, color: C.inkSoft, marginTop: 0, marginBottom: 10 }}>
           Nobody eats this, but the dish otherwise works — so we swap it out instead of skipping the whole recipe.
@@ -4837,10 +4840,10 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
           <button onClick={onRefresh} style={{ fontSize: 12, fontWeight: 700, color: C.jade700, textDecoration: "underline" }}>Try again</button>
         </div>
       ) : items.length === 0 ? (
-        <p style={{ fontSize: 12.5, color: C.inkSoft }}>Our cookbook is just getting started. {isAdmin ? "Add the first recipe above to bring it to life." : "New recipes will appear here when they are shared."}</p>
+        <div style={{textAlign:"center",padding:"48px 22px",background:"#fff",border:"1px solid #E9E3DF",borderRadius:22}}><div style={{fontSize:42,marginBottom:10}}>📖</div><h3 style={{fontFamily:FONT_DISPLAY,fontSize:23,margin:"0 0 8px"}}>A cookbook in the making</h3><p style={{fontSize:13,color:C.inkSoft,lineHeight:1.6,margin:0}}>{isAdmin ? "Start your community collection with the first recipe above." : "Shared recipes will appear here as the collection grows."}</p></div>
       ) : (
         <>
-          {items.length > 5 && (
+          {items.length > 0 && (
             <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search the library…" style={{ ...fieldStyle, marginBottom: 8 }} />
           )}
           {cuisines.length > 1 && (
@@ -4851,11 +4854,11 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
           )}
           {shown.length === 0 && <p style={{ fontSize: 12.5, color: C.inkSoft }}>Nothing matches that.</p>}
           {shown.map(r => (
-            <div key={r.id} style={{ background: "#fff", border: `1px solid ${C.line}`, borderRadius: 12, padding: 12, marginBottom: 10 }}>
+            <div key={r.id} style={{ background: "#fff", border: "1px solid #E9E3DF", borderRadius: 22, padding: 16, marginBottom: 14, boxShadow:"0 5px 18px rgba(47,42,51,.04)" }}>
               <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                {r.photo && <img src={r.photo} alt="" style={{ width: 56, height: 56, borderRadius: 9, objectFit: "cover", flexShrink: 0, border: `1px solid ${C.line}` }} />}
+                {r.photo && <img src={r.photo} alt="" style={{ width: 80, height: 80, borderRadius: 16, objectFit: "cover", flexShrink: 0, border: `1px solid ${C.line}` }} />}
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ fontFamily: FONT_DISPLAY, fontWeight: 600, fontSize: 15.5, color: C.ink }}>{r.name}</div>
+                  <div style={{ fontFamily: FONT_DISPLAY, fontWeight: 700, fontSize: 20, color: C.ink, lineHeight:1.25 }}>{r.name}</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
                     <Tag text={r.cuisine} /><Tag text={r.protein} />
                     {r.side && !r.isComponent && <Tag text="Side dish" />}
