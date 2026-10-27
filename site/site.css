@@ -1,15 +1,15 @@
-:root { --brown:#4A2A1F; --brown2:#6E4328; --oat:#F7EEDF; --oat2:#EDE0C8; --line:#DCC9A3; --mustard:#C98A2E; --mustard2:#A66E1E; --clay:#8F3E1E; --ink:#2E2015; --soft:#6B5243; }
+:root { --brown:#303241; --brown2:#565672; --oat:#F7F7FB; --oat2:#F1EFFB; --line:#E5E3EE; --mustard:#EAA28F; --mustard2:#D88774; --clay:#C87669; --ink:#303241; --soft:#67677E; }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body { margin:0; background:var(--oat); color:var(--ink); font:14.5px/1.65 "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif; }
 a { color:var(--brown2); }
-.top { background:var(--brown); color:var(--oat); }
+.top { background:#F1EFFB; color:var(--ink); border-bottom:1px solid var(--line); }
 .top .in { max-width:880px; margin:0 auto; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-.brand { font:700 21px/1.2 "Fraunces", Georgia, serif; color:var(--oat); text-decoration:none; }
+.brand { font:700 21px/1.2 "Fraunces", Georgia, serif; color:var(--ink); text-decoration:none; }
 .top nav { display:flex; gap:16px; align-items:center; flex-wrap:wrap; font-size:13px; }
-.top nav a { color:#EBD9BD; text-decoration:none; }
+.top nav a { color:var(--ink); text-decoration:none; }
 .top nav a:hover { text-decoration:underline; }
-.btn { display:inline-block; background:var(--mustard); color:var(--brown) !important; font-weight:700; text-decoration:none !important; padding:11px 20px; border-radius:12px; box-shadow:0 3px 0 var(--mustard2); }
+.btn { display:inline-block; background:var(--mustard); color:var(--brown) !important; font-weight:700; text-decoration:none !important; padding:11px 20px; border-radius:12px; box-shadow:0 2px 0 var(--mustard2); }
 .top nav a.cur { color:#fff; text-decoration:underline; text-underline-offset:5px; }
 .top nav .btn.small { color:var(--brown); }
 .btn.small { padding:7px 14px; font-size:13px; border-radius:10px; box-shadow:0 2px 0 var(--mustard2); }
@@ -41,3 +41,18 @@ tr:last-child td { border-bottom:none; }
 footer { border-top:1px solid var(--line); background:var(--oat2); }
 footer .in { max-width:880px; margin:0 auto; padding:20px; font-size:13px; color:var(--soft); display:flex; gap:16px; flex-wrap:wrap; justify-content:space-between; }
 footer a { color:var(--brown2); }
+
+/* Porcelain Coral Lilac: consistent with the five-tab app */
+body {background:#F7F7FB;color:#303241;}
+.top .in {max-width:1040px;padding:18px 22px;}
+.top {box-shadow:0 3px 18px rgba(48,50,65,.035);}
+.brand {font-family:"Fraunces",Georgia,serif;font-weight:700;letter-spacing:-.4px;}
+.top nav {gap:10px 18px;}
+.top nav a:not(.btn) {padding:7px 2px;}
+.top nav a.cur {color:#A65D4E;border-bottom:2px solid #EAA28F;}
+.btn {background:#EAA28F;color:#303241!important;box-shadow:none;border-radius:14px;}
+.btn:hover {background:#E39480;}
+main {background:#fff;border:1px solid #E5E3EE;border-radius:22px;margin-top:22px;margin-bottom:24px;padding:32px 30px;max-width:880px;}
+h1,h2,h3 {color:#303241;}
+a {color:#8F586A;}
+@media(max-width:620px){main{margin:14px 12px 22px;padding:24px 20px;border-radius:18px}.top .in{padding:16px 18px}.brand{font-size:21px}.top nav{gap:10px 16px}.top nav .btn{padding:9px 13px}.top nav a{font-size:13px}}
