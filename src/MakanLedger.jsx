@@ -2336,11 +2336,10 @@ export default function MakanLedger() {
               ["Household & preferences", "household", "People, portions and dietary preferences"],
               ["My cookbook", "import", "Your saved family recipes and cooking steps"],
               ["Discover recipes", "library", "Explore recipes from the community"],
-              ["Add a recipe", "import", "Save a family favourite"],
               ...(isAdmin ? [["Admin Studio", "admin", "Review and publish community recipes"]] : []),
-            ].map(([label,destination,description]) => <button key={destination} onClick={() => setTab(destination)}
+            ].map(([label,destination,description]) => <button key={label} onClick={() => setTab(destination)}
               style={{ textAlign: "left", background: "#fff", border: "1px solid #E9E3DF", borderRadius: 20, padding: "20px 18px", color: C.ink, boxShadow:"0 5px 18px rgba(47,42,51,.04)" }}>
-              <strong style={{ display: "block", fontSize: 16 }}>{label}</strong>
+              <strong style={{ display: "block", fontSize: 17, fontFamily:FONT_DISPLAY }}>{label}</strong>
               <span style={{ display: "block", marginTop: 5, color: C.inkSoft, fontSize: 13 }}>{description}</span>
             </button>)}
           </main>}
@@ -3769,14 +3768,16 @@ function Checkbox({ checked }) {
 ------------------------------------------------------------------*/
 function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUseSoon, updatePantryLocation, clearAllUseSoon, newPantryName, setNewPantryName, newPantryCategory, setNewPantryCategory, newPantryLocation, setNewPantryLocation, newPantryQuantity, setNewPantryQuantity, newPantryUnit, setNewPantryUnit, newPantryUseSoon, setNewPantryUseSoon, addPantryItem }) {
   const [addingIngredient, setAddingIngredient] = useState(false);
+  const [pantrySearch, setPantrySearch] = useState("");
   const grouped = useMemo(() => {
     const map = {};
     pantry.forEach(p => { const loc = p.location || "pantry"; (map[loc] = map[loc] || []).push(p); });
     return map;
   }, [pantry]);
+  const visibleGrouped = Object.fromEntries(Object.entries(grouped).map(([location, items]) => [location, items.filter(item => item.name.toLowerCase().includes(pantrySearch.trim().toLowerCase()))]));
 
   return (
-    <div style={{ padding: "18px 18px 28px" }}>
+    <div style={{ padding: "22px 18px 32px", background:"#FAF7F2", minHeight:"70vh" }}>
       <div style={{
         display: "flex", alignItems: "center", gap: 6, marginBottom: 12, fontSize: 11, color: C.jade700,
         fontFamily: FONT_MONO, background: "#EAEFE3", borderRadius: 8, padding: "7px 10px", lineHeight: 1.4,
@@ -3841,6 +3842,7 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
       </div>
 
       </div>}
+      <input aria-label="Search your ingredients" placeholder="Search your ingredients…" value={pantrySearch} onChange={e=>setPantrySearch(e.target.value)} style={{...fieldStyle,background:"#fff",borderRadius:14,padding:"12px 14px",marginBottom:16}} />
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <SectionLabel>Stored ingredients ({pantry.length})</SectionLabel>
         {pantry.some(p => p.useSoon) && (
@@ -3849,28 +3851,25 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
           </button>
         )}
       </div>
-      <p style={{ fontSize: 11.5, color: C.inkSoft, marginTop: -4, marginBottom: 12 }}>
-        Grouped by where it lives, so anyone cooking — including someone who isn't you — knows where to look.
-        Tap "use soon" on anything you want the generator to prioritize using up first.
-      </p>
+      <p style={{ fontSize: 12.5, color: C.inkSoft, marginTop: -4, marginBottom: 16 }}>Find ingredients by storage location. Mark anything you want to use first.</p>
 
-      {LOCATIONS.filter(loc => grouped[loc.id]?.length).map(loc => (
-        <details className="expandable" key={loc.id} open style={{ marginBottom: 16 }}>
+      {LOCATIONS.filter(loc => visibleGrouped[loc.id]?.length).map(loc => (
+        <details className="expandable" key={loc.id} open style={{ marginBottom: 16, background:"#fff",borderRadius:20,padding:12,border:"1px solid #E9E3DF" }}>
           <summary style={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
-            background: C.paperDim, borderRadius: 10, padding: "8px 10px", marginBottom: 8,
+            background: "#FAF7F2", borderRadius: 14, padding: "12px 14px", marginBottom: 8,
           }}>
             <span style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: FONT_MONO, fontSize: 11, fontWeight: 700, color: C.jade700, textTransform: "uppercase", letterSpacing: 0.6 }}>
               {loc.label}
               <span style={{
                 fontFamily: FONT_MONO, fontSize: 10, fontWeight: 700, color: C.jade700,
                 background: "#EAF3EE", borderRadius: 999, padding: "1px 7px", textTransform: "none", letterSpacing: 0,
-              }}>{grouped[loc.id].length}</span>
+              }}>{visibleGrouped[loc.id].length}</span>
             </span>
             <ChevronDown className="chevron" size={15} color={C.jade700} style={{ flexShrink: 0, transition: "transform .15s" }} />
           </summary>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {grouped[loc.id].map(item => (
+            {visibleGrouped[loc.id].map(item => (
               <div key={item.id} style={{
                 display: "flex", flexDirection: "column", gap: 6,
                 background: "#fff", border: `1px solid ${C.line}`, borderRadius: 9, padding: "8px 10px",
@@ -3923,7 +3922,7 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
       ))}
 
       {pantry.length === 0 && (
-        <p style={{ fontSize: 12.5, color: C.inkSoft, textAlign: "center", marginTop: 20 }}>No staples yet — add rice, seasonings, noodles you always have on hand.</p>
+        <div style={{background:"#fff",borderRadius:22,border:"1px solid #E9E3DF",padding:"42px 20px",textAlign:"center",marginTop:20}}><div style={{fontSize:38}}>🥬</div><h3 style={{fontFamily:FONT_DISPLAY,fontSize:23,margin:"10px 0 6px"}}>Your kitchen starts here</h3><p style={{fontSize:13,color:C.inkSoft}}>Add what you already have, and your meal plans can make better use of it.</p><button onClick={()=>setAddingIngredient(true)} style={{border:0,background:"#E9A28F",borderRadius:13,padding:"12px 18px",fontWeight:700}}>＋ Add an ingredient</button></div>
       )}
     </div>
   );
@@ -3944,10 +3943,11 @@ function HouseholdScreen({
   const [substituteInput, setSubstituteInput] = useState("");
 
   return (
-    <div style={{ padding: "18px 18px 28px" }}>
-      <h2 style={{fontFamily:FONT_DISPLAY,fontSize:28,margin:"0 0 6px"}}>Household & preferences</h2>
+    <div style={{ padding: "24px 18px 36px",background:"#FAF7F2",minHeight:"70vh" }}>
+      <h2 style={{fontFamily:FONT_DISPLAY,fontSize:30,margin:"0 0 6px"}}>Household & preferences</h2>
       <p style={{fontSize:13,color:C.inkSoft,margin:"0 0 18px"}}>{totalPax} people · {household.dishesPerMealMin}–{household.dishesPerMealMax} dishes per meal</p>
-      <details style={{background:"#fff",borderRadius:20,padding:16,marginBottom:14,border:"1px solid #E9E3DF"}}><summary style={{fontWeight:800,fontSize:16,cursor:"pointer",marginBottom:10}}>People & portions · {totalPax} people</summary>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:18}}>{[`${household.adults} adults`,`${household.kids} kids`,`${household.elderly} elderly`].filter(x=>!x.startsWith("0 ")).map(x=><span key={x} style={{background:"#fff",border:"1px solid #E9E3DF",borderRadius:999,padding:"8px 12px",fontSize:13,fontWeight:700}}>{x}</span>)}</div>
+      <details style={{background:"#fff",borderRadius:20,padding:16,marginBottom:14,border:"1px solid #E9E3DF",boxShadow:"0 5px 18px rgba(47,42,51,.04)"}}><summary style={{fontWeight:800,fontSize:16,cursor:"pointer",marginBottom:10}}>People & portions · {totalPax} people</summary>
       <SectionLabel>Who's eating</SectionLabel>
       <Stepper label="Adults" value={household.adults} min={0} max={12} onChange={v => setHouseholdCount("adults", v)} />
       <Stepper label="Kids" value={household.kids} min={0} max={12} onChange={v => setHouseholdCount("kids", v)} />
@@ -3984,7 +3984,7 @@ function HouseholdScreen({
       <SettingsSection
         title="Dietary needs"
         countLabel={household.diets.length ? `${household.diets.length} set` : null}
-        defaultOpen={household.diets.length > 0}
+        defaultOpen={false}
       >
         <p style={{ fontSize: 11.5, color: C.inkSoft, marginTop: 0, marginBottom: 12 }}>
           These apply to every plan you generate — meals get swapped or filtered to fit.
@@ -4016,7 +4016,7 @@ function HouseholdScreen({
       <SettingsSection
         title="Ingredients to avoid"
         countLabel={household.dislikedIngredients.length ? `${household.dislikedIngredients.length} excluded` : null}
-        defaultOpen={household.dislikedIngredients.length > 0}
+        defaultOpen={false}
       >
         <p style={{ fontSize: 11.5, color: C.inkSoft, marginTop: 0, marginBottom: 10 }}>
           Nobody eats this, but the dish otherwise works — so we swap it out instead of skipping the whole recipe.
@@ -4363,30 +4363,27 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
 
 
   return (
-    <div style={{ padding: "18px 18px 28px" }}>
-      <h2 style={{fontFamily:FONT_DISPLAY,fontSize:28,margin:"0 0 5px"}}>My cookbook</h2>
+    <div style={{ padding: "24px 18px 36px",background:"#FAF7F2",minHeight:"70vh" }}>
+      <h2 style={{fontFamily:FONT_DISPLAY,fontSize:30,margin:"0 0 5px"}}>My cookbook</h2>
       <p style={{fontSize:13,color:C.inkSoft,margin:"0 0 18px"}}>{myRecipes.length} saved recipes · Your own cooking collection</p>
-      <SectionLabel>Add a recipe</SectionLabel>
-      <p style={{ fontSize: 11.5, color: C.inkSoft, marginTop: -4, marginBottom: 12 }}>
-        Have the recipe open wherever you're reading it from, then fill in the fields below yourself.
-      </p>
+      <p style={{fontSize:13,color:C.inkSoft,margin:"0 0 12px"}}>Save a family favourite, or open one of your recipes below.</p>
 
       {!draft && (
         <button
           onClick={() => setDraft(blankDraft())}
           style={{
-            width: "100%", background: C.mustard, border: "none", borderRadius: 10, padding: "12px 0",
+            width: "100%", background: "#E9A28F", border: "none", borderRadius: 16, padding: "15px 0",boxShadow:"0 5px 16px rgba(180,107,86,.12)",
             color: C.jade900, fontFamily: FONT_BODY, fontWeight: 700, fontSize: 13.5, marginBottom: 18,
           }}
         >
-          Start filling in the recipe
+          ＋ Add a recipe
         </button>
       )}
 
       {error && <p style={{ fontSize: 11.5, color: C.clayText, marginBottom: 12 }}>{error}</p>}
 
       {draft && (
-        <div style={{ background: "#fff", border: `1px solid ${C.line}`, borderRadius: 12, padding: 14, marginBottom: 20 }}>
+        <div style={{ background: "#fff", border: "1px solid #E9E3DF", borderRadius: 22, padding: 18, marginBottom: 20,boxShadow:"0 5px 18px rgba(47,42,51,.04)" }}>
           {libraryEdit && (
             <div style={{ background: "#FBEFD5", border: `1px solid ${C.mustard}`, borderRadius: 9, padding: "8px 10px", marginBottom: 12, fontSize: 12, color: C.jade900, lineHeight: 1.45 }}>
               <b>Publishing to the shared library.</b> Everyone will see this recipe. Write it in your own words and credit the creator below.
@@ -4651,7 +4648,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
         </div>
       )}
 
-      {!libraryEdit && <p style={{background:"#F1EFFB",borderRadius:12,padding:"12px 14px",fontSize:12.5,color:C.inkSoft}}>🔒 Your recipes stay in your own collection. Saving here never publishes to the Community Library.</p>}
+      {!libraryEdit && <p style={{background:"#F1EFFB",borderRadius:12,padding:"12px 14px",fontSize:12.5,color:C.inkSoft}}>🔒 Private collection · Only you can see these recipes. They are never published automatically.</p>}
       {!libraryEdit && <SectionLabel>My private recipes ({myRecipes.length})</SectionLabel>}
       {myRecipes.length === 0 ? (
         <p style={{ fontSize: 12.5, color: C.inkSoft }}>Nothing saved yet — recipes you import will show up here, and get mixed into future generated plans.</p>
@@ -4708,6 +4705,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
 function SavedRecipeCard({ recipe, onDelete, onEdit, defaultPax }) {
   const [pax, setPax] = useState(defaultPax);
   const [actionsOpen, setActionsOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   return (
     <div style={{ background: "#fff", border: "1px solid #E9E3DF", borderRadius: 22, padding: "18px 16px", boxShadow:"0 5px 18px rgba(47,42,51,.04)" }}>
@@ -4739,7 +4737,8 @@ function SavedRecipeCard({ recipe, onDelete, onEdit, defaultPax }) {
         <div style={{flexShrink:0,position:"relative"}}><button aria-label="Recipe options" aria-expanded={actionsOpen} onClick={()=>setActionsOpen(v=>!v)} style={{border:"1px solid #E9E3DF",background:"#FAF7F2",borderRadius:12,padding:"8px 12px",fontWeight:800,color:C.ink}}>•••</button>{actionsOpen && <div style={{display:"grid",gap:6,marginTop:6}}><button onClick={()=>{setActionsOpen(false);onEdit();}} style={{padding:8,borderRadius:10,background:"#F1EFFB",color:C.ink}}>Edit</button><button onClick={()=>{setActionsOpen(false);onDelete();}} style={{padding:8,borderRadius:10,background:"#FBE9E3",color:C.clayText}}>Delete</button></div>}</div>
       </div>
 
-      {recipe.baseServings ? (
+      <button onClick={()=>setDetailsOpen(v=>!v)} aria-expanded={detailsOpen} style={{width:"100%",marginTop:14,display:"flex",justifyContent:"space-between",alignItems:"center",background:"#FAF7F2",border:"1px solid #E9E3DF",borderRadius:13,padding:"12px 14px",fontSize:14,fontWeight:750,color:C.ink}}><span>{detailsOpen?"Hide recipe":"View ingredients & cooking steps"}</span><ChevronDown size={17} style={{transform:detailsOpen?"rotate(180deg)":"none",transition:"transform .2s"}} /></button>
+      {detailsOpen && <div style={{paddingTop:12}}>{recipe.baseServings ? (
         <div style={{ marginTop: 10 }}>
           <Stepper label="Servings" value={pax} min={1} max={20} onChange={setPax} />
         </div>
@@ -4762,7 +4761,7 @@ function SavedRecipeCard({ recipe, onDelete, onEdit, defaultPax }) {
           </div>
           <StepsList steps={recipe.steps} />
         </div>
-      )}
+      )}</div>}
     </div>
   );
 }
@@ -4816,15 +4815,15 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
   const added = (id) => myRecipes.some(r => r.libraryId === id);
 
   return (
-    <div style={{ padding: "18px 18px 28px" }}>
-      <h2 style={{fontFamily:FONT_DISPLAY,fontSize:28,margin:"0 0 6px"}}>{isAdmin ? "Admin studio" : "Discover recipes"}</h2>
+    <div style={{ padding: "24px 18px 36px",background:"#FAF7F2",minHeight:"70vh" }}>
+      <h2 style={{fontFamily:FONT_DISPLAY,fontSize:30,margin:"0 0 6px"}}>{isAdmin ? "Admin studio" : "Discover recipes"}</h2>
       <p style={{fontSize:13,color:C.inkSoft,margin:"0 0 18px"}}>{items.length ? `${items.length} recipes to explore` : "A shared cookbook, growing together"}</p>
       <p style={{ fontSize: 11.5, color: C.inkSoft, marginTop: -4, marginBottom: 12, lineHeight: 1.5 }}>
         Recipes shared with everyone, with credit to where they came from. Tap "Add to my recipes" and the generator starts using it.
       </p>
 
       {isAdmin && (
-        <button onClick={onNew} style={{ width: "100%", background: C.mustard, border: "none", borderRadius: 10, padding: "11px 0", color: C.jade900, fontFamily: FONT_BODY, fontWeight: 700, fontSize: 13, marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+        <button onClick={onNew} style={{ width: "100%", background: "#E9A28F", border: "none", borderRadius: 16, padding: "15px 0", color: C.jade900, fontFamily: FONT_BODY, fontWeight: 700, fontSize: 13, marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
           <Plus size={15} /> New library recipe <span style={{ fontWeight: 500, fontSize: 11 }}>(admin)</span>
         </button>
       )}
@@ -4839,10 +4838,10 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
           <button onClick={onRefresh} style={{ fontSize: 12, fontWeight: 700, color: C.jade700, textDecoration: "underline" }}>Try again</button>
         </div>
       ) : items.length === 0 ? (
-        <p style={{ fontSize: 12.5, color: C.inkSoft }}>Our cookbook is just getting started. {isAdmin ? "Add the first recipe above to bring it to life." : "New recipes will appear here when they are shared."}</p>
+        <div style={{textAlign:"center",padding:"48px 22px",background:"#fff",border:"1px solid #E9E3DF",borderRadius:22}}><div style={{fontSize:42,marginBottom:10}}>📖</div><h3 style={{fontFamily:FONT_DISPLAY,fontSize:23,margin:"0 0 8px"}}>A cookbook in the making</h3><p style={{fontSize:13,color:C.inkSoft,lineHeight:1.6,margin:0}}>{isAdmin ? "Start your community collection with the first recipe above." : "Shared recipes will appear here as the collection grows."}</p></div>
       ) : (
         <>
-          {items.length > 5 && (
+          {items.length > 0 && (
             <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search the library…" style={{ ...fieldStyle, marginBottom: 8 }} />
           )}
           {cuisines.length > 1 && (
@@ -4853,11 +4852,11 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
           )}
           {shown.length === 0 && <p style={{ fontSize: 12.5, color: C.inkSoft }}>Nothing matches that.</p>}
           {shown.map(r => (
-            <div key={r.id} style={{ background: "#fff", border: `1px solid ${C.line}`, borderRadius: 12, padding: 12, marginBottom: 10 }}>
+            <div key={r.id} style={{ background: "#fff", border: "1px solid #E9E3DF", borderRadius: 22, padding: 16, marginBottom: 14, boxShadow:"0 5px 18px rgba(47,42,51,.04)" }}>
               <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                {r.photo && <img src={r.photo} alt="" style={{ width: 56, height: 56, borderRadius: 9, objectFit: "cover", flexShrink: 0, border: `1px solid ${C.line}` }} />}
+                {r.photo && <img src={r.photo} alt="" style={{ width: 80, height: 80, borderRadius: 16, objectFit: "cover", flexShrink: 0, border: `1px solid ${C.line}` }} />}
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ fontFamily: FONT_DISPLAY, fontWeight: 600, fontSize: 15.5, color: C.ink }}>{r.name}</div>
+                  <div style={{ fontFamily: FONT_DISPLAY, fontWeight: 700, fontSize: 20, color: C.ink, lineHeight:1.25 }}>{r.name}</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
                     <Tag text={r.cuisine} /><Tag text={r.protein} />
                     {r.side && !r.isComponent && <Tag text="Side dish" />}
