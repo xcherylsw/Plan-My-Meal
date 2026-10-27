@@ -4387,7 +4387,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
     <div style={{ padding: "24px 18px 36px",background:"#FAF7F2",minHeight:"70vh" }}>
       <h2 style={{fontFamily:FONT_DISPLAY,fontSize:30,margin:"0 0 5px"}}>My cookbook</h2>
       <p style={{fontSize:13,color:C.inkSoft,margin:"0 0 18px"}}>{myRecipes.length} saved recipes · Your own cooking collection</p>
-      <p style={{fontSize:13,color:C.inkSoft,margin:"0 0 12px"}}>Save a family favourite, or open one of your recipes below.</p>
+      <p style={{fontSize:13,color:C.inkSoft,margin:"0 0 12px"}}>Your saved recipes, ready when you need them.</p>
 
       {!draft && (
         <button
@@ -4403,6 +4403,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
 
       {error && <p style={{ fontSize: 11.5, color: C.clayText, marginBottom: 12 }}>{error}</p>}
 
+      {draft && <button onClick={handleCancelDraft} style={{border:"1px solid #E9E3DF",borderRadius:12,padding:"10px 14px",marginBottom:12,background:"#fff",fontWeight:700}}>← Back to saved recipes</button>}
       {draft && (
         <div style={{ background: "#fff", border: "1px solid #E9E3DF", borderRadius: 22, padding: 18, marginBottom: 20,boxShadow:"0 5px 18px rgba(47,42,51,.04)" }}>
           {libraryEdit && (
@@ -4669,9 +4670,9 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
         </div>
       )}
 
-      {!libraryEdit && <p style={{background:"#F1EFFB",borderRadius:12,padding:"12px 14px",fontSize:12.5,color:C.inkSoft}}>🔒 Private collection · Only you can see these recipes. They are never published automatically.</p>}
-      {!libraryEdit && <SectionLabel>My private recipes ({myRecipes.length})</SectionLabel>}
-      {myRecipes.length === 0 ? (
+      {!draft && !libraryEdit && <p style={{background:"#F1EFFB",borderRadius:12,padding:"12px 14px",fontSize:12.5,color:C.inkSoft}}>🔒 Private collection · Only you can see these recipes. They are never published automatically.</p>}
+      {!draft && !libraryEdit && <SectionLabel>My private recipes ({myRecipes.length})</SectionLabel>}
+      {!draft && (myRecipes.length === 0 ? (
         <p style={{ fontSize: 12.5, color: C.inkSoft }}>Nothing saved yet — recipes you import will show up here, and get mixed into future generated plans.</p>
       ) : (
         <>
@@ -4718,7 +4719,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
             </div>
           )}
         </>
-      )}
+      ))}
     </div>
   );
 }
