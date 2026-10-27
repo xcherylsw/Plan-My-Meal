@@ -4707,20 +4707,21 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
 
 function SavedRecipeCard({ recipe, onDelete, onEdit, defaultPax }) {
   const [pax, setPax] = useState(defaultPax);
+  const [actionsOpen, setActionsOpen] = useState(false);
 
   return (
-    <div style={{ background: "#fff", border: `1px solid ${C.line}`, borderRadius: 12, padding: "12px 14px" }}>
+    <div style={{ background: "#fff", border: "1px solid #E9E3DF", borderRadius: 22, padding: "18px 16px", boxShadow:"0 5px 18px rgba(47,42,51,.04)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
         <div style={{ display: "flex", gap: 10, minWidth: 0 }}>
           {recipe.photo && (
             <img
               src={recipe.photo}
               alt=""
-              style={{ width: 48, height: 48, borderRadius: 9, objectFit: "cover", flexShrink: 0, border: `1px solid ${C.line}` }}
+              style={{ width: 72, height: 72, borderRadius: 16, objectFit: "cover", flexShrink: 0, border: `1px solid ${C.line}` }}
             />
           )}
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontFamily: FONT_DISPLAY, fontWeight: 600, fontSize: 15, color: C.ink }}>{recipe.name}</div>
+            <div style={{ fontFamily: FONT_DISPLAY, fontWeight: 700, fontSize: 20, color: C.ink, lineHeight:1.25 }}>{recipe.name}</div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3, flexWrap: "wrap" }}>
               <Tag text={recipe.cuisine} />
               <Tag text={recipe.protein} />
@@ -4735,10 +4736,7 @@ function SavedRecipeCard({ recipe, onDelete, onEdit, defaultPax }) {
             <CreditLine r={recipe} />
           </div>
         </div>
-        <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
-          <IconBtn onClick={onEdit} title="Edit this recipe"><Pencil size={13} /></IconBtn>
-          <IconBtn onClick={onDelete} title="Remove"><Trash2 size={13} /></IconBtn>
-        </div>
+        <div style={{flexShrink:0,position:"relative"}}><button aria-label="Recipe options" aria-expanded={actionsOpen} onClick={()=>setActionsOpen(v=>!v)} style={{border:"1px solid #E9E3DF",background:"#FAF7F2",borderRadius:12,padding:"8px 12px",fontWeight:800,color:C.ink}}>•••</button>{actionsOpen && <div style={{display:"grid",gap:6,marginTop:6}}><button onClick={()=>{setActionsOpen(false);onEdit();}} style={{padding:8,borderRadius:10,background:"#F1EFFB",color:C.ink}}>Edit</button><button onClick={()=>{setActionsOpen(false);onDelete();}} style={{padding:8,borderRadius:10,background:"#FBE9E3",color:C.clayText}}>Delete</button></div>}</div>
       </div>
 
       {recipe.baseServings ? (
