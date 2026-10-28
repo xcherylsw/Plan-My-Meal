@@ -86,7 +86,7 @@ const MEALS = [
   { id: "m7", name: "Chicken & Sweetcorn Soup", cuisine: "Chinese", protein: "chicken", time: 20, baseServings: 4,
     ingredients: [ing("Chicken breast","protein",200,"g"), ing("Creamed corn","vegetable",400,"g"), ing("Egg","protein",2,"pcs"), ing("Cornstarch","seasoning",1,"tbsp")],
     steps: ["Bring stock to a simmer in a pot.", "Add shredded or finely diced chicken breast and poach until just cooked through.", "Stir in the creamed corn and bring back to a simmer.", "Mix cornstarch with a little cold water to make a slurry, then stir it in to thicken slightly.", "Beat the egg in a separate bowl.", "Drizzle the egg slowly into the simmering soup while stirring in one direction to form fine ribbons.", "Season to taste and serve hot."] },
-  { id: "m8", name: "Stir-Fry Kailan, Garlic", cuisine: "Chinese", protein: "vegetarian", time: 10, baseServings: 4,
+  { id: "m8", name: "Stir-Fry Kailan, Garlic", cuisine: "Chinese", protein: "vegetarian", time: 10, baseServings: 4, side: true,
     ingredients: [ing("Kailan","vegetable",400,"g"), ing("Garlic","seasoning",3,"cloves"), ing("Oyster sauce","seasoning",2,"tbsp"), ing("Rice","grain",3,"cups")],
     steps: ["Trim the tough ends off the kailan and cut into manageable lengths.", "Blanch briefly in boiling water for about a minute, then drain well.", "Heat oil in a wok and fry the garlic until just golden, taking care not to burn it.", "Add the kailan and toss quickly over high heat for a minute or two.", "Stir in oyster sauce, tossing to coat evenly.", "Serve immediately with rice while still bright green and crisp."] },
   { id: "m9", name: "Bak Kut Teh", cuisine: "Chinese", protein: "pork", time: 60, baseServings: 4,
@@ -1380,6 +1380,18 @@ export default function MakanLedger() {
           worstShortfall = Math.max(worstShortfall, targetCount - dishCount);
         }
       }
+    }
+    // Final safety check: a dinner must never consist entirely of sides.
+    // Repair incomplete slots using a real main from the eligible pool.
+    for (let d = 0; d < daysCount; d++) {
+      const date = addDaysToDateStr(startDateStr, d);
+      if (!slots.includes("dinner")) continue;
+      const dinner = results.filter(m => m.date === date && m.mealType === "dinner");
+      if (dinner.some(m => !m.side && !m.isComponent)) continue;
+      const mains = pool.filter(m => !m.side && !m.isComponent && m.mealTypes.includes("dinner"));
+      if (!mains.length) continue;
+      const main = mains[Math.floor(Math.random() * mains.length)];
+      results.push({ ...main, uid: main.id + "-" + date + "-dinner-main-" + Math.random().toString(36).slice(2,7), date, mealType:"dinner" });
     }
     return { meals: results, shortSlots, worstShortfall };
   }
