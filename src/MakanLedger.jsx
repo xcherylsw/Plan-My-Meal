@@ -1381,7 +1381,29 @@ export default function MakanLedger() {
         }
       }
     }
-    return { meals: results, shortSlots, worstShortfall };
+    return { meals: ensureDinnerMains(results, pool), shortSlots, worstShortfall };
+  }
+
+  // Safety net for generated and existing dinner slots. Never let a vegetable
+  // side become the only dish simply because a plan was regenerated or edited.
+  function ensureDinnerMains(meals, pool) {
+    const mains = pool.filter(m => !m.side && !m.isComponent && (!m.mealTypes || m.mealTypes.includes("dinner")));
+    if (!mains.length) return meals;
+    const groups = new Map();
+    for (const m of meals) if (m.mealType === "dinner" && m.date) {
+      if (!groups.has(m.date)) groups.set(m.date, []);
+      groups.get(m.date).push(m);
+    }
+    const additions = [];
+    for (const [date, dishes] of groups) {
+      if (dishes.some(m => !m.side && !m.isComponent)) continue;
+      const side = dishes[0];
+      const choices = mains.filter(m => !dishes.some(d => d.id === m.id));
+      const match = choices.find(m => m.cuisine === side.cuisine) || choices[0] || mains[0];
+      additions.push({ ...match, date, mealType: "dinner", pax: side.pax,
+        uid: match.id + "-" + date + "-dinner-main-" + Math.random().toString(36).slice(2,7) });
+    }
+    return [...meals, ...additions];
   }
 
   // DSLR Auto: one tap plans seven dinners, without exposing the full generator.
@@ -1398,7 +1420,7 @@ export default function MakanLedger() {
     });
     setPlan(prev => [
       ...prev.filter(m => !m.date || m.date < today || m.date > weekEnd || m.mealType !== "dinner"),
-      ...withSlotPax(meals),
+      ...withSlotPax(ensureDinnerMains(meals, pool)),
     ]);
     setSkippedDays(prev => prev.filter(d => d < today || d > weekEnd));
     setCheckedItems({});
