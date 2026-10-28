@@ -290,6 +290,23 @@ function getCutHint(name) {
   const hit = CUT_HINTS.find(h => n.includes(h.match));
   return hit ? hit.note : "wash and cut into bite-sized pieces";
 }
+const PREP_FORMS = ["whole", "minced", "sliced", "julienned", "diced", "chopped", "paste", "washed & cut", "other"];
+function requiredPrepForm(ingredient, info) {
+  // Recipe-specific cuts take priority. Generic suggestions ("slice or mince")
+  // are intentionally NOT treated as an exact match.
+  const explicit = (ingredient.prepForm || ingredient.preparation || "").toLowerCase().trim();
+  if (explicit && PREP_FORMS.includes(explicit)) return explicit;
+  if (info.kind !== "aggregate") return "";
+  const hint = (info.hint || "").toLowerCase();
+  if (/\\b(or|either)\\b/.test(hint)) return "";
+  const matches = PREP_FORMS.filter(form => form !== "other" && form !== "whole" && hint.includes(form.replace(/ed$/, "")));
+  return matches.length === 1 ? matches[0] : "";
+}
+function pantryHasPreparedForm(pantry, name, form) {
+  if (!form) return false; // ambiguous recipe instruction: never silently assume a match
+  return pantry.some(p => wordMatch(name.toLowerCase(), p.name.toLowerCase())
+    && (p.preparedForms || []).some(f => (typeof f === "string" ? f : f.form) === form));
+}
 function classifyPrepIngredient(ingredient) {
   const n = ingredient.name.toLowerCase();
   if (ingredient.category === "seasoning" && PREP_AROMATIC_NAMES.some(a => n.includes(a))) {
@@ -1870,6 +1887,7 @@ export default function MakanLedger() {
         const info = classifyPrepIngredient(i);
         if (!info) return;
         const ready = isIngredientReady(i.name);
+        if (info.kind === "aggregate" && pantryHasPreparedForm(pantry, i.name, requiredPrepForm(i, info))) return;
         if (info.kind === "aggregate") {
           const key = info.label;
           if (seenInThisMeal.has(key)) return;
@@ -1914,7 +1932,7 @@ export default function MakanLedger() {
       ready: need.recipe.ingredients.every(i => isIngredientReady(i.name)),
     }));
     return { aggregateItems, perDish, makeItems };
-  }, [plan, skippedDays, readyMap, componentNeeds]);
+  }, [plan, skippedDays, readyMap, componentNeeds, pantry]);
 
   const pendingPrepCount = prepList.aggregateItems.filter(i => i.ready && !prepChecked[i.key]).length
     + prepList.perDish.filter(i => i.ready && !prepChecked[i.key]).length
@@ -2146,6 +2164,13 @@ export default function MakanLedger() {
   }
   function removePantryItem(id) {
     setPantry(prev => prev.filter(p => p.id !== id));
+  }
+  function togglePantryPreparedForm(id, form) {
+    setPantry(prev => prev.map(p => {
+      if (p.id !== id) return p;
+      const forms = (p.preparedForms || []).map(f => typeof f === "string" ? f : f.form);
+      return { ...p, preparedForms: forms.includes(form) ? forms.filter(f => f !== form) : [...forms, form] };
+    }));
   }
   function updatePantryQuantity(id, quantity) {
     setPantry(prev => prev.map(p => p.id === id ? { ...p, quantity: quantity === "" ? null : Number(quantity) } : p));
@@ -2425,6 +2450,7 @@ export default function MakanLedger() {
               updatePantryQuantity={updatePantryQuantity}
               toggleUseSoon={toggleUseSoon}
               updatePantryLocation={updatePantryLocation}
+              togglePantryPreparedForm={togglePantryPreparedForm}
               clearAllUseSoon={clearAllUseSoon}
               newPantryName={newPantryName} setNewPantryName={setNewPantryName}
               newPantryCategory={newPantryCategory} setNewPantryCategory={setNewPantryCategory}
@@ -3784,7 +3810,7 @@ function Checkbox({ checked }) {
 /* ---------------------------------------------------------------
    PANTRY SCREEN
 ------------------------------------------------------------------*/
-function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUseSoon, updatePantryLocation, clearAllUseSoon, newPantryName, setNewPantryName, newPantryCategory, setNewPantryCategory, newPantryLocation, setNewPantryLocation, newPantryQuantity, setNewPantryQuantity, newPantryUnit, setNewPantryUnit, newPantryUseSoon, setNewPantryUseSoon, addPantryItem }) {
+function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUseSoon, updatePantryLocation, togglePantryPreparedForm, clearAllUseSoon, newPantryName, setNewPantryName, newPantryCategory, setNewPantryCategory, newPantryLocation, setNewPantryLocation, newPantryQuantity, setNewPantryQuantity, newPantryUnit, setNewPantryUnit, newPantryUseSoon, setNewPantryUseSoon, addPantryItem }) {
   const [addingIngredient, setAddingIngredient] = useState(false);
   const [pantrySearch, setPantrySearch] = useState("");
   const [editingPantryId, setEditingPantryId] = useState(null);
@@ -3901,8 +3927,9 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
                     {editingPantryId === item.id ? "✓" : "›"}
                   </button>
                 </div>
-                <div style={{ fontSize: 11.5, color: C.inkSoft,paddingLeft:17 }}>{item.quantity != null ? `${item.quantity} ${item.unit || ""}` : "Always on hand"}{item.useSoon ? " · ✦ Use soon" : ""}</div>
-                {editingPantryId === item.id && <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
+                <div style={{ fontSize: 11.5, color: C.inkSoft,paddingLeft:17 }}>{item.quantity != null ? `${item.quantity} ${item.unit || ""}` : "Always on hand"}{item.useSoon ? " · ✦ Use soon" : ""}{(item.preparedForms || []).length ? ` · Prepared: ${(item.preparedForms || []).join(", ")}` : ""}</div>
+                {editingPantryId === item.id && <div style={{ display: "flex", flexDirection:"column", gap: 9 }}>
+                  <div><div style={{fontSize:11,fontWeight:800,color:C.inkSoft,marginBottom:6}}>Already prepared as (optional)</div><div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{PREP_FORMS.map(form => <button key={form} type="button" aria-pressed={(item.preparedForms || []).includes(form)} onClick={()=>togglePantryPreparedForm(item.id,form)} style={{padding:"6px 9px",borderRadius:999,fontSize:11,border:"1px solid #DCD5CC",background:(item.preparedForms || []).includes(form)?"#365C4B":"#fff",color:(item.preparedForms || []).includes(form)?"#fff":"#514C49"}}>{form}</button>)}</div><p style={{fontSize:10,color:C.inkSoft,margin:"6px 0 0"}}>Only matching recipe cuts skip prep. Stock availability stays separate.</p></div><div style={{display:"flex",alignItems:"center",flexWrap:"wrap",gap:6}}>
                   <button
                     onClick={() => toggleUseSoon(item.id)}
                     style={{
