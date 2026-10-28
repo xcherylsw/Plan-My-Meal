@@ -4826,7 +4826,8 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
   const [cuisine, setCuisine] = useState(null);
   const [open, setOpen] = useState(null);
   const [confirmDel, setConfirmDel] = useState(null);
-  const items = library.items || [];
+  const communityItems = library.items || [];
+  const items = isAdmin ? communityItems : [...MEALS.map(r => ({...r, id: `builtin-${r.id}`, builtIn: true})), ...communityItems];
   const cuisines = useMemo(() => [...new Set(items.map(r => r.cuisine).filter(Boolean))].sort(), [items]);
   const shown = useMemo(() => items.filter(r =>
     (!q.trim() || r.name.toLowerCase().includes(q.trim().toLowerCase())) && (!cuisine || r.cuisine === cuisine)), [items, q, cuisine]);
@@ -4836,17 +4837,18 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
     <div style={{ padding: "24px 18px 36px",background:"#FAF7F2",minHeight:"70vh" }}>
       <div style={{background:"linear-gradient(125deg,#354E60,#6A8A94)",color:"#fff",borderRadius:24,padding:"25px 22px",marginBottom:20,position:"relative",overflow:"hidden"}}><div style={{position:"absolute",right:-12,top:-12,fontSize:106,opacity:.17,pointerEvents:"none"}}>🍲</div><div style={{fontSize:11,fontWeight:800,letterSpacing:2,color:"#DDEFF3",marginBottom:9}}>{isAdmin ? "CURATE THE COLLECTION" : "A WORLD OF GOOD FOOD"}</div><h2 style={{fontFamily:FONT_DISPLAY,fontSize:33,lineHeight:1.1,margin:"0 0 11px",maxWidth:250}}>{isAdmin ? "Your recipe studio." : "Find your next favourite."}</h2><div style={{fontSize:13,color:"#EDF6F7"}}>{items.length ? `${items.length} recipes to explore` : "A shared cookbook, growing together"}</div></div>
 
+      {!isAdmin && <p style={{fontSize:12,color:C.inkSoft,margin:"-7px 0 16px"}}>Explore recipes already available in your meal planner. Community additions appear here too.</p>}
       {isAdmin && (
         <button onClick={onNew} style={{ width: "100%", background: "#E9A28F", border: "none", borderRadius: 16, padding: "15px 0", color: C.jade900, fontFamily: FONT_BODY, fontWeight: 700, fontSize: 13, marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
           <Plus size={15} /> New library recipe <span style={{ fontWeight: 500, fontSize: 11 }}>(admin)</span>
         </button>
       )}
 
-      {!configured ? (
+      {isAdmin && !configured ? (
         <p style={{ fontSize: 12.5, color: C.inkSoft }}>The shared library needs the online version of the site.</p>
-      ) : library.status === "loading" || library.status === "idle" ? (
+      ) : isAdmin && (library.status === "loading" || library.status === "idle") ? (
         <p style={{ fontSize: 12.5, color: C.inkSoft }}>Loading recipes…</p>
-      ) : library.status === "error" ? (
+      ) : isAdmin && library.status === "error" ? (
         <div>
           <p style={{ fontSize: 12.5, color: C.clayText }}>{library.error}</p>
           <button onClick={onRefresh} style={{ fontSize: 12, fontWeight: 700, color: C.jade700, textDecoration: "underline" }}>Try again</button>
@@ -4865,58 +4867,32 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
             </div>
           )}
           {shown.length === 0 && <p style={{ fontSize: 12.5, color: C.inkSoft }}>Nothing matches that.</p>}
-          {shown.map(r => (
-            <div key={r.id} style={{ background: "#fff", border: "1px solid #E9E3DF", borderRadius: 22, padding: 16, marginBottom: 14, boxShadow:"0 5px 18px rgba(47,42,51,.04)" }}>
-              <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                {r.photo ? <img src={r.photo} alt="" style={{ width: 96, height: 96, borderRadius: 16, objectFit: "cover", flexShrink: 0, border: `1px solid ${C.line}` }} /> : <div aria-hidden="true" style={{width:80,height:88,borderRadius:16,flexShrink:0,display:"grid",placeItems:"center",background:"linear-gradient(135deg,#FBE5D8,#F5EBD9)",fontSize:39}}>🍽️</div>}
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ fontFamily: FONT_DISPLAY, fontWeight: 700, fontSize: 20, color: C.ink, lineHeight:1.25 }}>{r.name}</div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
-                    <Tag text={r.cuisine} /><Tag text={r.protein} />
-                    {r.side && !r.isComponent && <Tag text="Side dish" />}
-                    <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 11, color: C.inkSoft, fontFamily: FONT_MONO }}><Clock size={11} /> {formatDuration(r.time)}</span>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:14,alignItems:"start"}}>
+            {shown.map(r => (
+              <article key={r.id} style={{background:"#fff",borderRadius:17,overflow:"hidden",boxShadow:"0 5px 15px rgba(49,38,30,.09)",minWidth:0}}>
+                <button onClick={()=>setOpen(open===r.id?null:r.id)} aria-label={`View ${r.name} recipe`} style={{display:"block",width:"100%",textAlign:"left",padding:0,background:"transparent",border:0,color:C.ink}}>
+                  <div style={{aspectRatio:"1.18",background:"linear-gradient(135deg,#F0DDC5,#D8E4D2)",display:"grid",placeItems:"center",position:"relative",overflow:"hidden"}}>
+                    {r.photo ? <img src={r.photo} alt={r.name} loading="lazy" style={{width:"100%",height:"100%",objectFit:"cover",position:"absolute",inset:0}}/> : <span aria-hidden="true" style={{fontSize:56,filter:"drop-shadow(0 5px 6px rgba(0,0,0,.08))"}}>{r.protein==="fish"||r.protein==="seafood"?"🐟":r.protein==="chicken"?"🍗":r.side?"🥬":"🍲"}</span>}
+                    <span style={{position:"absolute",bottom:9,left:9,background:"rgba(255,255,255,.92)",borderRadius:999,padding:"4px 8px",fontSize:10,fontWeight:800,color:"#4D6558"}}>{r.cuisine||"Recipe"}</span>
                   </div>
-                  <CreditLine r={r} />
-                </div>
-                {isAdmin && (
-                  <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
-                    <IconBtn onClick={() => onEdit(r)} title="Edit in the library"><Pencil size={13} /></IconBtn>
-                    <IconBtn onClick={() => { if (confirmDel === r.id) { setConfirmDel(null); onDelete(r.id); } else setConfirmDel(r.id); }} title="Remove from the library">
-                      {confirmDel === r.id ? <Check size={13} /> : <Trash2 size={13} />}
-                    </IconBtn>
+                  <div style={{padding:"13px 12px 8px",minHeight:114,display:"flex",flexDirection:"column",justifyContent:"space-between",gap:12}}>
+                    <div style={{fontSize:16,fontWeight:800,lineHeight:1.32,fontFamily:FONT_BODY}}>{r.name}</div>
+                    <div style={{display:"flex",alignItems:"center",gap:5,color:"#8B776C",fontSize:12}}><Clock size={14} color="#D07D58"/>{formatDuration(r.time)}</div>
                   </div>
-                )}
-              </div>
-              {confirmDel === r.id && <p style={{ fontSize: 11, color: C.clayText, margin: "6px 0 0" }}>Tap the tick again to remove this from the library for everyone.</p>}
-              <div style={{ display: "flex", gap: 8, marginTop: 10, alignItems: "center" }}>
-                <button
-                  onClick={() => !added(r.id) && onAdd(r)}
-                  disabled={added(r.id)}
-                  style={{
-                    flex: 1, borderRadius: 9, padding: "9px 0", fontFamily: FONT_BODY, fontWeight: 700, fontSize: 12.5,
-                    background: added(r.id) ? "#EAEFE3" : C.jade700, color: added(r.id) ? C.sageText : "#fff", border: "none",
-                  }}
-                >{added(r.id) ? "✓ In your recipes" : "Add to my recipes"}</button>
-                <button onClick={() => setOpen(open === r.id ? null : r.id)} style={{ fontSize: 12, fontWeight: 600, color: C.jade700, textDecoration: "underline", padding: "0 4px" }}>
-                  {open === r.id ? "Hide" : "Preview"}
                 </button>
-              </div>
-              {open === r.id && (
-                <div style={{ marginTop: 10, fontSize: 12, color: C.ink, lineHeight: 1.55 }}>
-                  <div style={{ fontWeight: 700, color: C.jade700, marginBottom: 2 }}>Ingredients (serves {r.baseServings || 4})</div>
-                  <ul style={{ margin: "0 0 8px", paddingLeft: 18 }}>
-                    {(r.ingredients || []).map((i, k) => <li key={k}>{[i.amount, i.unit, i.name].filter(x => x !== null && x !== "" && x !== undefined).join(" ")}</li>)}
-                  </ul>
-                  {(r.steps || []).length > 0 && (
-                    <>
-                      <div style={{ fontWeight: 700, color: C.jade700, marginBottom: 2 }}>Steps</div>
-                      <ol style={{ margin: 0, paddingLeft: 18 }}>{r.steps.map((st, k) => <li key={k}>{st}</li>)}</ol>
-                    </>
-                  )}
+                <div style={{padding:"0 12px 12px"}}>
+                  <button onClick={()=>!r.builtIn&&!added(r.id)&&onAdd(r)} disabled={r.builtIn||added(r.id)} style={{width:"100%",padding:"9px 5px",borderRadius:10,background:r.builtIn||added(r.id)?"#EDF1EA":"#365C4B",color:r.builtIn||added(r.id)?"#45624F":"#fff",fontSize:11,fontWeight:800}}>{r.builtIn?"In meal planner":added(r.id)?"✓ Saved":"＋ Save recipe"}</button>
+                  {isAdmin&&!r.builtIn&&<div style={{display:"flex",justifyContent:"space-between",marginTop:8}}><button onClick={()=>onEdit(r)} style={{fontSize:11}}>Edit</button><button onClick={()=>{if(confirmDel===r.id){setConfirmDel(null);onDelete(r.id)}else setConfirmDel(r.id)}} style={{fontSize:11,color:C.clayText}}>{confirmDel===r.id?"Confirm remove":"Remove"}</button></div>}
                 </div>
-              )}
-            </div>
-          ))}
+                {open===r.id&&<div style={{padding:"12px",borderTop:"1px solid #EDE8E1",fontSize:12,lineHeight:1.55}}>
+                  <CreditLine r={r}/>
+                  <div style={{fontWeight:800,margin:"8px 0 4px"}}>Ingredients · serves {r.baseServings||4}</div>
+                  <ul style={{paddingLeft:18,margin:"0 0 10px"}}>{(r.ingredients||[]).map((i,k)=><li key={k}>{[i.amount,i.unit,i.name].filter(x=>x!==null&&x!==undefined&&x!=="").join(" ")}</li>)}</ul>
+                  {!!r.steps?.length&&<><div style={{fontWeight:800,marginBottom:4}}>How to cook</div><ol style={{paddingLeft:18,margin:0}}>{r.steps.map((step,k)=><li key={k}>{step}</li>)}</ol></>}
+                </div>}
+              </article>
+            ))}
+          </div>
         </>
       )}
     </div>
