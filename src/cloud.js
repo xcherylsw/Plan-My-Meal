@@ -484,7 +484,7 @@ export async function loadLibrary() {
 export async function saveBuiltinRecipePhoto(mealId, photo) {
   if (!db || !auth?.currentUser) throw new Error("Sign in as admin to publish a photo.");
   if (!/^m\\d+$/.test(mealId)) throw new Error("Unknown built-in recipe.");
-  if (!/^data:image\\/jpeg;base64,/.test(photo) || photo.length > 180000)
+  if (!photo.startsWith("data:image/jpeg;base64,") || photo.length > 180000)
     throw new Error("Photo is too large. Please choose a smaller image.");
   await setDoc(doc(db, "library", "builtin-photo-" + mealId), {
     kind: "builtin-photo", mealId, photo, updatedAt: Date.now(),
