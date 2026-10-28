@@ -1536,7 +1536,16 @@ export default function MakanLedger() {
     if (!source.length) source = pool.filter(p => p.side === !!meal.side);
     if (!source.length) { showToast("No suitable replacement dish available."); return; }
     const choice = source[Math.floor(Math.random() * source.length)];
-    setPlan(prevPlan.map(m => m.uid === uid ? { ...choice, uid: m.uid, date: m.date, mealType: m.mealType, pax: m.pax } : m));
+    const replacement = { ...choice, uid: meal.uid, date: meal.date, mealType: meal.mealType, pax: meal.pax };
+    const updated = prevPlan.map(m => m.uid === uid ? replacement : m);
+    if (meal.mealType === "dinner" && replacement.side && !updated.some(m => m.date === meal.date && m.mealType === "dinner" && !m.side)) {
+      const mains = pool.filter(m => !m.side && !m.isComponent && m.mealTypes.includes("dinner"));
+      if (mains.length) {
+        const main = mains[Math.floor(Math.random() * mains.length)];
+        updated.push({ ...main, uid: main.id + "-" + meal.date + "-dinner-main-" + Date.now(), date: meal.date, mealType: "dinner", pax: meal.pax });
+      }
+    }
+    setPlan(updated);
     showToast(`Swapped ${meal.name} for ${choice.name}`, () => setPlan(prevPlan));
   }
 
