@@ -466,6 +466,10 @@ export async function loadLibrary() {
   const snap = await getDocs(collection(db, "library"));
   const out = [];
   snap.forEach(d => {
+    if (d.data().kind === "builtin-photo") {
+      out.push({ id: d.id, kind: "builtin-photo", mealId: d.data().mealId, photo: d.data().photo });
+      return;
+    }
     try {
       const r = JSON.parse(d.data().json);
       out.push({ ...r, id: d.id });
