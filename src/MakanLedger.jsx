@@ -4826,7 +4826,8 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
   const [cuisine, setCuisine] = useState(null);
   const [open, setOpen] = useState(null);
   const [confirmDel, setConfirmDel] = useState(null);
-  const items = library.items || [];
+  const communityItems = library.items || [];
+  const items = isAdmin ? communityItems : [...MEALS.map(r => ({...r, id: `builtin-${r.id}`, builtIn: true})), ...communityItems];
   const cuisines = useMemo(() => [...new Set(items.map(r => r.cuisine).filter(Boolean))].sort(), [items]);
   const shown = useMemo(() => items.filter(r =>
     (!q.trim() || r.name.toLowerCase().includes(q.trim().toLowerCase())) && (!cuisine || r.cuisine === cuisine)), [items, q, cuisine]);
@@ -4836,17 +4837,18 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
     <div style={{ padding: "24px 18px 36px",background:"#FAF7F2",minHeight:"70vh" }}>
       <div style={{background:"linear-gradient(125deg,#354E60,#6A8A94)",color:"#fff",borderRadius:24,padding:"25px 22px",marginBottom:20,position:"relative",overflow:"hidden"}}><div style={{position:"absolute",right:-12,top:-12,fontSize:106,opacity:.17,pointerEvents:"none"}}>🍲</div><div style={{fontSize:11,fontWeight:800,letterSpacing:2,color:"#DDEFF3",marginBottom:9}}>{isAdmin ? "CURATE THE COLLECTION" : "A WORLD OF GOOD FOOD"}</div><h2 style={{fontFamily:FONT_DISPLAY,fontSize:33,lineHeight:1.1,margin:"0 0 11px",maxWidth:250}}>{isAdmin ? "Your recipe studio." : "Find your next favourite."}</h2><div style={{fontSize:13,color:"#EDF6F7"}}>{items.length ? `${items.length} recipes to explore` : "A shared cookbook, growing together"}</div></div>
 
+      {!isAdmin && <p style={{fontSize:12,color:C.inkSoft,margin:"-7px 0 16px"}}>Explore recipes already available in your meal planner. Community additions appear here too.</p>}
       {isAdmin && (
         <button onClick={onNew} style={{ width: "100%", background: "#E9A28F", border: "none", borderRadius: 16, padding: "15px 0", color: C.jade900, fontFamily: FONT_BODY, fontWeight: 700, fontSize: 13, marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
           <Plus size={15} /> New library recipe <span style={{ fontWeight: 500, fontSize: 11 }}>(admin)</span>
         </button>
       )}
 
-      {!configured ? (
+      {isAdmin && !configured ? (
         <p style={{ fontSize: 12.5, color: C.inkSoft }}>The shared library needs the online version of the site.</p>
-      ) : library.status === "loading" || library.status === "idle" ? (
+      ) : isAdmin && (library.status === "loading" || library.status === "idle") ? (
         <p style={{ fontSize: 12.5, color: C.inkSoft }}>Loading recipes…</p>
-      ) : library.status === "error" ? (
+      ) : isAdmin && library.status === "error" ? (
         <div>
           <p style={{ fontSize: 12.5, color: C.clayText }}>{library.error}</p>
           <button onClick={onRefresh} style={{ fontSize: 12, fontWeight: 700, color: C.jade700, textDecoration: "underline" }}>Try again</button>
@@ -4878,7 +4880,7 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
                   </div>
                   <CreditLine r={r} />
                 </div>
-                {isAdmin && (
+                {isAdmin && !r.builtIn && (
                   <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
                     <IconBtn onClick={() => onEdit(r)} title="Edit in the library"><Pencil size={13} /></IconBtn>
                     <IconBtn onClick={() => { if (confirmDel === r.id) { setConfirmDel(null); onDelete(r.id); } else setConfirmDel(r.id); }} title="Remove from the library">
@@ -4890,13 +4892,13 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
               {confirmDel === r.id && <p style={{ fontSize: 11, color: C.clayText, margin: "6px 0 0" }}>Tap the tick again to remove this from the library for everyone.</p>}
               <div style={{ display: "flex", gap: 8, marginTop: 10, alignItems: "center" }}>
                 <button
-                  onClick={() => !added(r.id) && onAdd(r)}
-                  disabled={added(r.id)}
+                  onClick={() => !r.builtIn && !added(r.id) && onAdd(r)}
+                  disabled={r.builtIn || added(r.id)}
                   style={{
                     flex: 1, borderRadius: 9, padding: "9px 0", fontFamily: FONT_BODY, fontWeight: 700, fontSize: 12.5,
-                    background: added(r.id) ? "#EAEFE3" : C.jade700, color: added(r.id) ? C.sageText : "#fff", border: "none",
+                    background: (r.builtIn || added(r.id)) ? "#EAEFE3" : C.jade700, color: (r.builtIn || added(r.id)) ? C.sageText : "#fff", border: "none",
                   }}
-                >{added(r.id) ? "✓ In your recipes" : "Add to my recipes"}</button>
+                >{r.builtIn ? "✓ In meal planner" : added(r.id) ? "✓ In your recipes" : "Add to my recipes"}</button>
                 <button onClick={() => setOpen(open === r.id ? null : r.id)} style={{ fontSize: 12, fontWeight: 600, color: C.jade700, textDecoration: "underline", padding: "0 4px" }}>
                   {open === r.id ? "Hide" : "Preview"}
                 </button>
