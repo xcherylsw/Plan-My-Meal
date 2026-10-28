@@ -4162,6 +4162,8 @@ function SettingsSection({ title, countLabel, defaultOpen, last, children }) {
 function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, setDraft, libraryEdit, setLibraryEdit, libraryIntent, clearLibraryIntent }) {
   const [error, setError] = useState("");
   const [ingredientPaste, setIngredientPaste] = useState("");
+  const [recipeTextPaste, setRecipeTextPaste] = useState("");
+  const [showTextImporter, setShowTextImporter] = useState(false);
 
   const householdPax = household.adults + household.kids + household.elderly;
 
@@ -4287,6 +4289,29 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
     setDraft(prev => ({ ...prev, photo: null }));
   }
 
+  function importRecipeText() {
+    const raw = recipeTextPaste.trim();
+    if (!raw) return;
+    const lines = raw.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+    let section = "intro";
+    const ingredients = [], steps = [];
+    let name = "";
+    for (const line of lines) {
+      if (/^(ingredients?|what you need)\s*:?$/i.test(line)) {section="ingredients";continue;}
+      if (/^(instructions?|method|directions?|steps?|how to cook)\s*:?$/i.test(line)) {section="steps";continue;}
+      if (!name && section==="intro" && !/^(https?:|@|#)/.test(line)) {name=line.replace(/^recipe\s*:\s*/i,"").slice(0,100);continue;}
+      if (section==="ingredients") {
+        const cleaned=line.replace(/^[-•*]\s*/,"");
+        const m=cleaned.match(/^(\d+(?:\.\d+)?|\d+\/\d+)\s*(kg|g|ml|l|tbsp|tsp|cups?|pcs?|pieces?|cloves?)?\s+(.+)$/i);
+        const amount=m?(m[1].includes("/")?Number(m[1].split("/")[0])/Number(m[1].split("/")[1]):Number(m[1])):null;
+        ingredients.push({id:"import-"+Date.now()+"-"+ingredients.length,name:m?m[3]:cleaned,category:"other",amount,unit:m?(m[2]||""):"",componentId:null});
+      } else if (section==="steps") {steps.push(line.replace(/^(?:\d+[.)]|[-•*])\s*/,""));}
+    }
+    if (!ingredients.length) {setError("Add an Ingredients heading and list ingredients on separate lines. Add a Steps heading for instructions.");return;}
+    setDraft(prev=>({...prev,name:name||prev?.name||"",ingredients,steps:steps.length?steps:[""],sourceNote:raw.slice(0,3000)}));
+    setShowTextImporter(false);setRecipeTextPaste("");setError("");
+  }
+
   function addPastedIngredients() {
     const lines = ingredientPaste.split(/\r?\n|;/).map(x => x.trim()).filter(Boolean);
     if (!lines.length) return;
@@ -4385,6 +4410,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
       <div style={{background:"linear-gradient(125deg,#8F554D,#C88B79)",color:"#fff",borderRadius:24,padding:"25px 22px",marginBottom:20,position:"relative",overflow:"hidden"}}><div style={{position:"absolute",right:-10,top:-10,fontSize:105,opacity:.19,pointerEvents:"none"}}>📖</div><div style={{fontSize:11,fontWeight:800,letterSpacing:2,color:"#FFE5D8",marginBottom:9}}>YOUR FAMILY FAVOURITES</div><h2 style={{fontFamily:FONT_DISPLAY,fontSize:33,lineHeight:1.1,margin:"0 0 11px",maxWidth:240}}>Recipes worth keeping.</h2><div style={{fontSize:13,color:"#FFF3EC"}}>{myRecipes.length} saved recipes · Private to you</div></div>
       {!draft && <p style={{fontSize:13,color:C.inkSoft,margin:"0 0 12px"}}>Your saved recipes, ready when you need them.</p>}
 
+      {!draft && <div style={{marginBottom:14}}><button onClick={()=>setShowTextImporter(v=>!v)} style={{width:"100%",background:"#365C4B",color:"#fff",borderRadius:14,padding:"14px",fontWeight:800}}>✦ Import from recipe text · Free</button>{showTextImporter&&<div style={{background:"#fff",padding:14,borderRadius:14,marginTop:9,border:"1px solid #E8E0D7"}}><p style={{fontSize:12,color:C.inkSoft}}>Copy a TikTok caption or recipe text. Use headings “Ingredients” and “Steps”, with one item per line. No AI or paid service is used.</p><textarea value={recipeTextPaste} onChange={e=>setRecipeTextPaste(e.target.value)} rows={8} placeholder={"Mapo tofu\\nIngredients\\n400 g tofu\\n200 g minced chicken\\n2 tbsp soy sauce\\nSteps\\n1. Cut tofu into cubes\\n2. Cook minced chicken"} style={{...fieldStyle,resize:"vertical"}}/><button onClick={importRecipeText} disabled={!recipeTextPaste.trim()} style={{background:"#E9A28F",borderRadius:10,padding:"11px 14px",fontWeight:800,marginTop:8,opacity:recipeTextPaste.trim()?1:.5}}>Preview extracted recipe</button></div>}</div>}
       {!draft && (
         <button
           onClick={() => setDraft(blankDraft())}
