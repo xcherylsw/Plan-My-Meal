@@ -4852,13 +4852,8 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
   const [cuisine, setCuisine] = useState(null);
   const [open, setOpen] = useState(null);
   const [confirmDel, setConfirmDel] = useState(null);
-  const [personalPhotos, setPersonalPhotos] = useState(()=>{try{return JSON.parse(localStorage.getItem("tcw-discover-photos")||"{}")}catch{return {}}});
-  function changePersonalPhoto(recipeId,file){
-    if(!file)return;
-    const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{const canvas=document.createElement("canvas");const scale=Math.min(1,420/img.width);canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);const photo=canvas.toDataURL("image/jpeg",.68);setPersonalPhotos(prev=>{const next={...prev,[recipeId]:photo};try{localStorage.setItem("tcw-discover-photos",JSON.stringify(next))}catch{alert("Photo storage is full. Try a smaller photo.")}return next})};img.src=reader.result};reader.readAsDataURL(file);
-  }
   const communityItems = library.items || [];
-  const items = isAdmin ? communityItems : [...MEALS.map(r => ({...r, id: `builtin-${r.id}`, builtIn: true})), ...communityItems];
+  const items = [...MEALS.map(r => ({...r, id: `builtin-${r.id}`, builtIn: true})), ...communityItems];
   const cuisines = useMemo(() => [...new Set(items.map(r => r.cuisine).filter(Boolean))].sort(), [items]);
   const shown = useMemo(() => items.filter(r =>
     (!q.trim() || r.name.toLowerCase().includes(q.trim().toLowerCase())) && (!cuisine || r.cuisine === cuisine)), [items, q, cuisine]);
@@ -4903,7 +4898,7 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
               <article key={r.id} style={{background:"#fff",borderRadius:17,overflow:"hidden",boxShadow:"0 5px 15px rgba(49,38,30,.09)",minWidth:0}}>
                 <button onClick={()=>setOpen(open===r.id?null:r.id)} aria-label={`View ${r.name} recipe`} style={{display:"block",width:"100%",textAlign:"left",padding:0,background:"transparent",border:0,color:C.ink}}>
                   <div style={{aspectRatio:"1.18",background:"linear-gradient(135deg,#F0DDC5,#D8E4D2)",display:"grid",placeItems:"center",position:"relative",overflow:"hidden"}}>
-                    {(personalPhotos[r.id]||r.photo) ? <img src={personalPhotos[r.id]||r.photo} alt={r.name} loading="lazy" style={{width:"100%",height:"100%",objectFit:"cover",position:"absolute",inset:0}}/> : <span aria-hidden="true" style={{fontSize:56,filter:"drop-shadow(0 5px 6px rgba(0,0,0,.08))"}}>{r.protein==="fish"||r.protein==="seafood"?"🐟":r.protein==="chicken"?"🍗":r.side?"🥬":"🍲"}</span>}
+                    {r.photo ? <img src={r.photo} alt={r.name} loading="lazy" style={{width:"100%",height:"100%",objectFit:"cover",position:"absolute",inset:0}}/> : <span aria-hidden="true" style={{fontSize:56,filter:"drop-shadow(0 5px 6px rgba(0,0,0,.08))"}}>{r.protein==="fish"||r.protein==="seafood"?"🐟":r.protein==="chicken"?"🍗":r.side?"🥬":"🍲"}</span>}
                     <span style={{position:"absolute",bottom:9,left:9,background:"rgba(255,255,255,.92)",borderRadius:999,padding:"4px 8px",fontSize:10,fontWeight:800,color:"#4D6558"}}>{r.cuisine||"Recipe"}</span>
                   </div>
                   <div style={{padding:"13px 12px 8px",minHeight:114,display:"flex",flexDirection:"column",justifyContent:"space-between",gap:12}}>
@@ -4912,9 +4907,9 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
                   </div>
                 </button>
                 <div style={{padding:"0 12px 12px"}}>
-                  <label style={{display:"block",textAlign:"center",fontSize:11,color:"#55705F",fontWeight:800,cursor:"pointer",padding:"5px 0 9px"}}>📷 {personalPhotos[r.id]?"Change my photo":"Add my photo"}<input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{changePersonalPhoto(r.id,e.target.files?.[0]);e.target.value=""}}/></label>
+
                   <button onClick={()=>!r.builtIn&&!added(r.id)&&onAdd(r)} disabled={r.builtIn||added(r.id)} style={{width:"100%",padding:"9px 5px",borderRadius:10,background:r.builtIn||added(r.id)?"#EDF1EA":"#365C4B",color:r.builtIn||added(r.id)?"#45624F":"#fff",fontSize:11,fontWeight:800}}>{r.builtIn?"In meal planner":added(r.id)?"✓ Saved":"＋ Save recipe"}</button>
-                  {isAdmin&&!r.builtIn&&<div style={{display:"flex",justifyContent:"space-between",marginTop:8}}><button onClick={()=>onEdit(r)} style={{fontSize:11}}>Edit</button><button onClick={()=>{if(confirmDel===r.id){setConfirmDel(null);onDelete(r.id)}else setConfirmDel(r.id)}} style={{fontSize:11,color:C.clayText}}>{confirmDel===r.id?"Confirm remove":"Remove"}</button></div>}
+                  {isAdmin&&!r.builtIn&&<div style={{display:"flex",justifyContent:"space-between",marginTop:8}}><button onClick={()=>onEdit(r)} style={{fontSize:11,fontWeight:800,color:"#365C4B"}}>✎ Edit recipe & photo</button><button onClick={()=>{if(confirmDel===r.id){setConfirmDel(null);onDelete(r.id)}else setConfirmDel(r.id)}} style={{fontSize:11,color:C.clayText}}>{confirmDel===r.id?"Confirm remove":"Remove"}</button></div>}
                 </div>
                 {open===r.id&&<div style={{padding:"12px",borderTop:"1px solid #EDE8E1",fontSize:12,lineHeight:1.55}}>
                   <CreditLine r={r}/>
