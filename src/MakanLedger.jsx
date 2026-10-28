@@ -3961,7 +3961,7 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
                     <span style={{ fontSize: 10, color: C.inkSoft, fontFamily: FONT_MONO, fontStyle: "italic" }}>always have</span>
                   )}
                   <button onClick={() => { removePantryItem(item.id); setEditingPantryId(null); }} style={{ fontSize: 12, color: C.clayText, padding: "6px 8px" }}>Remove ingredient</button>
-                </div>}
+                </div></div>}
               </div>
             ))}
           </div>
