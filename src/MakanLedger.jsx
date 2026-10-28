@@ -1393,6 +1393,16 @@ export default function MakanLedger() {
       const main = mains[Math.floor(Math.random() * mains.length)];
       results.push({ ...main, uid: main.id + "-" + date + "-dinner-main-" + Math.random().toString(36).slice(2,7), date, mealType:"dinner" });
     }
+    // Never return a dinner made entirely of side dishes.
+    const dinnerMains = pool.filter(m => !m.side && !m.isComponent && m.mealTypes?.includes("dinner"));
+    const mainFallbacks = dinnerMains.length ? dinnerMains : pool.filter(m => !m.side && !m.isComponent);
+    for (const date of [...new Set(results.filter(m => m.mealType === "dinner").map(m => m.date))]) {
+      const group = results.filter(m => m.date === date && m.mealType === "dinner");
+      if (group.some(m => !m.side && !m.isComponent)) continue;
+      const main = mainFallbacks[Math.floor(Math.random() * mainFallbacks.length)];
+      if (!main) continue;
+      results.push({ ...main, uid: main.id + "-" + date + "-dinner-main-" + Math.random().toString(36).slice(2,7), date, mealType:"dinner" });
+    }
     return { meals: results, shortSlots, worstShortfall };
   }
 
