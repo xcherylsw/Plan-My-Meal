@@ -4,7 +4,7 @@ import {
   Check, Clock, Sparkles, Tags, AlertTriangle, ChevronDown,
   BookmarkPlus, Link2, Users, UploadCloud, DownloadCloud, Pencil, Calendar, BookOpen, Play,
 } from "lucide-react";
-import { subscribe as cloudSubscribe, getSnapshot as cloudSnapshot, isAdminUser, loadLibrary, saveLibraryRecipe, deleteLibraryRecipe } from "./cloud.js";
+import { subscribe as cloudSubscribe, getSnapshot as cloudSnapshot, isAdminUser, loadLibrary, saveLibraryRecipe, deleteLibraryRecipe, saveBuiltinRecipePhoto } from "./cloud.js";
 import { pushState, pullState } from "./syncClient.js";
 import { SplashScreen } from "@capacitor/splash-screen";
 // Ads live entirely behind src/ads.js — the ads build ships the real AdMob
@@ -4852,8 +4852,26 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
   const [cuisine, setCuisine] = useState(null);
   const [open, setOpen] = useState(null);
   const [confirmDel, setConfirmDel] = useState(null);
-  const communityItems = library.items || [];
-  const items = [...MEALS.map(r => ({...r, id: `builtin-${r.id}`, builtIn: true})), ...communityItems];
+  const [photoSaving, setPhotoSaving] = useState(null);
+  const [photoMessage, setPhotoMessage] = useState("");
+  const photoRecords = (library.items || []).filter(r => r.kind === "builtin-photo");
+  const communityItems = (library.items || []).filter(r => r.kind !== "builtin-photo");
+  const items = [...MEALS.map(r => ({...r, id: `builtin-${r.id}`, builtIn: true, photo: photoRecords.find(p=>p.mealId===r.id)?.photo || r.photo})), ...communityItems];
+  async function publishPhoto(mealId,file) {
+    if (!file) return;
+    setPhotoSaving(mealId);setPhotoMessage("");
+    try {
+      const photo = await new Promise((resolve,reject)=>{
+        const reader = new FileReader();reader.onerror=()=>reject(new Error("Could not read image"));
+        reader.onload=()=>{const img=new Image();img.onerror=()=>reject(new Error("Could not open image"));
+          img.onload=()=>{const canvas=document.createElement("canvas");const scale=Math.min(1,480/img.width);canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL("image/jpeg",.65))};img.src=reader.result};reader.readAsDataURL(file);
+      });
+      await saveBuiltinRecipePhoto(mealId,photo);
+      await onRefresh();
+      setPhotoMessage("Official photo published. Everyone can now see it.");
+    } catch(e) {setPhotoMessage(e?.message || "Could not publish the photo.");}
+    finally {setPhotoSaving(null);}
+  }
   const cuisines = useMemo(() => [...new Set(items.map(r => r.cuisine).filter(Boolean))].sort(), [items]);
   const shown = useMemo(() => items.filter(r =>
     (!q.trim() || r.name.toLowerCase().includes(q.trim().toLowerCase())) && (!cuisine || r.cuisine === cuisine)), [items, q, cuisine]);
@@ -4864,6 +4882,7 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
       <div style={{background:"linear-gradient(125deg,#354E60,#6A8A94)",color:"#fff",borderRadius:24,padding:"25px 22px",marginBottom:20,position:"relative",overflow:"hidden"}}><div style={{position:"absolute",right:-12,top:-12,fontSize:106,opacity:.17,pointerEvents:"none"}}>🍲</div><div style={{fontSize:11,fontWeight:800,letterSpacing:2,color:"#DDEFF3",marginBottom:9}}>{isAdmin ? "CURATE THE COLLECTION" : "A WORLD OF GOOD FOOD"}</div><h2 style={{fontFamily:FONT_DISPLAY,fontSize:33,lineHeight:1.1,margin:"0 0 11px",maxWidth:250}}>{isAdmin ? "Your recipe studio." : "Find your next favourite."}</h2><div style={{fontSize:13,color:"#EDF6F7"}}>{items.length ? `${items.length} recipes to explore` : "A shared cookbook, growing together"}</div></div>
 
       {!isAdmin && <p style={{fontSize:12,color:C.inkSoft,margin:"-7px 0 16px"}}>Explore recipes already available in your meal planner. Community additions appear here too.</p>}
+      {isAdmin && photoMessage && <p role="status" style={{padding:"11px 13px",background:"#fff",borderRadius:10,color:"#365C4B",fontSize:12}}>{photoMessage}</p>}
       {isAdmin && (
         <button onClick={onNew} style={{ width: "100%", background: "#E9A28F", border: "none", borderRadius: 16, padding: "15px 0", color: C.jade900, fontFamily: FONT_BODY, fontWeight: 700, fontSize: 13, marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
           <Plus size={15} /> New library recipe <span style={{ fontWeight: 500, fontSize: 11 }}>(admin)</span>
@@ -4907,7 +4926,7 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
                   </div>
                 </button>
                 <div style={{padding:"0 12px 12px"}}>
-
+                  {isAdmin && r.builtIn && <label style={{display:"block",textAlign:"center",padding:"9px 4px",fontSize:11,fontWeight:800,color:"#365C4B",cursor:photoSaving===r.id.slice(8)?"wait":"pointer"}}>📷 {photoSaving===r.id.slice(8)?"Publishing…":r.photo?"Replace official photo":"Upload official photo"}<input type="file" accept="image/*" disabled={!!photoSaving} style={{display:"none"}} onChange={e=>{publishPhoto(r.id.slice(8),e.target.files?.[0]);e.target.value=""}}/></label>}
                   <button onClick={()=>!r.builtIn&&!added(r.id)&&onAdd(r)} disabled={r.builtIn||added(r.id)} style={{width:"100%",padding:"9px 5px",borderRadius:10,background:r.builtIn||added(r.id)?"#EDF1EA":"#365C4B",color:r.builtIn||added(r.id)?"#45624F":"#fff",fontSize:11,fontWeight:800}}>{r.builtIn?"In meal planner":added(r.id)?"✓ Saved":"＋ Save recipe"}</button>
                   {isAdmin&&!r.builtIn&&<div style={{display:"flex",justifyContent:"space-between",marginTop:8}}><button onClick={()=>onEdit(r)} style={{fontSize:11,fontWeight:800,color:"#365C4B"}}>✎ Edit recipe & photo</button><button onClick={()=>{if(confirmDel===r.id){setConfirmDel(null);onDelete(r.id)}else setConfirmDel(r.id)}} style={{fontSize:11,color:C.clayText}}>{confirmDel===r.id?"Confirm remove":"Remove"}</button></div>}
                 </div>

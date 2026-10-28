@@ -466,6 +466,10 @@ export async function loadLibrary() {
   const snap = await getDocs(collection(db, "library"));
   const out = [];
   snap.forEach(d => {
+    if (d.data().kind === "builtin-photo") {
+      out.push({ id: d.id, kind: "builtin-photo", mealId: d.data().mealId, photo: d.data().photo });
+      return;
+    }
     try {
       const r = JSON.parse(d.data().json);
       out.push({ ...r, id: d.id });
@@ -474,6 +478,19 @@ export async function loadLibrary() {
   out.sort((a, b) => String(a.name).localeCompare(String(b.name)));
   return out;
 }
+// Official photos for built-in recipes live in the existing public-read,
+// admin-write library collection. JPEG data URLs are capped below the Firestore
+// document limit and never change the recipe definition.
+export async function saveBuiltinRecipePhoto(mealId, photo) {
+  if (!db || !auth?.currentUser) throw new Error("Sign in as admin to publish a photo.");
+  if (!/^m\\d+$/.test(mealId)) throw new Error("Unknown built-in recipe.");
+  if (!photo.startsWith("data:image/jpeg;base64,") || photo.length > 180000)
+    throw new Error("Photo is too large. Please choose a smaller image.");
+  await setDoc(doc(db, "library", "builtin-photo-" + mealId), {
+    kind: "builtin-photo", mealId, photo, updatedAt: Date.now(),
+  });
+}
+
 export async function saveLibraryRecipe(recipe) {
   if (!db) throw new Error("Not connected to Firebase.");
   const id = recipe.id || ("l" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5));
