@@ -4162,6 +4162,8 @@ function SettingsSection({ title, countLabel, defaultOpen, last, children }) {
 function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, setDraft, libraryEdit, setLibraryEdit, libraryIntent, clearLibraryIntent }) {
   const [error, setError] = useState("");
   const [ingredientPaste, setIngredientPaste] = useState("");
+  const [recipeTextPaste, setRecipeTextPaste] = useState("");
+  const [showTextImporter, setShowTextImporter] = useState(false);
 
   const householdPax = household.adults + household.kids + household.elderly;
 
@@ -4287,6 +4289,29 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
     setDraft(prev => ({ ...prev, photo: null }));
   }
 
+  function importRecipeText() {
+    const raw = recipeTextPaste.trim();
+    if (!raw) return;
+    const lines = raw.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+    let section = "intro";
+    const ingredients = [], steps = [];
+    let name = "";
+    for (const line of lines) {
+      if (/^(ingredients?|what you need)\s*:?$/i.test(line)) {section="ingredients";continue;}
+      if (/^(instructions?|method|directions?|steps?|how to cook)\s*:?$/i.test(line)) {section="steps";continue;}
+      if (!name && section==="intro" && !/^(https?:|@|#)/.test(line)) {name=line.replace(/^recipe\s*:\s*/i,"").slice(0,100);continue;}
+      if (section==="ingredients") {
+        const cleaned=line.replace(/^[-•*]\s*/,"");
+        const m=cleaned.match(/^(\d+(?:\.\d+)?|\d+\/\d+)\s*(kg|g|ml|l|tbsp|tsp|cups?|pcs?|pieces?|cloves?)?\s+(.+)$/i);
+        const amount=m?(m[1].includes("/")?Number(m[1].split("/")[0])/Number(m[1].split("/")[1]):Number(m[1])):null;
+        ingredients.push({id:"import-"+Date.now()+"-"+ingredients.length,name:m?m[3]:cleaned,category:"other",amount,unit:m?(m[2]||""):"",componentId:null});
+      } else if (section==="steps") {steps.push(line.replace(/^(?:\d+[.)]|[-•*])\s*/,""));}
+    }
+    if (!ingredients.length) {setError("Add an Ingredients heading and list ingredients on separate lines. Add a Steps heading for instructions.");return;}
+    setDraft(prev=>({...prev,name:name||prev?.name||"",ingredients,steps:steps.length?steps:[""],sourceNote:raw.slice(0,3000)}));
+    setShowTextImporter(false);setRecipeTextPaste("");setError("");
+  }
+
   function addPastedIngredients() {
     const lines = ingredientPaste.split(/\r?\n|;/).map(x => x.trim()).filter(Boolean);
     if (!lines.length) return;
@@ -4385,6 +4410,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
       <div style={{background:"linear-gradient(125deg,#8F554D,#C88B79)",color:"#fff",borderRadius:24,padding:"25px 22px",marginBottom:20,position:"relative",overflow:"hidden"}}><div style={{position:"absolute",right:-10,top:-10,fontSize:105,opacity:.19,pointerEvents:"none"}}>📖</div><div style={{fontSize:11,fontWeight:800,letterSpacing:2,color:"#FFE5D8",marginBottom:9}}>YOUR FAMILY FAVOURITES</div><h2 style={{fontFamily:FONT_DISPLAY,fontSize:33,lineHeight:1.1,margin:"0 0 11px",maxWidth:240}}>Recipes worth keeping.</h2><div style={{fontSize:13,color:"#FFF3EC"}}>{myRecipes.length} saved recipes · Private to you</div></div>
       {!draft && <p style={{fontSize:13,color:C.inkSoft,margin:"0 0 12px"}}>Your saved recipes, ready when you need them.</p>}
 
+      {!draft && <div style={{marginBottom:14}}><button onClick={()=>setShowTextImporter(v=>!v)} style={{width:"100%",background:"#365C4B",color:"#fff",borderRadius:14,padding:"14px",fontWeight:800}}>✦ Import from recipe text · Free</button>{showTextImporter&&<div style={{background:"#fff",padding:14,borderRadius:14,marginTop:9,border:"1px solid #E8E0D7"}}><p style={{fontSize:12,color:C.inkSoft}}>Copy a TikTok caption or recipe text. Use headings “Ingredients” and “Steps”, with one item per line. No AI or paid service is used.</p><textarea value={recipeTextPaste} onChange={e=>setRecipeTextPaste(e.target.value)} rows={8} placeholder={"Mapo tofu\\nIngredients\\n400 g tofu\\n200 g minced chicken\\n2 tbsp soy sauce\\nSteps\\n1. Cut tofu into cubes\\n2. Cook minced chicken"} style={{...fieldStyle,resize:"vertical"}}/><button onClick={importRecipeText} disabled={!recipeTextPaste.trim()} style={{background:"#E9A28F",borderRadius:10,padding:"11px 14px",fontWeight:800,marginTop:8,opacity:recipeTextPaste.trim()?1:.5}}>Preview extracted recipe</button></div>}</div>}
       {!draft && (
         <button
           onClick={() => setDraft(blankDraft())}
@@ -4826,6 +4852,11 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
   const [cuisine, setCuisine] = useState(null);
   const [open, setOpen] = useState(null);
   const [confirmDel, setConfirmDel] = useState(null);
+  const [personalPhotos, setPersonalPhotos] = useState(()=>{try{return JSON.parse(localStorage.getItem("tcw-discover-photos")||"{}")}catch{return {}}});
+  function changePersonalPhoto(recipeId,file){
+    if(!file)return;
+    const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{const canvas=document.createElement("canvas");const scale=Math.min(1,420/img.width);canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);const photo=canvas.toDataURL("image/jpeg",.68);setPersonalPhotos(prev=>{const next={...prev,[recipeId]:photo};try{localStorage.setItem("tcw-discover-photos",JSON.stringify(next))}catch{alert("Photo storage is full. Try a smaller photo.")}return next})};img.src=reader.result};reader.readAsDataURL(file);
+  }
   const communityItems = library.items || [];
   const items = isAdmin ? communityItems : [...MEALS.map(r => ({...r, id: `builtin-${r.id}`, builtIn: true})), ...communityItems];
   const cuisines = useMemo(() => [...new Set(items.map(r => r.cuisine).filter(Boolean))].sort(), [items]);
@@ -4872,7 +4903,7 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
               <article key={r.id} style={{background:"#fff",borderRadius:17,overflow:"hidden",boxShadow:"0 5px 15px rgba(49,38,30,.09)",minWidth:0}}>
                 <button onClick={()=>setOpen(open===r.id?null:r.id)} aria-label={`View ${r.name} recipe`} style={{display:"block",width:"100%",textAlign:"left",padding:0,background:"transparent",border:0,color:C.ink}}>
                   <div style={{aspectRatio:"1.18",background:"linear-gradient(135deg,#F0DDC5,#D8E4D2)",display:"grid",placeItems:"center",position:"relative",overflow:"hidden"}}>
-                    {r.photo ? <img src={r.photo} alt={r.name} loading="lazy" style={{width:"100%",height:"100%",objectFit:"cover",position:"absolute",inset:0}}/> : <span aria-hidden="true" style={{fontSize:56,filter:"drop-shadow(0 5px 6px rgba(0,0,0,.08))"}}>{r.protein==="fish"||r.protein==="seafood"?"🐟":r.protein==="chicken"?"🍗":r.side?"🥬":"🍲"}</span>}
+                    {(personalPhotos[r.id]||r.photo) ? <img src={personalPhotos[r.id]||r.photo} alt={r.name} loading="lazy" style={{width:"100%",height:"100%",objectFit:"cover",position:"absolute",inset:0}}/> : <span aria-hidden="true" style={{fontSize:56,filter:"drop-shadow(0 5px 6px rgba(0,0,0,.08))"}}>{r.protein==="fish"||r.protein==="seafood"?"🐟":r.protein==="chicken"?"🍗":r.side?"🥬":"🍲"}</span>}
                     <span style={{position:"absolute",bottom:9,left:9,background:"rgba(255,255,255,.92)",borderRadius:999,padding:"4px 8px",fontSize:10,fontWeight:800,color:"#4D6558"}}>{r.cuisine||"Recipe"}</span>
                   </div>
                   <div style={{padding:"13px 12px 8px",minHeight:114,display:"flex",flexDirection:"column",justifyContent:"space-between",gap:12}}>
@@ -4881,6 +4912,7 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
                   </div>
                 </button>
                 <div style={{padding:"0 12px 12px"}}>
+                  <label style={{display:"block",textAlign:"center",fontSize:11,color:"#55705F",fontWeight:800,cursor:"pointer",padding:"5px 0 9px"}}>📷 {personalPhotos[r.id]?"Change my photo":"Add my photo"}<input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{changePersonalPhoto(r.id,e.target.files?.[0]);e.target.value=""}}/></label>
                   <button onClick={()=>!r.builtIn&&!added(r.id)&&onAdd(r)} disabled={r.builtIn||added(r.id)} style={{width:"100%",padding:"9px 5px",borderRadius:10,background:r.builtIn||added(r.id)?"#EDF1EA":"#365C4B",color:r.builtIn||added(r.id)?"#45624F":"#fff",fontSize:11,fontWeight:800}}>{r.builtIn?"In meal planner":added(r.id)?"✓ Saved":"＋ Save recipe"}</button>
                   {isAdmin&&!r.builtIn&&<div style={{display:"flex",justifyContent:"space-between",marginTop:8}}><button onClick={()=>onEdit(r)} style={{fontSize:11}}>Edit</button><button onClick={()=>{if(confirmDel===r.id){setConfirmDel(null);onDelete(r.id)}else setConfirmDel(r.id)}} style={{fontSize:11,color:C.clayText}}>{confirmDel===r.id?"Confirm remove":"Remove"}</button></div>}
                 </div>
