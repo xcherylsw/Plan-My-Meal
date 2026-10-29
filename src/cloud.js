@@ -68,7 +68,7 @@ const DEVICE = (() => {
 /* ---------- observable status for the UI ---------- */
 let snapshot = {
   configured: isFirebaseConfigured,
-  ready: !isFirebaseConfigured, // with no Firebase, there is nothing to wait for
+  ready: true, // show locally saved meals immediately; cloud sync happens in background
   user: null,                   // { uid, email, name, photo }
   household: null,              // { id, members: [{uid, name}], owner }
   sync: "idle",                 // idle | saving | saved | offline | error
@@ -421,8 +421,6 @@ export function initCloud() {
   auth = getAuth(app);
   db = getFirestore(app);
 
-  const giveUp = setTimeout(() => { if (!snapshot.ready) emit({ ready: true }); }, 8000);
-
   getRedirectResult(auth).catch(() => {
     emit({ error: "Sign-in didn't work. If you opened this link inside WhatsApp, Instagram or Facebook, open it in Chrome or Safari instead." });
   });
@@ -439,8 +437,6 @@ export function initCloud() {
       uid = null; hid = null;
       emit({ user: null, household: null, sync: "idle" });
     }
-    clearTimeout(giveUp);
-    if (!snapshot.ready) emit({ ready: true });
   });
 
   const wake = () => { if (document.visibilityState === "visible" && hid) pushDirty(); };
