@@ -21,6 +21,39 @@
   </head>
   <body>
     <div id="root"><div class="boot">Loading your meals…</div></div>
+    <script>
+      // If the JS bundle fails to load or execute, don't leave visitors on an
+      // endless static loading screen. No stored recipes or plans are touched.
+      (function () {
+        var booted = false;
+        window.addEventListener('pmm:booted', function () { booted = true; });
+        function showFailure(message) {
+          if (booted) return;
+          var el = document.querySelector('#root .boot');
+          if (!el) return;
+          el.innerHTML = '';
+          var panel = document.createElement('div');
+          panel.style.cssText = 'max-width:320px;padding:24px;text-align:center;line-height:1.6';
+          var title = document.createElement('strong');
+          title.textContent = 'Meals could not load';
+          var info = document.createElement('p');
+          info.textContent = message;
+          var retry = document.createElement('button');
+          retry.textContent = 'Try again';
+          retry.style.cssText = 'padding:12px 22px;border:0;border-radius:12px;background:#4A2A1F;color:white;font:inherit';
+          retry.onclick = function () { location.reload(); };
+          panel.append(title, info, retry);
+          el.append(panel);
+        }
+        window.addEventListener('error', function (e) {
+          if (!booted) showFailure('The app failed to start. Please try again. Your saved data has not been cleared.');
+        });
+        window.addEventListener('unhandledrejection', function () {
+          if (!booted) showFailure('The app could not finish starting. Please try again.');
+        });
+        setTimeout(function () { showFailure('The app is taking too long to start. Please try again.'); }, 12000);
+      })();
+    </script>
     <script src="/ads-config.js"></script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
