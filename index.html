@@ -21,6 +21,23 @@
   </head>
   <body>
     <div id="root"><div class="boot">Loading your meals…</div></div>
+    <script>
+      // The static loading message must never remain forever when the app bundle
+      // fails to load or execute. No user data is deleted by this recovery UI.
+      (function () {
+        var timer = setTimeout(function () {
+          var root = document.getElementById('root');
+          if (!root || !root.querySelector('.boot')) return;
+          root.innerHTML = '<div class="boot" style="height:auto;min-height:100vh;padding:24px;box-sizing:border-box;flex-direction:column;gap:14px;text-align:center"><strong>Today Cook What couldn\\'t start.</strong><span>There may be a problem loading the app. Your saved data has not been cleared.</span><button id="retry-app" style="padding:12px 20px;border:0;border-radius:10px;background:#27564A;color:white;font-size:15px">Retry loading</button></div>';
+          document.getElementById('retry-app').addEventListener('click', function () {
+            var url = new URL(location.href);
+            url.searchParams.set('retry', Date.now().toString());
+            location.replace(url.toString());
+          });
+        }, 12000);
+        window.addEventListener('pagehide', function () { clearTimeout(timer); });
+      })();
+    </script>
     <script src="/ads-config.js"></script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
