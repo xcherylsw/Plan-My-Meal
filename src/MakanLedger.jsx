@@ -365,7 +365,7 @@ const CUT_HINTS = [
   { match: "mixed vegetables", note: "wash and cut into bite-sized pieces" },
 ];
 function getCutHint(name) {
-  const n = name.toLowerCase();
+  const n = String(name ?? "").toLowerCase();
   const hit = CUT_HINTS.find(h => n.includes(h.match));
   return hit ? hit.note : "wash and cut into bite-sized pieces";
 }
@@ -383,23 +383,23 @@ function requiredPrepForm(ingredient, info) {
 }
 function pantryHasPreparedForm(pantry, name, form) {
   if (!form) return false; // ambiguous recipe instruction: never silently assume a match
-  return pantry.some(p => wordMatch(name.toLowerCase(), p.name.toLowerCase())
+  return pantry.some(p => wordMatch(String(name ?? "").toLowerCase(), String(p.name ?? "").toLowerCase())
     && (p.preparedForms || []).some(f => (typeof f === "string" ? f : f.form) === form));
 }
 function classifyPrepIngredient(ingredient) {
-  const n = ingredient.name.toLowerCase();
+  const n = String(ingredient.name ?? "").toLowerCase();
   if (ingredient.category === "seasoning" && PREP_AROMATIC_NAMES.some(a => n.includes(a))) {
-    return { kind: "aggregate", label: `Chop ${ingredient.name.toLowerCase()}`, hint: getCutHint(ingredient.name) };
+    return { kind: "aggregate", label: `Chop ${String(ingredient.name ?? "").toLowerCase()}`, hint: getCutHint(ingredient.name) };
   }
   if (ingredient.category === "vegetable") {
-    return { kind: "aggregate", label: `Wash & cut ${ingredient.name.toLowerCase()}`, hint: getCutHint(ingredient.name) };
+    return { kind: "aggregate", label: `Wash & cut ${String(ingredient.name ?? "").toLowerCase()}`, hint: getCutHint(ingredient.name) };
   }
   if (ingredient.category === "protein") {
     if (PREP_FREEZE_PROTEIN_NAMES.some(p => n.includes(p))) {
-      return { kind: "freeze", label: `Portion & freeze ${ingredient.name.toLowerCase()}` };
+      return { kind: "freeze", label: `Portion & freeze ${String(ingredient.name ?? "").toLowerCase()}` };
     }
     if (PREP_MARINATE_PROTEIN_NAMES.some(p => n.includes(p))) {
-      return { kind: "marinate", label: `Marinate ${ingredient.name.toLowerCase()}` };
+      return { kind: "marinate", label: `Marinate ${String(ingredient.name ?? "").toLowerCase()}` };
     }
   }
   return null;
@@ -593,7 +593,7 @@ function wordMatch(a, b) {
     try {
       if (new RegExp("\\b" + escapeRegex(shorter) + "\\b", "i").test(longer)) return true;
     } catch (e) {
-      if (a.toLowerCase() === b.toLowerCase()) return true;
+      if (String(a ?? "").toLowerCase() === String(b ?? "").toLowerCase()) return true;
     }
   }
   const wordsA = a.split(/\s+/).filter(Boolean);
@@ -606,12 +606,12 @@ function wordMatch(a, b) {
   return false;
 }
 function isInPantry(ingredientName, pantryList) {
-  const n = ingredientName.toLowerCase();
-  return pantryList.some(p => wordMatch(n, p.name.toLowerCase()));
+  const n = String(ingredientName ?? "").toLowerCase();
+  return pantryList.some(p => wordMatch(n, String(p.name ?? "").toLowerCase()));
 }
 function findPantryMatch(ingredientName, pantryList) {
-  const n = ingredientName.toLowerCase();
-  return pantryList.find(p => wordMatch(n, p.name.toLowerCase()));
+  const n = String(ingredientName ?? "").toLowerCase();
+  return pantryList.find(p => wordMatch(n, String(p.name ?? "").toLowerCase()));
 }
 function hasCategory(meal, category) {
   return meal.ingredients.some(i => i.category === category);
@@ -642,9 +642,9 @@ const HEAVY_DISH_NAME_KEYWORDS = [
   "curry", "rendang", "laksa", "bak kut teh", "stew", "braised", "gulai", "korma", "masak",
 ];
 function isHeavyDish(meal) {
-  const n = meal.name.toLowerCase();
+  const n = String(meal.name ?? "").toLowerCase();
   if (HEAVY_DISH_NAME_KEYWORDS.some(k => n.includes(k))) return true;
-  return meal.ingredients.some(i => i.name.toLowerCase().includes("coconut milk"));
+  return meal.ingredients.some(i => String(i.name ?? "").toLowerCase().includes("coconut milk"));
 }
 
 // A complete bowl/plate should not get an arbitrary extra side just to meet
@@ -657,7 +657,7 @@ const ONE_DISH_KEYWORDS = [
 function isOneDishMeal(meal) {
   if (meal.oneDish === true) return true; // personal/community recipe override
   if (meal.oneDish === false) return false;
-  const name = meal.name.toLowerCase();
+  const name = String(meal.name ?? "").toLowerCase();
   return ONE_DISH_KEYWORDS.some(keyword => name.includes(keyword));
 }
 
@@ -709,7 +709,7 @@ function applyDislikeSubs(meal, dislikes) {
   const notes = [...(meal.adaptNotes || [])];
   const ingredients = meal.ingredients
     .map(i => {
-      const hit = dislikes.find(d => d.name && wordMatch(d.name.toLowerCase(), i.name.toLowerCase()));
+      const hit = dislikes.find(d => d.name && wordMatch(String(d.name ?? "").toLowerCase(), String(i.name ?? "").toLowerCase()));
       if (!hit) return i;
       changed = true;
       if (hit.substitute) {
@@ -1255,7 +1255,7 @@ export default function MakanLedger() {
   function addDislike(name, substitute) {
     const n = name.trim();
     if (!n) return;
-    setHousehold(prev => prev.dislikedIngredients.some(d => d.name.toLowerCase() === n.toLowerCase())
+    setHousehold(prev => prev.dislikedIngredients.some(d => String(d.name ?? "").toLowerCase() === String(n ?? "").toLowerCase())
       ? prev
       : { ...prev, dislikedIngredients: [...prev.dislikedIngredients, { id: "dis" + Date.now(), name: n, substitute: (substitute || "").trim() }] });
   }
@@ -1352,9 +1352,9 @@ export default function MakanLedger() {
     const maxCount = Math.max(minCount, dishRange?.max ?? dishRange ?? 2);
     const stocked = (kitchen || []).filter(k => k.name && (k.qty == null || Number(k.qty) > 0));
     const useSoonItems = stocked.filter(k => k.useSoon);
-    const usesKitchenStock = (meal) => useSoonItems.some(k => meal.ingredients.some(i => wordMatch(i.name.toLowerCase(), k.name.toLowerCase())));
+    const usesKitchenStock = (meal) => useSoonItems.some(k => meal.ingredients.some(i => wordMatch(String(i.name ?? "").toLowerCase(), String(k.name ?? "").toLowerCase())));
     const stockScore = meal => meal.ingredients.reduce((score, ingredient) => score + stocked.reduce((n, item) =>
-      n + (wordMatch(ingredient.name.toLowerCase(), item.name.toLowerCase()) ? (item.useSoon ? 6 : 2) : 0), 0), 0);
+      n + (wordMatch(String(ingredient.name ?? "").toLowerCase(), String(item.name ?? "").toLowerCase()) ? (item.useSoon ? 6 : 2) : 0), 0), 0);
     const kitchenFirstOrder = list => shuffle(list).sort((a,b) => stockScore(a) - stockScore(b));
 
     const results = [];
@@ -1658,11 +1658,11 @@ export default function MakanLedger() {
   // serving "Butter Chicken" with no chicken isn't really butter chicken
   // anymore, and a full swap makes more sense there.
   function tryDropIngredient(meal, ingredientName) {
-    const idx = meal.ingredients.findIndex(i => wordMatch(i.name.toLowerCase(), ingredientName.toLowerCase()));
+    const idx = meal.ingredients.findIndex(i => wordMatch(String(i.name ?? "").toLowerCase(), String(ingredientName ?? "").toLowerCase()));
     if (idx === -1) return null;
     const target = meal.ingredients[idx];
     const isSoleProtein = target.category === "protein" && meal.ingredients.filter(i => i.category === "protein").length <= 1;
-    const namesTheDish = meal.name.toLowerCase().includes(ingredientName.toLowerCase());
+    const namesTheDish = String(meal.name ?? "").toLowerCase().includes(String(ingredientName ?? "").toLowerCase());
     if (isSoleProtein || namesTheDish) return null;
     const ingredients = meal.ingredients.filter((_, i) => i !== idx);
     const adaptNotes = [...(meal.adaptNotes || []), `Left out ${target.name} (not available)`];
@@ -1679,7 +1679,7 @@ export default function MakanLedger() {
     const meal = plan.find(m => m.uid === uid);
     if (!meal) return;
     const prevPlan = plan;
-    const needsIngredient = (m) => m.ingredients.some(i => wordMatch(i.name.toLowerCase(), ingredientName.toLowerCase()));
+    const needsIngredient = (m) => m.ingredients.some(i => wordMatch(String(i.name ?? "").toLowerCase(), String(ingredientName ?? "").toLowerCase()));
     const trimmed = tryDropIngredient(meal, ingredientName);
     let updatedMeal, message;
     if (trimmed) {
@@ -1838,8 +1838,8 @@ export default function MakanLedger() {
   // Only user-selected recipes enter the saved plan; typing never changes pantry stock.
   const rescueIngredients = rescueText.split(/[,;\n]+/).map(x => x.trim().toLowerCase().replace(/^(?:half|some|a few|a little|leftover|leftovers|one|two|three)[ ]+/i, "").trim()).filter(Boolean);
   const rescueMatches = rescueIngredients.length ? getPool().pool.filter(m => !m.side).map(meal => {
-    const matched = meal.ingredients.filter(i => rescueIngredients.some(term => wordMatch(i.name.toLowerCase(), term) || i.name.toLowerCase().includes(term)));
-    const useSoon = matched.filter(i => pantry.some(k => k.useSoon && wordMatch(k.name.toLowerCase(), i.name.toLowerCase()))).length;
+    const matched = meal.ingredients.filter(i => rescueIngredients.some(term => wordMatch(String(i.name ?? "").toLowerCase(), term) || String(i.name ?? "").toLowerCase().includes(term)));
+    const useSoon = matched.filter(i => pantry.some(k => k.useSoon && wordMatch(String(k.name ?? "").toLowerCase(), String(i.name ?? "").toLowerCase()))).length;
     return { meal, matched, score: matched.length * 4 + useSoon * 3 };
   }).filter(r => r.matched.length > 0).sort((a,b) => b.score - a.score || a.meal.time - b.meal.time).slice(0,6) : [];
 
@@ -1889,7 +1889,7 @@ export default function MakanLedger() {
         // directly — what THEY need gets folded in below instead, scaled by
         // however many batches are actually needed.
         if (i.componentId) return;
-        const key = i.name.toLowerCase();
+        const key = String(i.name ?? "").toLowerCase();
         if (!map[key]) map[key] = { key, name: i.name, category: i.category, count: 0, amount: null, unit: null, mealRefs: [], neededFor: [] };
         map[key].count++;
         if (i.amount != null) {
@@ -1909,7 +1909,7 @@ export default function MakanLedger() {
     componentNeeds.forEach(need => {
       need.recipe.ingredients.forEach(i => {
         if (i.componentId) return; // nested components aren't supported yet
-        const key = i.name.toLowerCase();
+        const key = String(i.name ?? "").toLowerCase();
         if (!map[key]) map[key] = { key, name: i.name, category: i.category, count: 0, amount: null, unit: null, mealRefs: [], neededFor: [] };
         map[key].count++;
         if (i.amount != null) {
@@ -1920,7 +1920,7 @@ export default function MakanLedger() {
       });
     });
     extraItems.forEach(i => {
-      const key = i.name.toLowerCase();
+      const key = String(i.name ?? "").toLowerCase();
       if (!map[key]) map[key] = { key, name: i.name, category: i.category, count: 0, amount: null, unit: null, manual: true };
       map[key].count++;
     });
@@ -1960,7 +1960,7 @@ export default function MakanLedger() {
     return map;
   }, [classified, checkedItems]);
   function isIngredientReady(name) {
-    const key = name.toLowerCase();
+    const key = String(name ?? "").toLowerCase();
     if (!(key in readyMap)) return true; // not on the shopping list at all (e.g. free-text extra) — don't block on it
     return readyMap[key];
   }
@@ -2006,7 +2006,7 @@ export default function MakanLedger() {
           const withIngredients = info.kind === "marinate"
             ? meal.ingredients
                 .filter(x => x.category === "seasoning")
-                .map(x => (x.amount != null ? `${formatQty(x.amount)}${x.unit} ` : "") + x.name.toLowerCase())
+                .map(x => (x.amount != null ? `${formatQty(x.amount)}${x.unit} ` : "") + String(x.name ?? "").toLowerCase())
                 .join(", ")
             : "";
           perDish.push({
@@ -2074,7 +2074,7 @@ export default function MakanLedger() {
     const prevPantry = pantry;
     const prevPrepChecked = prepChecked;
     const madeAmount = item.yieldAmount * item.batches;
-    const idx = pantry.findIndex(p => wordMatch(item.name.toLowerCase(), p.name.toLowerCase()));
+    const idx = pantry.findIndex(p => wordMatch(String(item.name ?? "").toLowerCase(), String(p.name ?? "").toLowerCase()));
     if (idx === -1) {
       setPantry(prev => [...prev, {
         id: "k" + Date.now() + Math.random().toString(36).slice(2, 6),
@@ -2119,7 +2119,7 @@ export default function MakanLedger() {
           if (i.amount == null) return;
           const idx = updated.findIndex(p =>
             p.quantity != null && (p.unit || "").toLowerCase() === (i.unit || "").toLowerCase() &&
-            wordMatch(i.name.toLowerCase(), p.name.toLowerCase())
+            wordMatch(String(i.name ?? "").toLowerCase(), String(p.name ?? "").toLowerCase())
           );
           if (idx === -1) return;
           updated[idx].quantity = Math.max(0, updated[idx].quantity - i.amount * scale);
@@ -2145,7 +2145,7 @@ export default function MakanLedger() {
         if (i.amount == null) return;
         const idx = updated.findIndex(p =>
           p.quantity != null && (p.unit || "").toLowerCase() === (i.unit || "").toLowerCase() &&
-          wordMatch(i.name.toLowerCase(), p.name.toLowerCase())
+          wordMatch(String(i.name ?? "").toLowerCase(), String(p.name ?? "").toLowerCase())
         );
         if (idx === -1) return;
         updated[idx].quantity = Math.max(0, updated[idx].quantity - i.amount * scale);
@@ -2174,7 +2174,7 @@ export default function MakanLedger() {
   // as a tracked quantity; if it already exists as "always have" (no
   // quantity), that's left alone rather than downgraded to a fixed number.
   function moveToKitchen(item) {
-    const idx = pantry.findIndex(p => wordMatch(item.name.toLowerCase(), p.name.toLowerCase()));
+    const idx = pantry.findIndex(p => wordMatch(String(item.name ?? "").toLowerCase(), String(p.name ?? "").toLowerCase()));
     if (idx === -1) {
       setPantry(prev => [...prev, {
         id: "k" + Date.now() + Math.random().toString(36).slice(2, 6),
@@ -2227,7 +2227,7 @@ export default function MakanLedger() {
     // second "Salt" sitting next to the first one — unless the units can't
     // be combined, in which case a second row (rather than silently losing
     // the new amount) is the honest outcome, and we say so.
-    const idx = pantry.findIndex(p => wordMatch(n.toLowerCase(), p.name.toLowerCase()));
+    const idx = pantry.findIndex(p => wordMatch(String(n ?? "").toLowerCase(), String(p.name ?? "").toLowerCase()));
     if (idx === -1) {
       setPantry(prev => [...prev, {
         id: "p" + Date.now(), name: n, category: newPantryCategory, location: newPantryLocation,
@@ -2235,7 +2235,7 @@ export default function MakanLedger() {
       }]);
     } else {
       const existing = pantry[idx];
-      const sameUnit = (existing.unit || "").toLowerCase() === unit.toLowerCase();
+      const sameUnit = (existing.unit || "").toLowerCase() === String(unit ?? "").toLowerCase();
       if (existing.quantity == null || qty == null) {
         // Either side is "always have" (no tracked amount) — stays unlimited
         // rather than being downgraded to a specific count.
@@ -3431,7 +3431,7 @@ function MealCard({ meal, onRegenerate, onPick, pickableMeals, rawPickableMeals,
   // a suggestion that matches a real dish name commits it right away.
   function handlePickInputChange(value) {
     setPickInput(value);
-    const match = (activeOptions || []).find(p => p.name.toLowerCase() === value.trim().toLowerCase());
+    const match = (activeOptions || []).find(p => String(p.name ?? "").toLowerCase() === value.trim().toLowerCase());
     if (match) {
       onPick(match.id, showOriginal);
       setPicking(false);
@@ -3581,13 +3581,13 @@ function AddDishButton({ date, mealType, pickableMeals, onAdd }) {
     if (guestVegetarian) list = list.filter(p => VEG_SAFE_PROTEINS.has(p.protein));
     const avoid = guestAvoid.trim().toLowerCase();
     if (avoid) {
-      list = list.filter(p => !(p.ingredients || []).some(i => wordMatch(avoid, i.name.toLowerCase())));
+      list = list.filter(p => !(p.ingredients || []).some(i => wordMatch(avoid, String(i.name ?? "").toLowerCase())));
     }
     return list;
   }, [pickableMeals, mealType, guestNoPork, guestVegetarian, guestAvoid]);
   function handleChange(value) {
     setInput(value);
-    const match = (options || []).find(p => p.name.toLowerCase() === value.trim().toLowerCase());
+    const match = (options || []).find(p => String(p.name ?? "").toLowerCase() === value.trim().toLowerCase());
     if (match) {
       onAdd(date, mealType, match.id);
       setOpen(false);
@@ -3735,10 +3735,10 @@ function ShoppingListScreen({ toBuyByCategory, haveIt, checkedItems, toggleCheck
                 {extraItems.map(item => (
                   <div key={item.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 0" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <Checkbox checked={!!checkedItems[item.name.toLowerCase()]} onClick={() => toggleChecked({ key: item.name.toLowerCase(), name: item.name, category: item.category, amount: null, unit: null })} />
+                      <Checkbox checked={!!checkedItems[String(item.name ?? "").toLowerCase()]} onClick={() => toggleChecked({ key: String(item.name ?? "").toLowerCase(), name: item.name, category: item.category, amount: null, unit: null })} />
                       <span style={{
-                        fontFamily: FONT_MONO, fontSize: 13, color: checkedItems[item.name.toLowerCase()] ? C.inkSoft : C.ink,
-                        textDecoration: checkedItems[item.name.toLowerCase()] ? "line-through" : "none",
+                        fontFamily: FONT_MONO, fontSize: 13, color: checkedItems[String(item.name ?? "").toLowerCase()] ? C.inkSoft : C.ink,
+                        textDecoration: checkedItems[String(item.name ?? "").toLowerCase()] ? "line-through" : "none",
                       }}>{item.name}</span>
                     </div>
                     <button onClick={() => removeExtraItem(item.id)} style={{ color: C.inkSoft }}><X size={13} /></button>
@@ -3920,7 +3920,7 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
     pantry.forEach(p => { const loc = p.location || "pantry"; (map[loc] = map[loc] || []).push(p); });
     return map;
   }, [pantry]);
-  const visibleGrouped = Object.fromEntries(Object.entries(grouped).map(([location, items]) => [location, items.filter(item => item.name.toLowerCase().includes(pantrySearch.trim().toLowerCase()))]));
+  const visibleGrouped = Object.fromEntries(Object.entries(grouped).map(([location, items]) => [location, items.filter(item => String(item.name ?? "").toLowerCase().includes(pantrySearch.trim().toLowerCase()))]));
 
   return (
     <div style={{ padding: "22px 18px 32px", background:"#FAF7F2", minHeight:"70vh" }}>
@@ -4301,7 +4301,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
   const cuisineSuggestions = useMemo(() => {
     const seen = new Map();
     [...CUISINES, ...myRecipes.map(r => r.cuisine)].forEach(c => {
-      if (c && !seen.has(c.toLowerCase())) seen.set(c.toLowerCase(), c);
+      if (c && !seen.has(String(c ?? "").toLowerCase())) seen.set(String(c ?? "").toLowerCase(), c);
     });
     return [...seen.values()];
   }, [myRecipes]);
@@ -4323,7 +4323,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
   const savedProteins = useMemo(() => [...new Set(myRecipes.map(r => r.protein).filter(Boolean))].sort(), [myRecipes]);
   const filteredRecipes = useMemo(() => {
     return myRecipes.filter(r => {
-      if (recipeQuery.trim() && !r.name.toLowerCase().includes(recipeQuery.trim().toLowerCase())) return false;
+      if (recipeQuery.trim() && !String(r.name ?? "").toLowerCase().includes(recipeQuery.trim().toLowerCase())) return false;
       if (recipeFilterType === "main" && (r.side || r.isComponent)) return false;
       if (recipeFilterType === "side" && (!r.side || r.isComponent)) return false;
       if (recipeFilterType === "component" && !r.isComponent) return false;
@@ -4672,7 +4672,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
                 </div>
                 {item.componentId && (
                   <p style={{ fontSize: 10, color: C.inkSoft, marginTop: 6, marginBottom: 0, lineHeight: 1.4 }}>
-                    Enter how much of the finished {item.name.toLowerCase()} this recipe uses — if you're running low, it'll show up as a Weekend Prep batch to make first.
+                    Enter how much of the finished {String(item.name ?? "").toLowerCase()} this recipe uses — if you're running low, it'll show up as a Weekend Prep batch to make first.
                   </p>
                 )}
               </div>
@@ -5002,7 +5002,7 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
   }
   const cuisines = useMemo(() => [...new Set(items.map(r => r.cuisine).filter(Boolean))].sort(), [items]);
   const shown = useMemo(() => items.filter(r =>
-    (!q.trim() || r.name.toLowerCase().includes(q.trim().toLowerCase())) && (!cuisine || r.cuisine === cuisine)), [items, q, cuisine]);
+    (!q.trim() || String(r.name ?? "").toLowerCase().includes(q.trim().toLowerCase())) && (!cuisine || r.cuisine === cuisine)), [items, q, cuisine]);
   const added = (id) => myRecipes.some(r => r.libraryId === id);
 
   return (

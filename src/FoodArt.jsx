@@ -2,7 +2,7 @@ import React from "react";
 
 /** Tiny original vector illustrations. No remote image URLs or user tracking. */
 export default function FoodArt({ kind = "meal", name = "", size = 112 }) {
-  const n = name.toLowerCase();
+  const n = String(name ?? "").toLowerCase();
   const type = kind === "meal" ? (/fish|salmon/.test(n) ? "fish" : /beans|vegetable|broccoli|spinach|peas|corn/.test(n) ? "veg" : /chicken|ayam|katsu/.test(n) ? "chicken" : /egg|omelette/.test(n) ? "egg" : /noodle|mee|laksa|ramen|udon|pasta/.test(n) ? "noodle" : /soup|porridge|congee/.test(n) ? "soup" : "rice") : kind;
   const bg = type === "fridge" ? "#E9E7FB" : type === "shop" ? "#FCE9E5" : type === "prep" ? "#E7F3F6" : "#FBEDE9";
   return <svg viewBox="0 0 160 160" width={size} height={size} role="img" aria-label={type === "meal" ? "Illustrated meal bowl" : "Cute " + type + " illustration"} style={{ flexShrink: 0, maxWidth: "100%", height: "auto" }}>

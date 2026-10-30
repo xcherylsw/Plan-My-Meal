@@ -25,7 +25,7 @@ export default function SimpleWeek({ plan, skippedDays, onSkip, onSwap, onRemove
   const dates = Array.from({length:7},(_,i)=>dateKey(new Date(now.getFullYear(),now.getMonth(),now.getDate()+i)));
   const hasCurrentPlan = plan.some(m => dates.includes(m.date) && m.mealType === "dinner");
   const activeMeals = plan.filter(m => !m.date || !skippedDays.includes(m.date));
-  const recipeOptions = (pickableMeals || []).filter(m => !query || m.name.toLowerCase().includes(query.toLowerCase())).slice(0,80);
+  const recipeOptions = (pickableMeals || []).filter(m => !query || String(m.name ?? "").toLowerCase().includes(String(query ?? "").toLowerCase())).slice(0,80);
   const openRecipe = (meal) => { setRecipe(meal); setStep(null); };
   const actionStyle = { ...ui.button, fontSize: 12, padding: "8px 10px" };
   return <main style={{ maxWidth: 760, margin: "0 auto", padding: "26px 18px 90px", color: "#303241", fontFamily: "system-ui, sans-serif" }}>
