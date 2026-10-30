@@ -373,10 +373,10 @@ const PREP_FORMS = ["whole", "minced", "sliced", "julienned", "diced", "chopped"
 function requiredPrepForm(ingredient, info) {
   // Recipe-specific cuts take priority. Generic suggestions ("slice or mince")
   // are intentionally NOT treated as an exact match.
-  const explicit = (ingredient.prepForm || ingredient.preparation || "").toLowerCase().trim();
+  const explicit = String(ingredient.prepForm ?? ingredient.preparation ?? "").toLowerCase().trim();
   if (explicit && PREP_FORMS.includes(explicit)) return explicit;
   if (info.kind !== "aggregate") return "";
-  const hint = (info.hint || "").toLowerCase();
+  const hint = String(info.hint ?? "").toLowerCase();
   if (/\\b(or|either)\\b/.test(hint)) return "";
   const matches = PREP_FORMS.filter(form => form !== "other" && form !== "whole" && hint.includes(form.replace(/ed$/, "")));
   return matches.length === 1 ? matches[0] : "";
@@ -1939,7 +1939,7 @@ export default function MakanLedger() {
       if (!match) return { ...item, covered: false };
       if (match.quantity == null || match.quantity === "") return { ...item, covered: true };
       if (item.amount == null) return { ...item, covered: match.quantity > 0 };
-      const sameUnit = (match.unit || "").toLowerCase() === (item.unit || "").toLowerCase();
+      const sameUnit = String(match.unit ?? "").toLowerCase() === String(item.unit ?? "").toLowerCase();
       if (!sameUnit) return { ...item, covered: match.quantity > 0 };
       if (match.quantity >= item.amount) return { ...item, covered: true };
       return { ...item, covered: false, amount: item.amount - match.quantity, fromStock: true };
@@ -2084,7 +2084,7 @@ export default function MakanLedger() {
       }]);
     } else {
       const existing = pantry[idx];
-      const sameUnit = (existing.unit || "").toLowerCase() === (item.yieldUnit || "").toLowerCase();
+      const sameUnit = String(existing.unit ?? "").toLowerCase() === String(item.yieldUnit ?? "").toLowerCase();
       if (existing.quantity == null) {
         // already unlimited — nothing to add
       } else if (sameUnit) {
@@ -2118,7 +2118,7 @@ export default function MakanLedger() {
         meal.ingredients.forEach(i => {
           if (i.amount == null) return;
           const idx = updated.findIndex(p =>
-            p.quantity != null && (p.unit || "").toLowerCase() === (i.unit || "").toLowerCase() &&
+            p.quantity != null && String(p.unit ?? "").toLowerCase() === String(i.unit ?? "").toLowerCase() &&
             wordMatch(String(i.name ?? "").toLowerCase(), String(p.name ?? "").toLowerCase())
           );
           if (idx === -1) return;
@@ -2144,7 +2144,7 @@ export default function MakanLedger() {
       meal.ingredients.forEach(i => {
         if (i.amount == null) return;
         const idx = updated.findIndex(p =>
-          p.quantity != null && (p.unit || "").toLowerCase() === (i.unit || "").toLowerCase() &&
+          p.quantity != null && String(p.unit ?? "").toLowerCase() === String(i.unit ?? "").toLowerCase() &&
           wordMatch(String(i.name ?? "").toLowerCase(), String(p.name ?? "").toLowerCase())
         );
         if (idx === -1) return;
@@ -2187,7 +2187,7 @@ export default function MakanLedger() {
     if (item.amount == null) return;
     const existing = pantry[idx];
     if (existing.quantity == null) return; // already unlimited — don't downgrade it
-    const sameUnit = (existing.unit || "").toLowerCase() === (item.unit || "").toLowerCase();
+    const sameUnit = String(existing.unit ?? "").toLowerCase() === String(item.unit ?? "").toLowerCase();
     if (!sameUnit) {
       // Can't sum different units (e.g. "packs" vs "g") — rather than
       // silently dropping the newly-bought amount, keep it as its own row
@@ -2235,7 +2235,7 @@ export default function MakanLedger() {
       }]);
     } else {
       const existing = pantry[idx];
-      const sameUnit = (existing.unit || "").toLowerCase() === String(unit ?? "").toLowerCase();
+      const sameUnit = String(existing.unit ?? "").toLowerCase() === String(unit ?? "").toLowerCase();
       if (existing.quantity == null || qty == null) {
         // Either side is "always have" (no tracked amount) — stays unlimited
         // rather than being downgraded to a specific count.
