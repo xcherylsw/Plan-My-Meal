@@ -1,4 +1,20 @@
 import React, { useEffect, useRef, useState } from "react";
+
+class StartupErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { error: null }; }
+  static getDerivedStateFromError(error) { return { error }; }
+  componentDidCatch(error, info) { console.error("Meal planner render failure", error, info); }
+  render() {
+    if (!this.state.error) return this.props.children;
+    return <div style={{minHeight:"100vh",padding:"32px 22px",boxSizing:"border-box",fontFamily:"system-ui,sans-serif",background:"#F7EEDF",color:"#303241"}}>
+      <h2>Today Cook What could not open</h2>
+      <p>Something went wrong while showing the meal planner. Your saved recipes and plans have not been cleared.</p>
+      <p style={{fontSize:12,overflowWrap:"anywhere",background:"#fff",padding:14,borderRadius:8}}>Error: {String(this.state.error?.message || this.state.error)}</p>
+      <p style={{fontSize:12}}>Please screenshot this message so we can fix the cause. Do not clear site data.</p>
+    </div>;
+  }
+}
+
 import { createRoot } from "react-dom/client";
 import MakanLedger from "./MakanLedger.jsx";
 import AccountBar from "./AccountBar.jsx";
@@ -50,4 +66,4 @@ function Root() {
   );
 }
 
-createRoot(document.getElementById("root")).render(<Root />);
+createRoot(document.getElementById("root")).render(<StartupErrorBoundary><Root /></StartupErrorBoundary>);
