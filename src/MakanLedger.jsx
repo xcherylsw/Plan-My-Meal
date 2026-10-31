@@ -4090,16 +4090,28 @@ function HouseholdScreen({
         <div style={{fontSize:12,color:"#54705E",marginTop:4}}>{household.adults} adults · {household.kids} kids · {household.elderly} elderly · {household.dishesPerMealMin}–{household.dishesPerMealMax} dishes</div></div>
       </div>
       <details style={{background:"#fff",border:"1px solid #E4E7E1",borderRadius:17,marginBottom:12,overflow:"hidden"}}>
-        <summary style={{padding:"16px",cursor:"pointer",fontSize:14,fontWeight:800,listStyle:"none",display:"flex",justifyContent:"space-between"}}>People & portions <span style={{fontSize:12,color:"#527663"}}>Edit ⌄</span></summary>
-        <div style={{padding:"12px 16px 16px",borderTop:"1px solid #F1F1ED"}}>
-          <strong style={{fontSize:12}}>Who's eating?</strong>
-          <Stepper label="Adults" value={household.adults} min={0} max={12} onChange={v=>setHouseholdCount("adults",v)}/>
-          <Stepper label="Kids" value={household.kids} min={0} max={12} onChange={v=>setHouseholdCount("kids",v)}/>
-          <Stepper label="Elderly" value={household.elderly} min={0} max={12} onChange={v=>setHouseholdCount("elderly",v)}/>
-          <strong style={{fontSize:12}}>Dishes per meal</strong>
-          <Stepper label="Minimum" value={household.dishesPerMealMin} min={1} max={6} onChange={v=>setDishesPerMealRange("min",v)}/>
-          <Stepper label="Maximum" value={household.dishesPerMealMax} min={1} max={6} onChange={v=>setDishesPerMealRange("max",v)}/>
-          <p style={{fontSize:12,color:C.inkSoft,margin:"8px 0 0"}}>Set a range, or use the same number for both.</p>
+        <summary style={{padding:"16px",cursor:"pointer",fontSize:14,fontWeight:800,listStyle:"none",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <span>People & portions</span><span style={{fontSize:12,color:"#527663",fontWeight:650}}>Change <ChevronDown size={15} style={{verticalAlign:"middle"}}/></span>
+        </summary>
+        <div style={{padding:"14px 16px 18px",borderTop:"1px solid #F1F1ED"}}>
+          <div style={{fontSize:12,fontWeight:800,color:"#577361",marginBottom:9}}>WHO'S EATING?</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:9,marginBottom:19}}>
+            {[["Adults","adults"],["Kids","kids"],["Elderly","elderly"]].map(([label,key])=><label key={key} style={{display:"grid",gap:7,padding:"12px 10px",background:"#F5F7F3",borderRadius:13,fontSize:12,fontWeight:750,color:C.ink}}>
+              {label}
+              <select aria-label={label} value={household[key]} onChange={e=>setHouseholdCount(key,Number(e.target.value))} style={{width:"100%",border:"1px solid #D9E1D9",borderRadius:9,background:"#fff",padding:"9px 8px",fontSize:16,fontWeight:750,color:C.ink}}>
+                {Array.from({length:13},(_,n)=><option key={n} value={n}>{n}</option>)}
+              </select>
+            </label>)}
+          </div>
+          <div style={{fontSize:12,fontWeight:800,color:"#577361",marginBottom:9}}>DISHES PER MEAL</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:9}}>
+            {[["Minimum","min",household.dishesPerMealMin],["Maximum","max",household.dishesPerMealMax]].map(([label,key,value])=><label key={key} style={{display:"grid",gap:7,padding:"12px 10px",background:"#F5F7F3",borderRadius:13,fontSize:12,fontWeight:750,color:C.ink}}>
+              {label}
+              <select aria-label={label+" dishes per meal"} value={value} onChange={e=>setDishesPerMealRange(key,Number(e.target.value))} style={{width:"100%",border:"1px solid #D9E1D9",borderRadius:9,background:"#fff",padding:"9px 8px",fontSize:16,fontWeight:750,color:C.ink}}>
+                {Array.from({length:6},(_,n)=><option key={n+1} value={n+1}>{n+1} {n===0?"dish":"dishes"}</option>)}
+              </select>
+            </label>)}
+          </div>
         </div>
       </details>
       <SettingsSection
