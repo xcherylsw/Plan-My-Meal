@@ -642,7 +642,7 @@ function stockIngredientMatch(recipeName, stockName) {
   const stock = String(stockName || "").toLowerCase().trim();
   if (!recipe || !stock) return false;
   const fishNames = ["sea bream","seabream","snapper","sea bass","seabass","barramundi","tilapia","grouper","pomfret","cod","salmon","mackerel","threadfin","dory","sole","haddock","halibut","tuna","sardine"];
-  const fishType = name => fishNames.find(f => new RegExp("\b"+f+"\b","i").test(name));
+  const fishType = name => fishNames.find(f => new RegExp("\\b"+f+"\\b","i").test(name));
   const rf = fishType(recipe), sf = fishType(stock);
   const genericFish = /\b(white fish|fish fillet|fish fillets|whole fish|fresh fish|fish)\b/.test(recipe);
   if (rf || sf || /\bfish\b/.test(recipe) || /\bfish\b/.test(stock)) {
