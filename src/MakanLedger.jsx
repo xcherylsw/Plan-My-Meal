@@ -369,29 +369,39 @@ function getCutHint(name) {
   const hit = CUT_HINTS.find(h => n.includes(h.match));
   return hit ? hit.note : "wash and cut into bite-sized pieces";
 }
-const PREP_FORMS = ["whole", "minced", "sliced", "julienned", "diced", "chopped", "paste", "washed & cut", "other"];
+const PREP_FORMS = ["whole", "minced", "sliced", "julienned", "diced", "chopped", "paste", "washed & cut", "bite-sized pieces", "other"];
 function requiredPrepForm(ingredient, info) {
-  // Recipe-specific cuts take priority. Generic suggestions ("slice or mince")
-  // are intentionally NOT treated as an exact match.
-  const explicit = (ingredient.prepForm || ingredient.preparation || "").toLowerCase().trim();
+  const explicit = String(ingredient.prepForm || ingredient.preparation || "").toLowerCase().trim();
   if (explicit && PREP_FORMS.includes(explicit)) return explicit;
   if (info.kind !== "aggregate") return "";
-  const hint = (info.hint || "").toLowerCase();
-  if (/\\b(or|either)\\b/.test(hint)) return "";
-  const matches = PREP_FORMS.filter(form => form !== "other" && form !== "whole" && hint.includes(form.replace(/ed$/, "")));
-  return matches.length === 1 ? matches[0] : "";
+  const hint = String(info.hint || "").toLowerCase();
+  if (/bite[- ]sized pieces?/.test(hint)) return "bite-sized pieces";
+  if (/\b(or|either)\b/.test(hint)) return "";
+  if (/\bmince(?:d)?\b/.test(hint)) return "minced";
+  if (/\bslic(?:e|ed)\b/.test(hint)) return "sliced";
+  if (/\bjulienne(?:d)?\b/.test(hint)) return "julienned";
+  if (/\bdic(?:e|ed)\b/.test(hint)) return "diced";
+  if (/\bchop(?:ped)?\b/.test(hint)) return "chopped";
+  if (/\bwash(?:ed)?\b/.test(hint) && /\bcut\b/.test(hint)) return "washed & cut";
+  return "";
+}
+function prepIngredientName(name) {
+  const n = String(name || "").toLowerCase().trim();
+  // Normalise straightforward plurals for grouping only.
+  if (n.endsWith("potatoes")) return n.slice(0,-3)+"o";
+  if (n.endsWith("tomatoes")) return n.slice(0,-3)+"o";
+  if (n.endsWith("carrots")) return n.slice(0,-1);
+  return n;
 }
 function pantryHasPreparedForm(pantry, name, form) {
   if (!form) return false;
   const normalized = String(form).toLowerCase().trim();
-  return pantry.some(p => wordMatch(String(name ?? "").toLowerCase(), String(p.name ?? "").toLowerCase())
+  return pantry.some(p => prepIngredientName(p.name) === prepIngredientName(name)
     && (p.preparedForms || []).some(f => String(typeof f === "string" ? f : f.form).toLowerCase().trim() === normalized));
 }
 function pantryHasPrepReady(pantry, ingredient, info) {
   const explicit = requiredPrepForm(ingredient, info);
   if (explicit) return pantryHasPreparedForm(pantry, ingredient.name, explicit);
-  // A generic hint can permit multiple equivalent forms; use only those
-  // explicitly allowed by the hint, rather than assuming any cut is suitable.
   const hint = String(info.hint || "").toLowerCase();
   const forms = [];
   if (/\bmince(?:d)?\b/.test(hint)) forms.push("minced");
@@ -399,6 +409,7 @@ function pantryHasPrepReady(pantry, ingredient, info) {
   if (/\bjulienne(?:d)?\b/.test(hint)) forms.push("julienned");
   if (/\bdic(?:e|ed)\b/.test(hint)) forms.push("diced");
   if (/\bchop(?:ped)?\b/.test(hint)) forms.push("chopped");
+  if (/bite[- ]sized pieces?/.test(hint)) forms.push("bite-sized pieces");
   if (/\bwash(?:ed)?\b/.test(hint) && /\bcut\b/.test(hint)) forms.push("washed & cut");
   return forms.some(form => pantryHasPreparedForm(pantry, ingredient.name, form));
 }
@@ -2058,10 +2069,10 @@ export default function MakanLedger() {
         const ready = isIngredientReady(i.name);
         if (info.kind === "aggregate" && pantryHasPrepReady(pantry, i, info)) return;
         if (info.kind === "aggregate") {
-          const key = info.label;
+          const key = info.label.replace(String(i.name ?? "").toLowerCase(), prepIngredientName(i.name));
           if (seenInThisMeal.has(key)) return;
           seenInThisMeal.add(key);
-          if (!aggregateMap[key]) aggregateMap[key] = { key, label: info.label, hint: info.hint, count: 0, ready: true };
+          if (!aggregateMap[key]) aggregateMap[key] = { key, label: key, hint: info.hint, count: 0, ready: true };
           aggregateMap[key].count++;
           if (!ready) aggregateMap[key].ready = false; // any un-bought instance locks the whole batch
         } else {
