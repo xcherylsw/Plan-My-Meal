@@ -935,7 +935,7 @@ export default function MakanLedger() {
 
   const [pantry, setPantry] = useState(DEFAULT_PANTRY);
   const [myRecipes, setMyRecipes] = useState([]);
-  const [household, setHousehold] = useState({ adults: 2, kids: 0, elderly: 0, dishesPerMealMin: 2, dishesPerMealMax: 2, diets: [], preferredCuisines: [], preferredProteins: [], dislikedIngredients: [] });
+  const [household, setHousehold] = useState({ adults: 2, kids: 0, elderly: 0, dishesPerMealMin: 2, dishesPerMealMax: 2, diets: [], preferredCuisines: [], preferredProteins: [], mainDishPreference: "meat-fish", dislikedIngredients: [] });
   const [plan, setPlan] = useState([]);
   const [justGeneratedWeek, setJustGeneratedWeek] = useState(false);
   const [checkedItems, setCheckedItems] = useState({});
@@ -1047,6 +1047,7 @@ export default function MakanLedger() {
             diets: parsed.diets || [],
             preferredCuisines: parsed.preferredCuisines || [],
             preferredProteins: parsed.preferredProteins || [],
+            mainDishPreference: parsed.mainDishPreference || "meat-fish",
             dislikedIngredients: (parsed.dislikedIngredients || []).map(d =>
               typeof d === "string" ? { id: "dis" + Math.random().toString(36).slice(2), name: d, substitute: "" } : d
             ),
@@ -1243,6 +1244,9 @@ export default function MakanLedger() {
   function setHouseholdCount(field, value) {
     setHousehold(prev => ({ ...prev, [field]: value }));
   }
+  function setMainDishPreference(value) {
+    setHousehold(prev => ({ ...prev, mainDishPreference: value }));
+  }
   // Keeps min <= max automatically — dragging the minimum above the current
   // maximum (or the maximum below the current minimum) pulls the other end
   // along instead of leaving an invalid range sitting in state.
@@ -1350,6 +1354,9 @@ export default function MakanLedger() {
   // is what makes "add to kitchen" actually mean something at generation
   // time, without needing a separate one-off filter step.
   function buildDaySlotsPlan(pool, daysCount, slots, startDateStr, kitchen, dishRange) {
+    const mainPreference = household.diets.includes("vegetarian") ? "vegetarian" : (household.mainDishPreference || "meat-fish");
+    const qualifiesAsMain = meal => mainPreference !== "meat-fish" || hasRealMeat(meal) || isOneDishMeal(meal);
+
     // dishRange is {min, max} — a big family eating family-style might want
     // "4 to 6 dishes on the table", but not every main deserves the full 6:
     // a rich, already-filling dish (curry, rendang...) aims for the low end
@@ -1373,7 +1380,8 @@ export default function MakanLedger() {
     slots.forEach(type => {
       const slotPool = pool.filter(m => !m.isComponent && m.mealTypes.includes(type));
       const sub = slotPool.filter(m => !m.side);
-      const base = sub.length ? sub : pool.filter(m => !m.side && !m.isComponent);
+      const preferredMains = sub.filter(qualifiesAsMain);
+      const base = preferredMains.length ? preferredMains : (sub.length ? sub : pool.filter(m => !m.side && !m.isComponent));
       const priority = useSoonItems.length ? base.filter(usesKitchenStock) : [];
       const rest = useSoonItems.length ? base.filter(m => !usesKitchenStock(m)) : base;
       queues[type] = {
@@ -1425,7 +1433,7 @@ export default function MakanLedger() {
         const targetCount = standalone ? 1 : Math.min(2, (isHeavyDish(choice) ? minCount : maxCount));
         // Egg/tofu are valid mains; don't automatically add a second protein
         // to fried egg when what the household actually wants is greens.
-        let needsMeat = !hasRealMeat(choice) && !["egg", "tofu", "vegetarian"].includes(choice.protein);
+        let needsMeat = mainPreference === "meat-fish" && !hasRealMeat(choice) && !standalone;
         let needsVeg = !hasCategory(choice, "vegetable");
         const usedSideIds = new Set();
         let dishCount = 1;
@@ -2592,7 +2600,7 @@ export default function MakanLedger() {
           )}
           {tab === "household" && (
             <HouseholdScreen
-              household={household} toggleDiet={toggleDiet} setHouseholdCount={setHouseholdCount}
+              household={household} toggleDiet={toggleDiet} setHouseholdCount={setHouseholdCount} setMainDishPreference={setMainDishPreference}
               setDishesPerMealRange={setDishesPerMealRange} toggleHouseholdList={toggleHouseholdList}
               addDislike={addDislike} removeDislike={removeDislike}
               syncSettings={syncSettings} setSyncField={setSyncField} syncStatus={syncStatus}
@@ -4063,7 +4071,7 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
    HOUSEHOLD SCREEN
 ------------------------------------------------------------------*/
 function HouseholdScreen({
-  household, toggleDiet, setHouseholdCount, setDishesPerMealRange, toggleHouseholdList, addDislike, removeDislike,
+  household, toggleDiet, setHouseholdCount, setMainDishPreference, setDishesPerMealRange, toggleHouseholdList, addDislike, removeDislike,
   syncSettings, setSyncField, syncStatus, onPushToCloud, onPullFromCloud, onRestartTour,
 }) {
   const totalPax = household.adults + household.kids + household.elderly;
@@ -4139,6 +4147,10 @@ function HouseholdScreen({
         </div>
       </SettingsSection>
 
+      <SettingsSection title="Main dish preference" countLabel={household.mainDishPreference === "flexible" ? "Flexible" : household.mainDishPreference === "vegetarian" ? "Vegetarian" : "Meat or fish"} defaultOpen={false}>
+        <p style={{fontSize:12,color:C.inkSoft,marginTop:0}}>Choose what makes dinner feel complete for your household.</p>
+        {[["meat-fish","Meat or fish preferred","Tofu, eggs and vegetables can be supporting dishes."],["flexible","Flexible mains","Tofu, egg and plant-based dishes can be the main."],["vegetarian","Plant-based mains preferred","Set Dietary needs to Vegetarian too if you want to exclude meat and fish."]].map(([value,label,desc])=><button key={value} type="button" aria-pressed={(household.mainDishPreference||"meat-fish")===value} onClick={()=>setMainDishPreference(value)} style={{display:"block",width:"100%",textAlign:"left",border:(household.mainDishPreference||"meat-fish")===value?"2px solid #365C4B":"1px solid #E5E3DD",background:(household.mainDishPreference||"meat-fish")===value?"#EAF3EE":"#fff",borderRadius:12,padding:"12px 14px",marginBottom:8,color:C.ink}}><strong>{label}</strong><div style={{fontSize:12,color:C.inkSoft,marginTop:3}}>{desc}</div></button>)}
+      </SettingsSection>
       <SettingsSection
         title="Ingredients to avoid"
         countLabel={household.dislikedIngredients.length ? `${household.dislikedIngredients.length} excluded` : null}
