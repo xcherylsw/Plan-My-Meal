@@ -4077,6 +4077,7 @@ function HouseholdScreen({
   const totalPax = household.adults + household.kids + household.elderly;
   const [dislikeInput, setDislikeInput] = useState("");
   const [substituteInput, setSubstituteInput] = useState("");
+  const [addingAvoid, setAddingAvoid] = useState(false);
 
   return (
     <div style={{padding:"20px 16px 40px",background:"#F8F8F3",minHeight:"70vh"}}>
@@ -4149,42 +4150,18 @@ function HouseholdScreen({
         defaultOpen={false}
       >
 
-        <div style={{ display: "grid", gridTemplateColumns:"minmax(0,1fr)", gap: 8, marginBottom: 10 }}>
-          <input
-            value={dislikeInput}
-            onChange={e => setDislikeInput(e.target.value)}
-            placeholder="Ingredient to avoid, e.g. okra"
-            style={{ width:"100%",boxSizing:"border-box",border:`1px solid ${C.line}`,borderRadius:11,padding:"12px 13px",fontFamily:FONT_BODY,fontSize:14,background:"#fff",color:C.ink }}
-          />
-          <input
-            value={substituteInput}
-            onChange={e => setSubstituteInput(e.target.value)}
-            onKeyDown={e => { if (e.key === "Enter") { addDislike(dislikeInput, substituteInput); setDislikeInput(""); setSubstituteInput(""); } }}
-            placeholder="Replace with… (optional)"
-            style={{ width:"100%",boxSizing:"border-box",border:`1px solid ${C.line}`,borderRadius:11,padding:"12px 13px",fontFamily:FONT_BODY,fontSize:14,background:"#fff",color:C.ink }}
-          />
+        <div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:12}}>
+          {household.dislikedIngredients.map(d=><span key={d.id} style={{display:"inline-flex",alignItems:"center",gap:7,borderRadius:999,background:"#F4F2EE",padding:"8px 9px 8px 12px",fontSize:12.5,color:C.ink}}>
+            {d.name}{d.substitute?" → "+d.substitute:""}
+            <button type="button" aria-label={"Remove "+d.name} onClick={()=>removeDislike(d.id)} style={{border:0,background:"transparent",color:C.inkSoft,padding:0,display:"flex"}}><X size={14}/></button>
+          </span>)}
+          <button type="button" onClick={()=>setAddingAvoid(v=>!v)} style={{border:"1px dashed #A7B9AA",background:"#F0F6F0",borderRadius:999,padding:"8px 12px",fontSize:12.5,fontWeight:750,color:"#365C4B"}}>{addingAvoid?"Cancel":"+ Add ingredient"}</button>
         </div>
-        <button
-          onClick={() => { addDislike(dislikeInput, substituteInput); setDislikeInput(""); setSubstituteInput(""); }}
-          style={{ display: "flex", alignItems: "center", gap: 5, color: C.jade700, fontSize: 12, fontWeight: 600, marginBottom: 10 }}
-        >
-          <Plus size={13} /> Add
-        </button>
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          {household.dislikedIngredients.length === 0 ? (
-            <p style={{ fontSize: 12, color: C.inkSoft, fontStyle: "italic" }}>Nothing excluded yet.</p>
-          ) : household.dislikedIngredients.map(d => (
-            <div key={d.id} style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
-              background: "#F7E6DC", borderRadius: 9, padding: "8px 10px 8px 12px",
-            }}>
-              <span style={{ fontSize: 12.5, color: C.clayText, fontWeight: 600, fontFamily: FONT_BODY }}>
-                {d.name}{d.substitute ? ` → ${d.substitute}` : " (dropped, no swap)"}
-              </span>
-              <button onClick={() => removeDislike(d.id)} style={{ color: C.clay, display: "flex", flexShrink: 0 }}><X size={13} /></button>
-            </div>
-          ))}
-        </div>
+        {addingAvoid && <div style={{display:"grid",gap:9,background:"#F7F9F6",borderRadius:13,padding:12,marginBottom:10}}>
+          <input aria-label="Ingredient to avoid" value={dislikeInput} onChange={e=>setDislikeInput(e.target.value)} placeholder="Ingredient to avoid" style={{width:"100%",boxSizing:"border-box",border:"1px solid #DDE4DB",borderRadius:10,padding:"12px",fontSize:14}}/>
+          <input aria-label="Replacement ingredient" value={substituteInput} onChange={e=>setSubstituteInput(e.target.value)} placeholder="Replace with (optional)" style={{width:"100%",boxSizing:"border-box",border:"1px solid #DDE4DB",borderRadius:10,padding:"12px",fontSize:14}}/>
+          <button type="button" disabled={!dislikeInput.trim()} onClick={()=>{addDislike(dislikeInput,substituteInput);setDislikeInput("");setSubstituteInput("");setAddingAvoid(false);}} style={{border:0,background:"#365C4B",color:"#fff",borderRadius:10,padding:12,fontWeight:750,opacity:dislikeInput.trim()?1:.5}}>Save ingredient</button>
+        </div>}
       </SettingsSection>
 
       <SettingsSection
