@@ -1532,8 +1532,30 @@ export default function MakanLedger() {
         // Select from all eligible mains; queues alone favour the same stocked protein repeatedly.
         const dayIndex = (new Date(dateStr+"T12:00:00").getDay()+6)%7;
         const quickDay = type === "dinner" && (household.quickDinnerDays ?? [0,1,2,3,4,5,6]).includes(dayIndex);
-        const quickEligible = quickDay ? q.base.filter(m => estimatedMealMinutes(m, kitchen) > 0 && estimatedMealMinutes(m, kitchen) <= 30) : q.base;
-        const dayPool = quickEligible.length ? quickEligible : q.base;
+        // Validate the full dinner, including the mandatory vegetable/protein side.
+        // Conservatively sum dish times: parallel cooking cannot be assumed for every recipe.
+        const quickSideFor = (main) => {
+          if (!hasCategory(main, "vegetable")) {
+            const sides = q.vegSideBase.filter(m => m.id !== main.id && estimatedMealMinutes(m, kitchen) > 0);
+            return [...sides].sort((a,b) => estimatedMealMinutes(a, kitchen) - estimatedMealMinutes(b, kitchen))[0] || null;
+          }
+          if (mainPreference === "meat-fish" && !hasRealMeat(main) && !isOneDishMeal(main)) {
+            const sides = q.proteinSideBase.filter(m => m.id !== main.id && estimatedMealMinutes(m, kitchen) > 0);
+            return [...sides].sort((a,b) => estimatedMealMinutes(a, kitchen) - estimatedMealMinutes(b, kitchen))[0] || null;
+          }
+          return undefined; // already complete
+        };
+        const fullDinnerMinutes = main => {
+          const base = estimatedMealMinutes(main, kitchen);
+          if (!(base > 0)) return Infinity;
+          const side = quickSideFor(main);
+          if (side === null) return Infinity; // required side unavailable
+          return base + (side ? estimatedMealMinutes(side, kitchen) : 0);
+        };
+        const quickEligible = quickDay ? q.base.filter(m => fullDinnerMinutes(m) <= 30) : q.base;
+        // Never silently bypass the user's 30-minute limit.
+        if (quickDay && !quickEligible.length) continue;
+        const dayPool = quickDay ? quickEligible : q.base;
         const available = dayPool.filter(m => !chosenMainIds.has(m.id));
         const candidates = available.length ? available : dayPool;
         const kinds = new Set(candidates.map(mainProtein));
@@ -1590,12 +1612,12 @@ export default function MakanLedger() {
         while (!skipBonusPadding && dishCount < targetCount) {
           let side = null, filledKind = null;
           if (needsMeat) {
-            const candidates = q.proteinSideBase.filter(m => !usedSideIds.has(m.id));
-            if (candidates.length) { side = pickMatchingSide(candidates, choice.cuisine); filledKind = "meat"; }
+            const candidates = q.proteinSideBase.filter(m => !usedSideIds.has(m.id) && (!quickDay || estimatedMealMinutes(choice, kitchen) + estimatedMealMinutes(m, kitchen) <= 30));
+            if (candidates.length) { side = quickDay ? [...candidates].sort((a,b)=>estimatedMealMinutes(a,kitchen)-estimatedMealMinutes(b,kitchen))[0] : pickMatchingSide(candidates, choice.cuisine); filledKind = "meat"; }
           }
           if (!side && needsVeg) {
-            const candidates = q.vegSideBase.filter(m => !usedSideIds.has(m.id));
-            if (candidates.length) { side = pickMatchingSide(candidates, choice.cuisine); filledKind = "veg"; }
+            const candidates = q.vegSideBase.filter(m => !usedSideIds.has(m.id) && (!quickDay || estimatedMealMinutes(choice, kitchen) + estimatedMealMinutes(m, kitchen) <= 30));
+            if (candidates.length) { side = quickDay ? [...candidates].sort((a,b)=>estimatedMealMinutes(a,kitchen)-estimatedMealMinutes(b,kitchen))[0] : pickMatchingSide(candidates, choice.cuisine); filledKind = "veg"; }
           }
           // No arbitrary bonus side: if the meal is complete, stop rather than pairing two dinners.
           if (!side) break;
