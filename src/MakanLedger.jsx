@@ -1467,6 +1467,24 @@ export default function MakanLedger() {
     const kitchenFirstOrder = list => shuffle(list).sort((a,b) => stockScore(a) - stockScore(b));
 
     const results = [];
+    // Balance mains across the whole week, not merely unique recipe IDs.
+    // A freezer full of chicken should not generate six different chicken dinners.
+    const mainProtein = meal => {
+      const p = String(meal.protein || "").toLowerCase();
+      if (["chicken","poultry","duck","turkey"].includes(p)) return "poultry";
+      if (["fish","seafood","prawn","shrimp"].includes(p)) return "seafood";
+      if (["beef","lamb","mutton"].includes(p)) return "red-meat";
+      if (p === "pork") return "pork";
+      if (["egg","tofu","vegetarian"].includes(p)) return p;
+      const n = String(meal.name || "").toLowerCase();
+      if (/chicken|duck|turkey/.test(n)) return "poultry";
+      if (/fish|salmon|prawn|shrimp|seafood|squid/.test(n)) return "seafood";
+      if (/beef|lamb|mutton/.test(n)) return "red-meat";
+      return p || "other";
+    };
+    const proteinUsed = {};
+    const chosenMainIds = new Set();
+    let lastMainProtein = null;
     if (!pool.some(m => !m.side && !m.isComponent)) return { meals: [], shortSlots: daysCount * slots.length, worstShortfall: maxCount };
     let shortSlots = 0; // meal slots that couldn't reach the requested dish count — dish bank ran dry, not a bug
     let worstShortfall = 0;
@@ -1500,13 +1518,23 @@ export default function MakanLedger() {
       const dateStr = addDaysToDateStr(startDateStr, d);
       for (const type of slots) {
         const q = queues[type];
-        let choice;
-        if (q.priorityQueue.length > 0) {
-          choice = q.priorityQueue.pop();
-        } else {
-          if (q.restQueue.length === 0) q.restQueue = kitchenFirstOrder(q.restBase);
-          choice = q.restQueue.pop();
-        }
+        // Stock and use-soon remain useful tie-breakers, but variety wins.
+        // Select from all eligible mains; queues alone favour the same stocked protein repeatedly.
+        const available = q.base.filter(m => !chosenMainIds.has(m.id));
+        const candidates = available.length ? available : q.base;
+        const kinds = new Set(candidates.map(mainProtein));
+        const maxSame = kinds.size >= 3 && daysCount >= 5 ? Math.max(2, Math.ceil(daysCount / kinds.size)) : daysCount;
+        const scored = shuffle(candidates).map(m => {
+          const kind = mainProtein(m);
+          const count = proteinUsed[kind] || 0;
+          const overCap = count >= maxSame ? 1 : 0;
+          return { m, score: overCap * 1000 + count * 120 + (kind === lastMainProtein ? 70 : 0) + (chosenMainIds.has(m.id) ? 50 : 0) - Math.min(stockScore(m), 24) };
+        }).sort((a,b) => a.score - b.score);
+        const choice = scored[0].m;
+        const kind = mainProtein(choice);
+        proteinUsed[kind] = (proteinUsed[kind] || 0) + 1;
+        lastMainProtein = kind;
+        chosenMainIds.add(choice.id);
         const uidBase = choice.id + "-" + dateStr + "-" + type + "-" + Math.random().toString(36).slice(2, 7);
         results.push({ ...choice, uid: uidBase, date: dateStr, mealType: type });
 
