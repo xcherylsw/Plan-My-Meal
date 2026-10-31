@@ -4115,6 +4115,7 @@ function HouseholdScreen({
   const [substituteInput, setSubstituteInput] = useState("");
   const [addingAvoid, setAddingAvoid] = useState(false);
   const [editingAvoidId, setEditingAvoidId] = useState(null);
+  const [editingTaste, setEditingTaste] = useState(null);
 
   return (
     <div style={{padding:"20px 16px 40px",background:"#F8F8F3",minHeight:"70vh"}}>
@@ -4202,26 +4203,36 @@ function HouseholdScreen({
         {addingAvoid && <div style={{display:"grid",gap:9,background:"#F7F9F6",borderRadius:13,padding:12,marginBottom:10}}>
           <input aria-label="Ingredient to avoid" value={dislikeInput} onChange={e=>setDislikeInput(e.target.value)} placeholder="Ingredient to avoid" style={{width:"100%",boxSizing:"border-box",border:"1px solid #DDE4DB",borderRadius:10,padding:"12px",fontSize:14}}/>
           <input aria-label="Replacement ingredient" value={substituteInput} onChange={e=>setSubstituteInput(e.target.value)} placeholder="Replace with (optional)" style={{width:"100%",boxSizing:"border-box",border:"1px solid #DDE4DB",borderRadius:10,padding:"12px",fontSize:14}}/>
-          <button type="button" disabled={!dislikeInput.trim()} onClick={()=>{addDislike(dislikeInput,substituteInput);setDislikeInput("");setSubstituteInput("");setAddingAvoid(false);}} style={{border:0,background:"#365C4B",color:"#fff",borderRadius:10,padding:12,fontWeight:750,opacity:dislikeInput.trim()?1:.5}}>Save ingredient</button>
-        </div>}
+          <button type="button" disabled={!dislikeInput.trim()} onClick={()=>{addDislike(dislikeInput,substituteInput);setDislikeInput("");setSubstituteInput("");setAddingAvoid(false);}} style={{border:0,background:"#365C4B",color:"#fff",borderRadius:10,padding:12,fontWeight:750,opacity:dislikeInput.trim()?1:.5}}>Save ingr      <SettingsSection title="Taste preferences" countLabel={(household.preferredCuisines.length+household.preferredProteins.length)?`${household.preferredCuisines.length+household.preferredProteins.length} selected`:null} defaultOpen={false}>
+        <p style={{fontSize:12,color:C.inkSoft,margin:"0 0 14px",lineHeight:1.5}}>Optional. Leave blank to enjoy more variety.</p>
+        {[
+          {key:"preferredCuisines",label:"Favourite cuisines",items:CUISINES,empty:"All cuisines"},
+          {key:"preferredProteins",label:"Preferred main ingredients",items:PROTEINS,empty:"All ingredients"}
+        ].map((group,idx)=>{
+          const selected=household[group.key]||[];
+          const expanded=editingTaste===group.key;
+          return <div key={group.key} style={{borderTop:idx?"1px solid #E9EDE8":"none",paddingTop:idx?14:0,marginTop:idx?14:0}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12}}>
+              <div style={{minWidth:0}}>
+                <div style={{fontSize:13.5,fontWeight:800,color:C.ink}}>{group.label}</div>
+                <div style={{fontSize:12,color:C.inkSoft,marginTop:5,lineHeight:1.45}}>{selected.length?selected.join(" · "):group.empty}</div>
+              </div>
+              <button type="button" aria-expanded={expanded} onClick={()=>setEditingTaste(expanded?null:group.key)} style={{flexShrink:0,border:"1px solid #C8D9CD",background:expanded?"#E8F2EA":"#fff",color:"#365C4B",borderRadius:10,padding:"9px 12px",fontSize:12,fontWeight:800}}>{expanded?"Done":"Edit"}</button>
+            </div>
+            {expanded&&<div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:8,marginTop:13}}>
+              {group.items.map(item=>{
+                const active=selected.includes(item);
+                return <button key={item} type="button" aria-pressed={active} onClick={()=>toggleHouseholdList(group.key,item)} style={{display:"flex",alignItems:"center",gap:8,minWidth:0,textAlign:"left",border:active?"1px solid #5A8267":"1px solid #E2E8E1",background:active?"#EAF4EC":"#FAFBF9",borderRadius:10,padding:"11px 9px",fontSize:12.5,fontWeight:active?750:550,color:C.ink}}>
+                  <span aria-hidden="true" style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:17,height:17,flexShrink:0,borderRadius:5,border:active?"1px solid #527B61":"1px solid #BAC9BE",background:active?"#527B61":"#fff",color:"#fff",fontSize:12}}>{active?"✓":""}</span>
+                  <span style={{overflowWrap:"anywhere"}}>{item}</span>
+                </button>;
+              })}
+            </div>}
+          </div>;
+        })}
       </SettingsSection>
 
-      <SettingsSection
-        title="Taste preferences"
-        countLabel={(household.preferredCuisines.length + household.preferredProteins.length) ? `${household.preferredCuisines.length + household.preferredProteins.length} set` : null}
-        defaultOpen={false}
-      >
-
-        <div style={{ fontSize: 11.5, fontWeight: 600, color: C.inkSoft, marginBottom: 6 }}>Cuisine</div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
-          {CUISINES.map(c => (
-            <Chip key={c} active={household.preferredCuisines.includes(c)} onClick={() => toggleHouseholdList("preferredCuisines", c)}>{c}</Chip>
-          ))}
-        </div>
-        <div style={{ fontSize: 11.5, fontWeight: 600, color: C.inkSoft, marginBottom: 6 }}>Protein</div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-          {PROTEINS.map(p => (
-            <Chip key={p} active={household.preferredProteins.includes(p)} onClick={() => toggleHouseholdList("preferredProteins", p)}>{p}</Chip>
+>
           ))}
         </div>
       </SettingsSection>
