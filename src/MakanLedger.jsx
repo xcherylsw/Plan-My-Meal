@@ -746,6 +746,8 @@ const ONE_DISH_KEYWORDS = [
   "claypot chicken rice", "prata & egg curry", "katsu curry", "japanese curry", "chicken rice", "hainanese rice", "biryani", "briyani", "pasta", "spaghetti", "risotto", "rice bowl", "poke bowl", "soba", "udon", "ramen",
 ];
 function isOneDishMeal(meal) {
+  if (meal.completeMeal === true) return true;
+  if (meal.completeMeal === false) return false;
   if (meal.oneDish === true) return true; // personal/community recipe override
   if (meal.oneDish === false) return false;
   const name = String(meal.name ?? "").toLowerCase();
@@ -1556,7 +1558,7 @@ export default function MakanLedger() {
         // Validate the full dinner, including the mandatory vegetable/protein side.
         // Conservatively sum dish times: parallel cooking cannot be assumed for every recipe.
         const quickSideFor = (main) => {
-          if (!hasCategory(main, "vegetable")) {
+          if (!isOneDishMeal(main) && !hasCategory(main, "vegetable")) {
             const sides = q.vegSideBase.filter(m => m.id !== main.id && estimatedMealMinutes(m, kitchen) > 0 && estimatedDinnerMinutes(main, m, kitchen) <= 30);
             return [...sides].sort((a,b) => estimatedMealMinutes(a, kitchen) - estimatedMealMinutes(b, kitchen))[0] || null;
           }
@@ -1611,12 +1613,12 @@ export default function MakanLedger() {
         const standalone = isOneDishMeal(choice);
         // A one-dish label describes the recipe format, not whether it contains vegetables.
         // Even a standalone fish/rice dish needs a vegetable side when vegetables are absent.
-        const missingVegetables = !hasCategory(choice, "vegetable");
+        const missingVegetables = !standalone && !hasCategory(choice, "vegetable");
         const targetCount = missingVegetables ? Math.max(2, Math.min(2, maxCount)) : (standalone ? 1 : Math.min(2, (isHeavyDish(choice) ? minCount : maxCount)));
         // Egg/tofu are valid mains; don't automatically add a second protein
         // to fried egg when what the household actually wants is greens.
         let needsMeat = mainPreference === "meat-fish" && !hasRealMeat(choice) && !standalone;
-        let needsVeg = !hasCategory(choice, "vegetable");
+        let needsVeg = !standalone && !hasCategory(choice, "vegetable");
         const usedSideIds = new Set();
         let dishCount = 1;
         // A main that's already a complete one-pot meal on its own (real
@@ -4509,7 +4511,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
 
   function blankDraft() {
     return {
-      name: "", cuisine: CUISINES[0], protein: PROTEINS[0], time: 30, soft: false, side: false,
+      name: "", cuisine: CUISINES[0], protein: PROTEINS[0], time: 30, soft: false, side: false, completeMeal: false,
       isComponent: false, yieldAmount: "", yieldUnit: "",
       mealTypes: ["lunch", "dinner"], baseServings: 4,
       ingredients: [{ id: "d" + Date.now(), name: "", category: "other", amount: null, unit: "", componentId: null }],
@@ -4645,6 +4647,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
       time: draft.time,
       soft: draft.soft,
       side: draft.side,
+      completeMeal: !draft.side && !draft.isComponent && !!draft.completeMeal,
       isComponent: draft.isComponent,
       yieldAmount: draft.isComponent ? Number(draft.yieldAmount) : null,
       yieldUnit: draft.isComponent ? draft.yieldUnit.trim() : "",
@@ -4687,7 +4690,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
     return {
       id: recipe.id,
       name: recipe.name, cuisine: recipe.cuisine, protein: recipe.protein, time: recipe.time,
-      soft: !!recipe.soft, side: !!recipe.side,
+      soft: !!recipe.soft, side: !!recipe.side, completeMeal: recipe.completeMeal === true || (recipe.completeMeal == null && isOneDishMeal(recipe)),
       isComponent: !!recipe.isComponent,
       yieldAmount: recipe.yieldAmount != null ? String(recipe.yieldAmount) : "",
       yieldUnit: recipe.yieldUnit || "",
@@ -4951,9 +4954,10 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
 
           <label style={labelStyle}>Dish type</label>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 4 }}>
-            <Chip active={!draft.side && !draft.isComponent} onClick={() => setDraft(prev => ({ ...prev, side: false, isComponent: false }))}>Main dish</Chip>
-            <Chip active={!!draft.side && !draft.isComponent} onClick={() => setDraft(prev => ({ ...prev, side: true, isComponent: false }))}>Side dish</Chip>
-            <Chip active={!!draft.isComponent} onClick={() => setDraft(prev => ({ ...prev, isComponent: true, side: false }))}>Condiment / base</Chip>
+            <Chip active={!draft.side && !draft.isComponent && !draft.completeMeal} onClick={() => setDraft(prev => ({ ...prev, side: false, isComponent: false, completeMeal: false }))}>Main dish + side</Chip>
+            <Chip active={!draft.side && !draft.isComponent && !!draft.completeMeal} onClick={() => setDraft(prev => ({ ...prev, side: false, isComponent: false, completeMeal: true }))}>Complete meal</Chip>
+            <Chip active={!!draft.side && !draft.isComponent} onClick={() => setDraft(prev => ({ ...prev, side: true, isComponent: false, completeMeal: false }))}>Side dish</Chip>
+            <Chip active={!!draft.isComponent} onClick={() => setDraft(prev => ({ ...prev, isComponent: true, side: false, completeMeal: false }))}>Condiment / base</Chip>
           </div>
           <p style={{ fontSize: 10.5, color: C.inkSoft, marginTop: 0, marginBottom: 12, lineHeight: 1.4 }}>
             {draft.isComponent
@@ -5230,7 +5234,7 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
                 <div style={{padding:"0 12px 12px"}}>
                   {isAdmin && r.builtIn && <label style={{display:"block",textAlign:"center",padding:"9px 4px",fontSize:11,fontWeight:800,color:"#365C4B",cursor:photoSaving===r.id.slice(8)?"wait":"pointer"}}>📷 {photoSaving===r.id.slice(8)?"Publishing…":r.photo?"Replace official photo":"Upload official photo"}<input type="file" accept="image/*" disabled={!!photoSaving} style={{display:"none"}} onChange={e=>{publishPhoto(r.id.slice(8),e.target.files?.[0]);e.target.value=""}}/></label>}
                   <button onClick={()=>!r.builtIn&&!added(r.id)&&onAdd(r)} disabled={r.builtIn||added(r.id)} style={{width:"100%",padding:"9px 5px",borderRadius:10,background:r.builtIn||added(r.id)?"#EDF1EA":"#365C4B",color:r.builtIn||added(r.id)?"#45624F":"#fff",fontSize:11,fontWeight:800}}>{r.builtIn?"In meal planner":added(r.id)?"✓ Saved":"＋ Save recipe"}</button>
-                  {isAdmin&&!r.builtIn&&<div style={{display:"flex",justifyContent:"space-between",marginTop:8}}><button onClick={()=>onEdit(r)} style={{fontSize:11,fontWeight:800,color:"#365C4B"}}>✎ Edit recipe & photo</button><button onClick={()=>{if(confirmDel===r.id){setConfirmDel(null);onDelete(r.id)}else setConfirmDel(r.id)}} style={{fontSize:11,color:C.clayText}}>{confirmDel===r.id?"Confirm remove":"Remove"}</button></div>}
+                  {isAdmin&&!r.builtIn&&<div style={{display:"flex",justifyContent:"space-between",marginTop:8}}><button onClick={()=>onEdit(r)} style={{fontSize:11,fontWeight:800,color:"#365C4B"}}>✎ Edit recipe, tags & photo</button><button onClick={()=>{if(confirmDel===r.id){setConfirmDel(null);onDelete(r.id)}else setConfirmDel(r.id)}} style={{fontSize:11,color:C.clayText}}>{confirmDel===r.id?"Confirm remove":"Remove"}</button></div>}
                 </div>
                 {open===r.id&&<div style={{padding:"12px",borderTop:"1px solid #EDE8E1",fontSize:12,lineHeight:1.55}}>
                   <CreditLine r={r}/>
