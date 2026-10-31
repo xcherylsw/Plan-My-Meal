@@ -2674,24 +2674,7 @@ export default function MakanLedger() {
               onTogglePrepCard={setPrepCardOpen}
               onAutoPlan={planMyWeek}
               hasWeekPlan={plan.some(m => m.mealType === "dinner" && m.date >= todayDateStr() && m.date <= addDaysToDateStr(todayDateStr(), 6))}
-            />            <section style={{margin:"16px 18px 0",border:"1px solid #E5E3EE",borderRadius:20,background:"#fff",padding:16}}>
-              <button onClick={()=>setRescueOpen(v=>!v)} aria-expanded={rescueOpen} style={{display:"flex",width:"100%",justifyContent:"space-between",alignItems:"center",border:0,background:"transparent",color:C.ink,textAlign:"left",fontWeight:800,fontSize:16,padding:0}}>
-                <span>🥕 Use leftovers · Fridge Rescue</span><span>{rescueOpen?"−":"+"}</span>
-              </button>
-              <p style={{color:C.inkSoft,fontSize:12,margin:"7px 0 0"}}>Tell us what needs using. No need to update your pantry.</p>
-              {rescueOpen && <div style={{display:"grid",gap:12,marginTop:14}}>
-                <textarea value={rescueText} onChange={e=>setRescueText(e.target.value)} rows={3} placeholder="e.g. half cabbage, eggs, leftover rice, fishballs" aria-label="Leftover ingredients" style={{border:"1px solid #D8D6E3",borderRadius:12,padding:12,fontFamily:"inherit",fontSize:14,resize:"vertical"}}/>
-                {rescueIngredients.length>0 && <div aria-live="polite" style={{display:"grid",gap:9}}>
-                  <strong style={{fontSize:13}}>Ideas using your ingredients</strong>
-                  {rescueMatches.length===0 ? <p style={{fontSize:13,color:C.inkSoft}}>No matching recipes yet. Try a simpler ingredient name, or add a family recipe under Me.</p> :
-                    rescueMatches.map(({meal,matched})=><div key={meal.id} style={{display:"flex",alignItems:"center",gap:9,background:"#F7F7FB",borderRadius:13,padding:9}}>
-                      <FoodArt name={meal.name} size={57}/><div style={{flex:1,minWidth:0}}><strong style={{fontSize:13}}>{meal.name}</strong><div style={{fontSize:11,color:C.inkSoft}}>Uses {matched.map(i=>i.name).join(", ")}</div></div>
-                      <button onClick={()=>{cookNow(meal.id,"dinner",slotPax.dinner);setTab("week");}} style={{border:0,borderRadius:10,padding:"10px 12px",background:"#EAA28F",fontWeight:800,color:C.ink}}>Plan</button>
-                    </div>)}
-                  <p style={{fontSize:11,color:C.inkSoft}}>Suggestions may need other ingredients. Check the recipe and food freshness before cooking; refrigerate leftovers promptly.</p>
-                </div>}
-              </div>}
-            </section>
+            />
 
           </>)}
           {tab === "me" && <main style={{ padding: "24px 20px", display: "grid", gap: 14, background:"#FAF7F2", minHeight:"65vh" }}>
@@ -2801,6 +2784,26 @@ export default function MakanLedger() {
               newPantryUseSoon={newPantryUseSoon} setNewPantryUseSoon={setNewPantryUseSoon}
               addPantryItem={addPantryItem}
             />
+          )}
+          {tab === "pantry" && (
+            <section style={{margin:"16px 18px 0",border:"1px solid #E5E3EE",borderRadius:20,background:"#fff",padding:16}}>
+              <button onClick={()=>setRescueOpen(v=>!v)} aria-expanded={rescueOpen} style={{display:"flex",width:"100%",justifyContent:"space-between",alignItems:"center",border:0,background:"transparent",color:C.ink,textAlign:"left",fontWeight:800,fontSize:16,padding:0}}>
+                <span>🧊 What’s in your fridge?</span><span>{rescueOpen?"−":"+"}</span>
+              </button>
+              <p style={{color:C.inkSoft,fontSize:12,margin:"7px 0 0"}}>Use up leftovers and ingredients before they go to waste. Get dinner ideas without changing your inventory.</p>
+              {rescueOpen && <div style={{display:"grid",gap:12,marginTop:14}}>
+                <textarea value={rescueText} onChange={e=>setRescueText(e.target.value)} rows={3} placeholder="e.g. half cabbage, eggs, leftover rice, fishballs" aria-label="Leftover ingredients" style={{border:"1px solid #D8D6E3",borderRadius:12,padding:12,fontFamily:"inherit",fontSize:14,resize:"vertical"}}/>
+                {rescueIngredients.length>0 && <div aria-live="polite" style={{display:"grid",gap:9}}>
+                  <strong style={{fontSize:13}}>Ideas using your ingredients</strong>
+                  {rescueMatches.length===0 ? <p style={{fontSize:13,color:C.inkSoft}}>No matching recipes yet. Try a simpler ingredient name, or add a family recipe under Me.</p> :
+                    rescueMatches.map(({meal,matched})=><div key={meal.id} style={{display:"flex",alignItems:"center",gap:9,background:"#F7F7FB",borderRadius:13,padding:9}}>
+                      <FoodArt name={meal.name} size={57}/><div style={{flex:1,minWidth:0}}><strong style={{fontSize:13}}>{meal.name}</strong><div style={{fontSize:11,color:C.inkSoft}}>Uses {matched.map(i=>i.name).join(", ")}</div></div>
+                      <button onClick={()=>{cookNow(meal.id,"dinner",slotPax.dinner);setTab("week");}} style={{border:0,borderRadius:10,padding:"10px 12px",background:"#EAA28F",fontWeight:800,color:C.ink}}>Plan</button>
+                    </div>)}
+                  <p style={{fontSize:11,color:C.inkSoft}}>Suggestions may need other ingredients. Check the recipe and food freshness before cooking; refrigerate leftovers promptly.</p>
+                </div>}
+              </div>}
+            </section>
           )}
           {(tab === "library" || (tab === "admin" && isAdmin)) && (
             <LibraryScreen
@@ -2947,7 +2950,7 @@ function GenerateScreen(props) {
     <div style={{ padding: "18px 18px 28px", maxWidth: 760, margin: "0 auto", color:C.ink }}>
       {props.variant !== "custom" && <section style={{background:"#FCE9E5",borderRadius:24,padding:20,display:"grid",gap:14,marginBottom:18}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12}}>
-          <div><span style={{fontSize:11,fontWeight:800,letterSpacing:1.5,color:"#A65D4E"}}>POINT & SHOOT</span>
+          <div>
             <h3 style={{fontFamily:FONT_DISPLAY,fontSize:27,lineHeight:1.2,margin:"7px 0"}}>Dinner, handled.</h3>
             <p style={{fontSize:13,lineHeight:1.6,color:C.inkSoft,margin:0}}>Seven dinners, using what’s in your kitchen first. Shopping and prep update automatically.</p></div>
           <FoodArt kind="meal" size={112}/>
