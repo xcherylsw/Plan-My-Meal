@@ -488,7 +488,7 @@ function formatDuration(minutes) {
 }
 
 const CUISINES = [...new Set(MEALS.map(m => m.cuisine))];
-const PROTEINS = [...new Set(MEALS.map(m => m.protein))];
+const PROTEINS = [...new Set(MEALS.map(m => m.protein))].filter(p => p !== "vegetarian");
 
 const SCOPES = [
   { id: "day", label: "A day" },
@@ -4210,7 +4210,7 @@ function HouseholdScreen({
         <p style={{fontSize:12,color:C.inkSoft,margin:"0 0 14px",lineHeight:1.5}}>Optional. Leave blank to enjoy more variety.</p>
         {[
           {key:"preferredCuisines",label:"Favourite cuisines",items:CUISINES,empty:"All cuisines"},
-          {key:"preferredProteins",label:"Preferred main ingredients",items:PROTEINS,empty:"All ingredients"}
+          {key:"preferredProteins",label:"Preferred main ingredients",items:PROTEINS.filter(item=>!household.diets.includes("halal") || item!=="pork").filter(item=>!household.diets.includes("vegetarian") || ["tofu","egg"].includes(item)),empty:"All ingredients"}
         ].map((group,idx)=>{
           const selected=household[group.key]||[];
           const expanded=editingTaste===group.key;
