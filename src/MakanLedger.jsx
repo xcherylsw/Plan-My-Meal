@@ -1985,6 +1985,23 @@ export default function MakanLedger() {
     }).filter(n => n && n.batches > 0);
   }, [plan, skippedDays, targetPax, myRecipes, pantry]);
 
+  // Canonical shopping names keep singular/plural variants on one line.
+  const shoppingName = name => {
+    const n = String(name ?? "").trim().toLowerCase();
+    if (/^eggs?$/.test(n)) return "egg";
+    if (/^potatoes?$/.test(n)) return "potato";
+    if (/^tomatoes?$/.test(n)) return "tomato";
+    if (/^carrots?$/.test(n)) return "carrot";
+    return n;
+  };
+  const shoppingUnit = unit => {
+    const u = String(unit ?? "").trim().toLowerCase();
+    if (!u || /^(pc|pcs|piece|pieces|unit|units|each|ea)$/.test(u)) return "pcs";
+    if (/^(egg|eggs)$/.test(u)) return "pcs";
+    if (/^(g|gram|grams)$/.test(u)) return "g";
+    if (/^(kg|kilogram|kilograms)$/.test(u)) return "kg";
+    return u;
+  };
   const aggregated = useMemo(() => {
     const map = {};
     plan.forEach(meal => {
@@ -1999,12 +2016,12 @@ export default function MakanLedger() {
         // directly — what THEY need gets folded in below instead, scaled by
         // however many batches are actually needed.
         if (i.componentId) return;
-        const key = String(i.name ?? "").toLowerCase();
-        if (!map[key]) map[key] = { key, name: i.name, category: i.category, count: 0, amount: null, unit: null, mealRefs: [], neededFor: [] };
+        const key = shoppingName(i.name);
+        if (!map[key]) map[key] = { key, name: key === "egg" ? "Eggs" : i.name, category: i.category, count: 0, amount: null, unit: null, mealRefs: [], neededFor: [] };
         map[key].count++;
         if (i.amount != null) {
           map[key].amount = (map[key].amount || 0) + i.amount * scale;
-          map[key].unit = i.unit;
+          map[key].unit = shoppingUnit(i.unit);
         }
         // Track which specific planned meals need this ingredient, so if it
         // turns out to be unavailable at the shop, those exact meals can be
@@ -2019,19 +2036,19 @@ export default function MakanLedger() {
     componentNeeds.forEach(need => {
       need.recipe.ingredients.forEach(i => {
         if (i.componentId) return; // nested components aren't supported yet
-        const key = String(i.name ?? "").toLowerCase();
-        if (!map[key]) map[key] = { key, name: i.name, category: i.category, count: 0, amount: null, unit: null, mealRefs: [], neededFor: [] };
+        const key = shoppingName(i.name);
+        if (!map[key]) map[key] = { key, name: key === "egg" ? "Eggs" : i.name, category: i.category, count: 0, amount: null, unit: null, mealRefs: [], neededFor: [] };
         map[key].count++;
         if (i.amount != null) {
           map[key].amount = (map[key].amount || 0) + i.amount * need.batches;
-          map[key].unit = i.unit;
+          map[key].unit = shoppingUnit(i.unit);
         }
         if (!map[key].neededFor.includes(need.recipe.name)) map[key].neededFor.push(need.recipe.name);
       });
     });
     extraItems.forEach(i => {
-      const key = String(i.name ?? "").toLowerCase();
-      if (!map[key]) map[key] = { key, name: i.name, category: i.category, count: 0, amount: null, unit: null, manual: true };
+      const key = shoppingName(i.name);
+      if (!map[key]) map[key] = { key, name: key === "egg" ? "Eggs" : i.name, category: i.category, count: 0, amount: null, unit: null, manual: true };
       map[key].count++;
     });
     return Object.values(map);
@@ -2044,15 +2061,29 @@ export default function MakanLedger() {
   // amount, so a bulk-buy-on-sale reduces what you're asked to rebuy rather
   // than being ignored entirely.
   const classified = useMemo(() => {
+    // Track remaining stock by pantry entry so variants cannot spend the same eggs twice.
+    const remaining = new Map(pantry.map(p => [p.id, p.quantity == null || p.quantity === "" ? null : Number(p.quantity)]));
     return aggregated.map(item => {
       const match = findPantryMatch(item.name, pantry);
       if (!match) return { ...item, covered: false };
-      if (match.quantity == null || match.quantity === "") return { ...item, covered: true };
-      if (item.amount == null) return { ...item, covered: match.quantity > 0 };
-      const sameUnit = (match.unit || "").toLowerCase() === (item.unit || "").toLowerCase();
-      if (!sameUnit) return { ...item, covered: match.quantity > 0 };
-      if (match.quantity >= item.amount) return { ...item, covered: true };
-      return { ...item, covered: false, amount: item.amount - match.quantity, fromStock: true };
+      const available = remaining.get(match.id);
+      if (available == null) return { ...item, covered: true };
+      if (!Number.isFinite(available) || available <= 0) return { ...item, covered: false };
+      if (item.amount == null) return { ...item, covered: true };
+      const neededUnit = shoppingUnit(item.unit);
+      const stockUnit = shoppingUnit(match.unit);
+      let stockAmount = available;
+      if (stockUnit !== neededUnit) {
+        if (stockUnit === "kg" && neededUnit === "g") stockAmount *= 1000;
+        else if (stockUnit === "g" && neededUnit === "kg") stockAmount /= 1000;
+        else return { ...item, covered: false, unitMismatch: true };
+      }
+      const used = Math.min(stockAmount, item.amount);
+      const remainder = Math.max(0, item.amount - used);
+      const factor = stockUnit === "kg" && neededUnit === "g" ? 1000 : stockUnit === "g" && neededUnit === "kg" ? 0.001 : 1;
+      remaining.set(match.id, Math.max(0, available - used / factor));
+      if (remainder <= 0) return { ...item, covered: true };
+      return { ...item, covered: false, amount: remainder, fromStock: used > 0 };
     });
   }, [aggregated, pantry]);
 
