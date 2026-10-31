@@ -636,13 +636,40 @@ function wordMatch(a, b) {
   }
   return false;
 }
+// Match recipe ingredients to stock without treating every fish, meat cut or vegetable as interchangeable.
+function stockIngredientMatch(recipeName, stockName) {
+  const recipe = String(recipeName || "").toLowerCase().trim();
+  const stock = String(stockName || "").toLowerCase().trim();
+  if (!recipe || !stock) return false;
+  const fishNames = ["sea bream","seabream","snapper","sea bass","seabass","barramundi","tilapia","grouper","pomfret","cod","salmon","mackerel","threadfin","dory","sole","haddock","halibut","tuna","sardine"];
+  const fishType = name => fishNames.find(f => new RegExp("\b"+f+"\b","i").test(name));
+  const rf = fishType(recipe), sf = fishType(stock);
+  const genericFish = /\b(white fish|fish fillet|fish fillets|whole fish|fresh fish|fish)\b/.test(recipe);
+  if (rf || sf || /\bfish\b/.test(recipe) || /\bfish\b/.test(stock)) {
+    if (rf && sf && rf !== sf) return false;
+    if (rf && !sf) return false;
+    if (!rf && sf && !genericFish) return false;
+    if (/\bfillets?\b/.test(recipe) && /\bwhole\b/.test(stock)) return false;
+    if (/\bwhole\b/.test(recipe) && /\bfillets?\b/.test(stock)) return false;
+    if (rf && sf) return true;
+    if (sf && genericFish) {
+      // Salmon and tuna are not generic white fish substitutes.
+      if (/\bwhite fish\b/.test(recipe) && ["salmon","tuna","mackerel","sardine"].includes(sf)) return false;
+      return true;
+    }
+  }
+  const singular = x => x.replace(/\bpotatoes\b/g,"potato").replace(/\btomatoes\b/g,"tomato").replace(/\bcarrots\b/g,"carrot");
+  if (singular(recipe) === singular(stock)) return true;
+  // Preserve established exact/typo matching for other ingredient names.
+  return wordMatch(recipe, stock);
+}
 function isInPantry(ingredientName, pantryList) {
   const n = String(ingredientName ?? "").toLowerCase();
-  return pantryList.some(p => wordMatch(n, String(p.name ?? "").toLowerCase()));
+  return pantryList.some(p => stockIngredientMatch(n, p.name));
 }
 function findPantryMatch(ingredientName, pantryList) {
   const n = String(ingredientName ?? "").toLowerCase();
-  return pantryList.find(p => wordMatch(n, String(p.name ?? "").toLowerCase()));
+  return pantryList.find(p => stockIngredientMatch(n, p.name));
 }
 function hasCategory(meal, category) {
   return meal.ingredients.some(i => i.category === category);
@@ -1434,9 +1461,9 @@ export default function MakanLedger() {
     const maxCount = Math.max(minCount, dishRange?.max ?? dishRange ?? 2);
     const stocked = (kitchen || []).filter(k => k.name && (k.qty == null || Number(k.qty) > 0));
     const useSoonItems = stocked.filter(k => k.useSoon);
-    const usesKitchenStock = (meal) => useSoonItems.some(k => meal.ingredients.some(i => wordMatch(String(i.name ?? "").toLowerCase(), String(k.name ?? "").toLowerCase())));
+    const usesKitchenStock = (meal) => useSoonItems.some(k => meal.ingredients.some(i => stockIngredientMatch(i.name, k.name)));
     const stockScore = meal => meal.ingredients.reduce((score, ingredient) => score + stocked.reduce((n, item) =>
-      n + (wordMatch(String(ingredient.name ?? "").toLowerCase(), String(item.name ?? "").toLowerCase()) ? (item.useSoon ? 6 : 2) : 0), 0), 0);
+      n + (stockIngredientMatch(ingredient.name, item.name) ? (item.useSoon ? 6 : 2) : 0), 0), 0);
     const kitchenFirstOrder = list => shuffle(list).sort((a,b) => stockScore(a) - stockScore(b));
 
     const results = [];
