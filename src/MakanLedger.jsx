@@ -403,6 +403,16 @@ function pantryHasPreparedForm(pantry, name, form) {
   return pantry.some(p => prepIngredientName(p.name) === prepIngredientName(name)
     && (p.preparedForms || []).some(f => String(typeof f === "string" ? f : f.form).toLowerCase().trim() === normalized));
 }
+// Conservative estimate: subtract only explicitly prepared forms, never more than 25%.
+function estimatedMealMinutes(meal, pantry) {
+  const original = Number(meal?.time);
+  if (!Number.isFinite(original) || original <= 0) return original;
+  const ready = (meal.ingredients || []).filter(i => {
+    const info = typeof i === "object" ? i : {name:String(i)};
+    return pantryHasPrepReady(pantry || [], info, info);
+  }).length;
+  return Math.max(1, original - Math.min(ready * 3, Math.floor(original * 0.25)));
+}
 function pantryHasPrepReady(pantry, ingredient, info) {
   const explicit = requiredPrepForm(ingredient, info);
   if (explicit) return pantryHasPreparedForm(pantry, ingredient.name, explicit);
@@ -1522,7 +1532,7 @@ export default function MakanLedger() {
         // Select from all eligible mains; queues alone favour the same stocked protein repeatedly.
         const dayIndex = (new Date(dateStr+"T12:00:00").getDay()+6)%7;
         const quickDay = type === "dinner" && (household.quickDinnerDays ?? [0,1,2,3,4,5,6]).includes(dayIndex);
-        const quickEligible = quickDay ? q.base.filter(m => Number(m.time) > 0 && Number(m.time) <= 30) : q.base;
+        const quickEligible = quickDay ? q.base.filter(m => estimatedMealMinutes(m, kitchen) > 0 && estimatedMealMinutes(m, kitchen) <= 30) : q.base;
         const dayPool = quickEligible.length ? quickEligible : q.base;
         const available = dayPool.filter(m => !chosenMainIds.has(m.id));
         const candidates = available.length ? available : dayPool;
@@ -2587,6 +2597,7 @@ export default function MakanLedger() {
         <div style={{ flex: 1, background: C.paper }}>
           {tab === "home" && (<>
             <GenerateScreen
+              pantry={pantry}
               variant="home"
               scope={scope} setScope={setScope}
               mealSlots={mealSlots} toggleMealSlot={toggleMealSlot}
@@ -2835,7 +2846,7 @@ function GenerateScreen(props) {
   const {
     scope, setScope,
     mealSlots, toggleMealSlot,
-    onAddOn, onRedo, generateNote, grouped, onRegenerate, onPickMeal, pickableMeals, rawPickableMeals, onAddExtraDish, onReapplyHousehold, onRemove, household,
+    onAddOn, onRedo, generateNote, grouped, onRegenerate, onPickMeal, pickableMeals, rawPickableMeals, onAddExtraDish, onReapplyHousehold, onRemove, household, pantry,
     cookNowRanked, onGenerateOne, onCookNow, pantryCount, todayDishes, slotPax, onSetSlotPax, onSetMealPax,
     skippedDays, toggleSkipDay, onMarkCooked,
     prepList, prepChecked, togglePrepChecked, onCompleteComponentBatch, prepCardOpen, onTogglePrepCard, onAutoPlan, hasWeekPlan,
@@ -3171,7 +3182,7 @@ function GenerateScreen(props) {
                   )}
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {g.items.map(m => (
-                      <MealCard key={m.uid} meal={m} onRegenerate={() => onRegenerate(m.uid)} onPick={(id, useOriginal) => onPickMeal(m.uid, id, useOriginal)} pickableMeals={pickableMeals} rawPickableMeals={rawPickableMeals} onRemove={() => onRemove(m.uid)} onMarkCooked={() => onMarkCooked(m.uid)} pax={m.pax != null ? m.pax : totalPax} onPaxChange={n => onSetMealPax(m.date, m.mealType, n)} />
+                      <MealCard key={m.uid} meal={m} pantry={pantry} onRegenerate={() => onRegenerate(m.uid)} onPick={(id, useOriginal) => onPickMeal(m.uid, id, useOriginal)} pickableMeals={pickableMeals} rawPickableMeals={rawPickableMeals} onRemove={() => onRemove(m.uid)} onMarkCooked={() => onMarkCooked(m.uid)} pax={m.pax != null ? m.pax : totalPax} onPaxChange={n => onSetMealPax(m.date, m.mealType, n)} />
                     ))}
                     <AddDishButton date={grouped.days[0].date} mealType={g.mealType} pickableMeals={pickableMeals} onAdd={onAddExtraDish} />
                   </div>
@@ -3218,7 +3229,7 @@ function GenerateScreen(props) {
                             )}
                             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                               {g.items.map(m => (
-                                <MealCard key={m.uid} meal={m} onRegenerate={() => onRegenerate(m.uid)} onPick={(id, useOriginal) => onPickMeal(m.uid, id, useOriginal)} pickableMeals={pickableMeals} rawPickableMeals={rawPickableMeals} onRemove={() => onRemove(m.uid)} onMarkCooked={() => onMarkCooked(m.uid)} pax={m.pax != null ? m.pax : totalPax} onPaxChange={n => onSetMealPax(m.date, m.mealType, n)} />
+                                <MealCard key={m.uid} meal={m} pantry={pantry} onRegenerate={() => onRegenerate(m.uid)} onPick={(id, useOriginal) => onPickMeal(m.uid, id, useOriginal)} pickableMeals={pickableMeals} rawPickableMeals={rawPickableMeals} onRemove={() => onRemove(m.uid)} onMarkCooked={() => onMarkCooked(m.uid)} pax={m.pax != null ? m.pax : totalPax} onPaxChange={n => onSetMealPax(m.date, m.mealType, n)} />
                               ))}
                               <AddDishButton date={d.date} mealType={g.mealType} pickableMeals={pickableMeals} onAdd={onAddExtraDish} />
                             </div>
@@ -3273,7 +3284,7 @@ function GenerateScreen(props) {
                             )}
                             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                               {g.items.map(m => (
-                                <MealCard key={m.uid} meal={m} onRegenerate={() => onRegenerate(m.uid)} onPick={(id, useOriginal) => onPickMeal(m.uid, id, useOriginal)} pickableMeals={pickableMeals} rawPickableMeals={rawPickableMeals} onRemove={() => onRemove(m.uid)} onMarkCooked={() => onMarkCooked(m.uid)} pax={m.pax != null ? m.pax : totalPax} onPaxChange={n => onSetMealPax(m.date, m.mealType, n)} />
+                                <MealCard key={m.uid} meal={m} pantry={pantry} onRegenerate={() => onRegenerate(m.uid)} onPick={(id, useOriginal) => onPickMeal(m.uid, id, useOriginal)} pickableMeals={pickableMeals} rawPickableMeals={rawPickableMeals} onRemove={() => onRemove(m.uid)} onMarkCooked={() => onMarkCooked(m.uid)} pax={m.pax != null ? m.pax : totalPax} onPaxChange={n => onSetMealPax(m.date, m.mealType, n)} />
                               ))}
                               <AddDishButton date={d.date} mealType={g.mealType} pickableMeals={pickableMeals} onAdd={onAddExtraDish} />
                             </div>
@@ -3592,7 +3603,7 @@ function WeekendPrepCard({ prepList, prepChecked, togglePrepChecked, onCompleteC
   );
 }
 
-function MealCard({ meal, onRegenerate, onPick, pickableMeals, rawPickableMeals, onRemove, onMarkCooked, compact, pax, onPaxChange }) {
+function MealCard({ meal, onRegenerate, onPick, pickableMeals, rawPickableMeals, onRemove, onMarkCooked, compact, pax, onPaxChange, pantry }) {
   const [picking, setPicking] = useState(false);
   const [pickInput, setPickInput] = useState("");
   // Off by default — the picker shows the diet-adapted list (the normal
@@ -3637,7 +3648,7 @@ function MealCard({ meal, onRegenerate, onPick, pickableMeals, rawPickableMeals,
             <Tag text={meal.protein} />
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 3, marginTop: 4, fontSize: 11, color: C.inkSoft, fontFamily: FONT_MONO }}>
-            <Clock size={11} /> {formatDuration(meal.time)}
+            <Clock size={11} /> {formatDuration(estimatedMealMinutes(meal, pantry))}{estimatedMealMinutes(meal, pantry) < Number(meal.time) ? " · prep saved" : ""}
           </div>
           {onPaxChange && meal.date && meal.mealType && !meal.cooked && (
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }} title="Changes the headcount for every dish in this meal">
