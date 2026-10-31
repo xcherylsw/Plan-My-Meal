@@ -382,9 +382,25 @@ function requiredPrepForm(ingredient, info) {
   return matches.length === 1 ? matches[0] : "";
 }
 function pantryHasPreparedForm(pantry, name, form) {
-  if (!form) return false; // ambiguous recipe instruction: never silently assume a match
+  if (!form) return false;
+  const normalized = String(form).toLowerCase().trim();
   return pantry.some(p => wordMatch(String(name ?? "").toLowerCase(), String(p.name ?? "").toLowerCase())
-    && (p.preparedForms || []).some(f => (typeof f === "string" ? f : f.form) === form));
+    && (p.preparedForms || []).some(f => String(typeof f === "string" ? f : f.form).toLowerCase().trim() === normalized));
+}
+function pantryHasPrepReady(pantry, ingredient, info) {
+  const explicit = requiredPrepForm(ingredient, info);
+  if (explicit) return pantryHasPreparedForm(pantry, ingredient.name, explicit);
+  // A generic hint can permit multiple equivalent forms; use only those
+  // explicitly allowed by the hint, rather than assuming any cut is suitable.
+  const hint = String(info.hint || "").toLowerCase();
+  const forms = [];
+  if (/\\bmince(?:d)?\\b/.test(hint)) forms.push("minced");
+  if (/\\bslic(?:e|ed)\\b/.test(hint)) forms.push("sliced");
+  if (/\\bjulienne(?:d)?\\b/.test(hint)) forms.push("julienned");
+  if (/\\bdic(?:e|ed)\\b/.test(hint)) forms.push("diced");
+  if (/\\bchop(?:ped)?\\b/.test(hint)) forms.push("chopped");
+  if (/\\bwash(?:ed)?\\b/.test(hint) && /\\bcut\\b/.test(hint)) forms.push("washed & cut");
+  return forms.some(form => pantryHasPreparedForm(pantry, ingredient.name, form));
 }
 function classifyPrepIngredient(ingredient) {
   const n = String(ingredient.name ?? "").toLowerCase();
@@ -2040,7 +2056,7 @@ export default function MakanLedger() {
         const info = classifyPrepIngredient(i);
         if (!info) return;
         const ready = isIngredientReady(i.name);
-        if (info.kind === "aggregate" && pantryHasPreparedForm(pantry, i.name, requiredPrepForm(i, info))) return;
+        if (info.kind === "aggregate" && pantryHasPrepReady(pantry, i, info)) return;
         if (info.kind === "aggregate") {
           const key = info.label;
           if (seenInThisMeal.has(key)) return;
