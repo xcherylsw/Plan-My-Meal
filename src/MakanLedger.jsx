@@ -394,12 +394,12 @@ function pantryHasPrepReady(pantry, ingredient, info) {
   // explicitly allowed by the hint, rather than assuming any cut is suitable.
   const hint = String(info.hint || "").toLowerCase();
   const forms = [];
-  if (/\\bmince(?:d)?\\b/.test(hint)) forms.push("minced");
-  if (/\\bslic(?:e|ed)\\b/.test(hint)) forms.push("sliced");
-  if (/\\bjulienne(?:d)?\\b/.test(hint)) forms.push("julienned");
-  if (/\\bdic(?:e|ed)\\b/.test(hint)) forms.push("diced");
-  if (/\\bchop(?:ped)?\\b/.test(hint)) forms.push("chopped");
-  if (/\\bwash(?:ed)?\\b/.test(hint) && /\\bcut\\b/.test(hint)) forms.push("washed & cut");
+  if (/\bmince(?:d)?\b/.test(hint)) forms.push("minced");
+  if (/\bslic(?:e|ed)\b/.test(hint)) forms.push("sliced");
+  if (/\bjulienne(?:d)?\b/.test(hint)) forms.push("julienned");
+  if (/\bdic(?:e|ed)\b/.test(hint)) forms.push("diced");
+  if (/\bchop(?:ped)?\b/.test(hint)) forms.push("chopped");
+  if (/\bwash(?:ed)?\b/.test(hint) && /\bcut\b/.test(hint)) forms.push("washed & cut");
   return forms.some(form => pantryHasPreparedForm(pantry, ingredient.name, form));
 }
 function classifyPrepIngredient(ingredient) {
