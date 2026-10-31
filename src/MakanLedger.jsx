@@ -1304,7 +1304,10 @@ export default function MakanLedger() {
       ? prev
       : { ...prev, dislikedIngredients: [...prev.dislikedIngredients, { id: "dis" + Date.now(), name: n, substitute: (substitute || "").trim() }] });
   }
-  function updateDislikeSubstitute(id, substitute) {\n    setHousehold(prev=>({...prev,dislikedIngredients:prev.dislikedIngredients.map(d=>d.id===id?{...d,substitute}:d)}));\n  }\n  function removeDislike(id) {
+  function updateDislikeSubstitute(id, substitute) {
+    setHousehold(prev=>({...prev,dislikedIngredients:prev.dislikedIngredients.map(d=>d.id===id?{...d,substitute}:d)}));
+  }
+  function removeDislike(id) {
     setHousehold(prev => ({ ...prev, dislikedIngredients: prev.dislikedIngredients.filter(d => d.id !== id) }));
   }
   function toggleMealSlot(type) {
