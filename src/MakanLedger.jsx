@@ -907,7 +907,7 @@ export default function MakanLedger() {
   const [tab, setTab] = useState(() => {
     try {
       const saved = sessionStorage.getItem("pmm-tab");
-      return saved === "generate" ? "week" : (saved && ["home", "week", "prep", "me", "manual", "list", "pantry", "library", "import", "household"].includes(saved) ? saved : "home");
+      return saved === "generate" ? "week" : (saved && ["home", "week", "kitchen", "prep", "me", "manual", "list", "pantry", "library", "import", "household"].includes(saved) ? saved : "home");
     } catch (e) { return "home"; }
   });
   const [moreOpen, setMoreOpen] = useState(false);
@@ -2396,9 +2396,9 @@ export default function MakanLedger() {
           <nav aria-label="Sections" className="pmm-tabs">
             <TabButton icon={ChefHat} label="Home" active={tab === "home"} onClick={() => { setTab("home"); setMoreOpen(false); }} />
             <TabButton icon={Calendar} label="My week" active={tab === "week"} onClick={() => { setTab("week"); setMoreOpen(false); }} />
-            <TabButton icon={ShoppingCart} label="Shop" active={tab === "list"} onClick={() => { setTab("list"); setMoreOpen(false); }} badge={toBuy.length || null} />
-            <TabButton icon={Check} label="Prep" active={tab === "prep"} onClick={() => { setTab("prep"); setMoreOpen(false); }} badge={pendingPrepCount || null} />
-            <TabButton icon={Users} label="Me" active={["me","pantry","library","import","household","admin"].includes(tab)} onClick={() => { setTab("me"); setMoreOpen(false); }} />
+            <TabButton icon={Package} label="Kitchen" active={["kitchen","pantry","list","prep"].includes(tab)} onClick={() => { setTab("kitchen"); setMoreOpen(false); }} badge={toBuy.length || null} />
+            <TabButton icon={BookOpen} label="Library" active={["library","import","admin"].includes(tab)} onClick={() => { setTab("library"); setMoreOpen(false); }} />
+            <TabButton icon={Users} label="Me" active={["me","household"].includes(tab)} onClick={() => { setTab("me"); setMoreOpen(false); }} />
           </nav>
 
         </div>
@@ -2458,14 +2458,24 @@ export default function MakanLedger() {
             </section>
 
           </>)}
+          {tab === "kitchen" && <main style={{padding:"24px 18px 40px",display:"grid",gap:14,maxWidth:760,margin:"0 auto"}}>
+            <h2 style={{fontFamily:FONT_DISPLAY,fontSize:28,margin:"0 0 4px"}}>My Kitchen</h2>
+            <p style={{color:C.inkSoft,margin:"0 0 8px"}}>Everything you have, need to buy and can prepare — all in one place.</p>
+            {[
+              ["🥬 Pantry · Fridge · Freezer","pantry","See what is on hand and what needs using",null],
+              ["🛒 Shopping list","list","Only the ingredients missing from your kitchen",toBuy.length],
+              ["✓ Weekend Prep","prep","Prepare ahead for the meals you planned",pendingPrepCount],
+            ].map(([label,destination,description,count])=><button key={destination} onClick={()=>setTab(destination)} style={{textAlign:"left",background:"#fff",border:"1px solid #E5E3EE",borderRadius:18,padding:"18px 16px",color:C.ink}}>
+              <strong style={{fontSize:17}}>{label}{count>0?` · ${count}`:""}</strong>
+              <span style={{display:"block",fontSize:13,color:C.inkSoft,marginTop:6}}>{description}</span>
+            </button>)}
+          </main>}
           {tab === "me" && <main style={{ padding: "24px 20px", display: "grid", gap: 14, background:"#FAF7F2", minHeight:"65vh" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#F1EFFB", borderRadius: 20, padding: 16 }}><h2 style={{ margin: 0, fontSize: 28, color: C.ink }}>Your kitchen, your way.</h2><FoodArt kind="fridge" size={95}/></div>
             <p style={{ color: C.inkSoft, margin: "0 0 14px" }}>Everything behind your meals, neatly in one place.</p>
             {[
-              ["My kitchen", "pantry", "Pantry, fridge and freezer · ingredients on hand"],
               ["Household & preferences", "household", "People, portions and dietary preferences"],
               ["My cookbook", "import", "Your saved family recipes and cooking steps"],
-              ["Discover recipes", "library", "Explore recipes from the community"],
               ...(isAdmin ? [["Admin Studio", "admin", "Review and publish community recipes"]] : []),
             ].map(([label,destination,description]) => <button key={label} onClick={() => setTab(destination)}
               style={{ textAlign: "left", background: "#fff", border: "1px solid #E9E3DF", borderRadius: 20, padding: "20px 18px", color: C.ink, boxShadow:"0 5px 18px rgba(47,42,51,.04)" }}>
@@ -2532,8 +2542,8 @@ export default function MakanLedger() {
           )}
           {["pantry","household","import","library","admin"].includes(tab) && (
             <nav aria-label="Me section navigation" style={{padding:"14px 18px 12px",background:"#FAF7F2",borderBottom:"1px solid #E9E3DF"}}>
-              <button onClick={()=>setTab("me")} style={{display:"inline-flex",alignItems:"center",gap:7,background:"transparent",border:0,color:C.ink,fontWeight:750,fontSize:14,padding:"8px 0",marginBottom:10}}>
-                <span aria-hidden="true">←</span> Back to Me
+              <button onClick={()=>setTab(["pantry","list","prep"].includes(tab)?"kitchen":["library","import","admin"].includes(tab)?"library":"me")} style={{display:"inline-flex",alignItems:"center",gap:7,background:"transparent",border:0,color:C.ink,fontWeight:750,fontSize:14,padding:"8px 0",marginBottom:10}}>
+                <span aria-hidden="true">←</span> Back to {["pantry","list","prep"].includes(tab)?"Kitchen":["library","import","admin"].includes(tab)?"Library":"Me"}
               </button>
               <div style={{display:"flex",gap:8,flexWrap:"wrap",paddingBottom:4}}>
                 {[["pantry","My kitchen"],["household","Household"],["import","My cookbook"],["library","Discover"],...(isAdmin?[["admin","Admin"]]:[])].map(([id,label])=>(
