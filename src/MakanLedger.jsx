@@ -953,7 +953,7 @@ export default function MakanLedger() {
   const [skippedDays, setSkippedDays] = useState([]);
 
   const [newPantryName, setNewPantryName] = useState("");
-  const [newPantryCategory, setNewPantryCategory] = useState("seasoning");
+  const [newPantryCategory, setNewPantryCategory] = useState("other");
   const [newPantryLocation, setNewPantryLocation] = useState("pantry");
   const [newPantryQuantity, setNewPantryQuantity] = useState("");
   const [newPantryUnit, setNewPantryUnit] = useState("");
@@ -2290,6 +2290,9 @@ export default function MakanLedger() {
   function updatePantryLocation(id, location) {
     setPantry(prev => prev.map(p => p.id === id ? { ...p, location } : p));
   }
+  function updatePantryCategory(id, category) {
+    setPantry(prev => prev.map(p => p.id === id ? { ...p, category } : p));
+  }
   function clearAllUseSoon() {
     setPantry(prev => prev.map(p => ({ ...p, useSoon: false })));
   }
@@ -2563,6 +2566,7 @@ export default function MakanLedger() {
               updatePantryQuantity={updatePantryQuantity}
               toggleUseSoon={toggleUseSoon}
               updatePantryLocation={updatePantryLocation}
+              updatePantryCategory={updatePantryCategory}
               togglePantryPreparedForm={togglePantryPreparedForm}
               clearAllUseSoon={clearAllUseSoon}
               newPantryName={newPantryName} setNewPantryName={setNewPantryName}
@@ -3924,7 +3928,7 @@ function Checkbox({ checked }) {
 /* ---------------------------------------------------------------
    PANTRY SCREEN
 ------------------------------------------------------------------*/
-function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUseSoon, updatePantryLocation, togglePantryPreparedForm, clearAllUseSoon, newPantryName, setNewPantryName, newPantryCategory, setNewPantryCategory, newPantryLocation, setNewPantryLocation, newPantryQuantity, setNewPantryQuantity, newPantryUnit, setNewPantryUnit, newPantryUseSoon, setNewPantryUseSoon, addPantryItem }) {
+function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUseSoon, updatePantryLocation, updatePantryCategory, togglePantryPreparedForm, clearAllUseSoon, newPantryName, setNewPantryName, newPantryCategory, setNewPantryCategory, newPantryLocation, setNewPantryLocation, newPantryQuantity, setNewPantryQuantity, newPantryUnit, setNewPantryUnit, newPantryUseSoon, setNewPantryUseSoon, addPantryItem }) {
   const [addingIngredient, setAddingIngredient] = useState(false);
   const [moreIngredientOptions, setMoreIngredientOptions] = useState(false);
   const [pantrySearch, setPantrySearch] = useState("");
@@ -3995,13 +3999,13 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
         ))}
       </div>
 
-      <button type="button" onClick={()=>setMoreIngredientOptions(v=>!v)} aria-expanded={moreIngredientOptions} style={{border:0,background:"transparent",color:C.jade700,fontWeight:750,padding:"8px 0 12px"}}>{moreIngredientOptions?"− Fewer options":"＋ More options (category, use soon)"}</button>
-      {moreIngredientOptions && <><div style={{ fontSize: 11.5, fontWeight: 600, color: C.inkSoft, marginBottom: 6 }}>Category</div>
+      <button type="button" onClick={()=>setMoreIngredientOptions(v=>!v)} aria-expanded={moreIngredientOptions} style={{border:0,background:"transparent",color:C.jade700,fontWeight:750,padding:"8px 0 12px"}}>{moreIngredientOptions?"− Fewer options":"＋ More options (use soon)"}</button>
+      <div style={{ fontSize: 11.5, fontWeight: 600, color: C.inkSoft, marginBottom: 6 }}>Category</div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 20 }}>
         {CATEGORY_ORDER.map(cat => (
           <Chip key={cat} active={newPantryCategory === cat} onClick={() => setNewPantryCategory(cat)}>{CATEGORY_LABEL[cat]}</Chip>
         ))}
-      </div></>}
+      </div>
 
       </div>}
       <div role="group" aria-label="Storage location" style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:8,marginBottom:16}}>{LOCATIONS.map(loc=>{const count=grouped[loc.id]?.length||0;const active=selectedStorage===loc.id;return <button key={loc.id} type="button" onClick={()=>{setSelectedStorage(loc.id);setEditingPantryId(null);}} aria-pressed={active} style={{border:active?"2px solid #456D55":"1px solid #E5E3DD",borderRadius:16,background:active?"#EAF3EE":"#fff",padding:"13px 5px",display:"grid",gap:5,justifyItems:"center",color:C.ink}}><span style={{fontSize:22}}>{loc.id==="pantry"?"🫙":loc.id==="fridge"?"🥬":"❄️"}</span><strong style={{fontSize:13}}>{loc.id==="pantry"?"Pantry":loc.label}</strong><span style={{fontSize:15,fontWeight:800}}>{count}</span></button>})}</div>
@@ -4049,6 +4053,8 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
                 </div>
                 <div style={{ fontSize: 11.5, color: C.inkSoft,paddingLeft:17 }}>{item.quantity != null ? `${item.quantity} ${item.unit || ""}` : "Always on hand"}{item.useSoon ? " · ✦ Use soon" : ""}{(item.preparedForms || []).length ? ` · Prepared: ${(item.preparedForms || []).join(", ")}` : ""}</div>
                 {editingPantryId === item.id && <div style={{ display: "flex", flexDirection:"column", gap: 9 }}>
+                  <div><div style={{fontSize:12,fontWeight:800,marginBottom:7}}>Category</div><div style={{display:"flex",flexWrap:"wrap",gap:6}}>{CATEGORY_ORDER.map(cat=><button key={cat} type="button" aria-pressed={item.category===cat} onClick={()=>updatePantryCategory(item.id,cat)} style={{padding:"7px 10px",borderRadius:999,border:"1px solid #DCD5CC",background:item.category===cat?"#365C4B":"#fff",color:item.category===cat?"#fff":"#514C49",fontSize:12,fontWeight:650}}>{CATEGORY_LABEL[cat]}</button>)}</div></div>
+                  <div><div style={{fontSize:12,fontWeight:800,marginBottom:7}}>Stored in</div><div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{LOCATIONS.map(loc=><button key={loc.id} type="button" aria-pressed={(item.location||"pantry")===loc.id} onClick={()=>{updatePantryLocation(item.id,loc.id);setSelectedStorage(loc.id);}} style={{padding:"8px 12px",borderRadius:999,border:"1px solid #DCD5CC",background:(item.location||"pantry")===loc.id?"#365C4B":"#fff",color:(item.location||"pantry")===loc.id?"#fff":"#514C49",fontSize:12,fontWeight:650}}>{loc.label}</button>)}</div></div>
                   <div><div style={{fontSize:11,fontWeight:800,color:C.inkSoft,marginBottom:6}}>Already prepared as (optional)</div><div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{PREP_FORMS.map(form => <button key={form} type="button" aria-pressed={(item.preparedForms || []).includes(form)} onClick={()=>togglePantryPreparedForm(item.id,form)} style={{padding:"6px 9px",borderRadius:999,fontSize:11,border:"1px solid #DCD5CC",background:(item.preparedForms || []).includes(form)?"#365C4B":"#fff",color:(item.preparedForms || []).includes(form)?"#fff":"#514C49"}}>{form}</button>)}</div><p style={{fontSize:10,color:C.inkSoft,margin:"6px 0 0"}}>Only matching recipe cuts skip prep. Stock availability stays separate.</p></div><div style={{display:"flex",alignItems:"center",flexWrap:"wrap",gap:6}}>
                   <button
                     onClick={() => toggleUseSoon(item.id)}
@@ -4060,13 +4066,6 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
                   >
                     use soon
                   </button>
-                  <select
-                    value={item.location || "pantry"}
-                    onChange={e => updatePantryLocation(item.id, e.target.value)}
-                    style={{ border: `1px solid ${C.line}`, borderRadius: 6, padding: "3px 2px", fontFamily: FONT_MONO, fontSize: 10, color: C.inkSoft, background: "#fff", flexShrink: 0 }}
-                  >
-                    {LOCATIONS.map(loc => <option key={loc.id} value={loc.id}>{loc.label}</option>)}
-                  </select>
                   {item.quantity != null ? (
                     <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
                       <input
