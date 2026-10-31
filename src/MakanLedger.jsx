@@ -3928,6 +3928,8 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
   const [addingIngredient, setAddingIngredient] = useState(false);
   const [moreIngredientOptions, setMoreIngredientOptions] = useState(false);
   const [pantrySearch, setPantrySearch] = useState("");
+  const [selectedStorage, setSelectedStorage] = useState("pantry");
+  const [showUseSoon, setShowUseSoon] = useState(false);
   const [editingPantryId, setEditingPantryId] = useState(null);
   const grouped = useMemo(() => {
     const map = {};
@@ -3938,13 +3940,13 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
 
   return (
     <div style={{ padding: "22px 18px 32px", background:"#FAF7F2", minHeight:"70vh" }}>
-      <div style={{background:"linear-gradient(125deg,#294B3F,#456D55 65%,#779477)",borderRadius:24,padding:"25px 22px",color:"#fff",marginBottom:22,position:"relative",overflow:"hidden",boxShadow:"0 12px 28px rgba(36,68,53,.16)"}}>
+      {false && <div style={{background:"linear-gradient(125deg,#294B3F,#456D55 65%,#779477)",borderRadius:24,padding:"25px 22px",color:"#fff",marginBottom:22,position:"relative",overflow:"hidden",boxShadow:"0 12px 28px rgba(36,68,53,.16)"}}>
         <div style={{position:"absolute",right:-20,top:-28,fontSize:116,opacity:.18,transform:"rotate(-16deg)",pointerEvents:"none"}}>🥬</div>
         <div style={{fontSize:11,letterSpacing:2.2,fontWeight:800,color:"#D9EBCF",marginBottom:10}}>YOUR LITTLE FOOD HAVEN</div>
         <div style={{fontFamily:FONT_DISPLAY,fontSize:34,lineHeight:1.08,maxWidth:230,marginBottom:12}}>Good food starts here.</div>
         <div style={{fontSize:13,color:"#F1F4EA",maxWidth:265,lineHeight:1.6}}>{pantry.length} ingredients ready for your next meal · {pantry.filter(p=>p.useSoon).length} to use soon</div>
-      </div>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,gap:12}}><div><h2 style={{fontFamily:FONT_DISPLAY,fontSize:28,margin:"0 0 3px"}}>My kitchen</h2><span style={{fontSize:13,color:C.inkSoft}}>{pantry.length} ingredients on hand</span></div><button onClick={()=>{ setAddingIngredient(v=>!v); setMoreIngredientOptions(false); }} aria-expanded={addingIngredient} style={{background:"#E9A28F",border:0,borderRadius:14,padding:"12px 14px",fontWeight:800,color:C.ink}}>{addingIngredient?"Cancel":"＋ Add ingredient"}</button></div>
+      </div>}
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,gap:12}}><div><h2 style={{fontFamily:FONT_DISPLAY,fontSize:28,margin:"0 0 3px"}}>My kitchen</h2><span style={{fontSize:13,color:C.inkSoft}}>{pantry.length} ingredients on hand</span></div><button onClick={()=>{ setAddingIngredient(v=>!v); setMoreIngredientOptions(false); }} aria-expanded={addingIngredient} style={{background:"#E9A28F",border:0,borderRadius:14,padding:"12px 14px",fontWeight:800,color:C.ink}}>{addingIngredient?"Cancel":"＋ Add"}</button></div>
       {addingIngredient && <div style={{background:"#fff",border:"1px solid #E9E3DF",borderRadius:20,padding:16,marginBottom:20}}><SectionLabel>Add an ingredient</SectionLabel>
       <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
         <input
@@ -4002,18 +4004,20 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
       </div></>}
 
       </div>}
+      <div role="group" aria-label="Storage location" style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:8,marginBottom:16}}>{LOCATIONS.map(loc=>{const count=grouped[loc.id]?.length||0;const active=selectedStorage===loc.id;return <button key={loc.id} type="button" onClick={()=>{setSelectedStorage(loc.id);setEditingPantryId(null);}} aria-pressed={active} style={{border:active?"2px solid #456D55":"1px solid #E5E3DD",borderRadius:16,background:active?"#EAF3EE":"#fff",padding:"13px 5px",display:"grid",gap:5,justifyItems:"center",color:C.ink}}><span style={{fontSize:22}}>{loc.id==="pantry"?"🫙":loc.id==="fridge"?"🥬":"❄️"}</span><strong style={{fontSize:13}}>{loc.id==="pantry"?"Pantry":loc.label}</strong><span style={{fontSize:15,fontWeight:800}}>{count}</span></button>})}</div>
       <input aria-label="Search your ingredients" placeholder="Search your ingredients…" value={pantrySearch} onChange={e=>setPantrySearch(e.target.value)} style={{...fieldStyle,background:"#fff",borderRadius:14,padding:"12px 14px",marginBottom:16}} />
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <SectionLabel>Stored ingredients ({pantry.length})</SectionLabel>
+        <SectionLabel>{LOCATIONS.find(loc=>loc.id===selectedStorage)?.label} ({visibleGrouped[selectedStorage]?.length||0})</SectionLabel>
         {pantry.some(p => p.useSoon) && (
           <button onClick={clearAllUseSoon} style={{ fontSize: 10.5, color: C.clayText, fontWeight: 700, marginBottom: 8 }}>
             Clear all "use soon"
           </button>
         )}
       </div>
-      {pantry.some(p=>p.useSoon) && <div style={{background:"#FFF0E7",border:"1px solid #F4D4C6",borderRadius:18,padding:"15px 17px",marginBottom:18}}><div style={{fontWeight:800,fontSize:13,color:"#A7533D",marginBottom:7}}>✦ Cook these first</div><div style={{display:"flex",flexWrap:"wrap",gap:7}}>{pantry.filter(p=>p.useSoon).map(p=><span key={p.id} style={{background:"#fff",borderRadius:999,padding:"7px 11px",fontSize:12,fontWeight:650}}>{p.name}</span>)}</div></div>}
+      {pantry.some(p=>p.useSoon) && <button type="button" onClick={()=>setShowUseSoon(v=>!v)} aria-expanded={showUseSoon} style={{width:"100%",textAlign:"left",border:"1px solid #F4D4C6",background:"#FFF0E7",borderRadius:14,padding:"12px 14px",fontWeight:750,marginBottom:10,color:"#A7533D"}}>✦ Cook these first ({pantry.filter(p=>p.useSoon).length}) {showUseSoon?"⌃":"⌄"}</button>}
+      {showUseSoon && pantry.some(p=>p.useSoon) && <div style={{background:"#FFF0E7",border:"1px solid #F4D4C6",borderRadius:18,padding:"15px 17px",marginBottom:18}}><div style={{fontWeight:800,fontSize:13,color:"#A7533D",marginBottom:7}}>✦ Cook these first</div><div style={{display:"flex",flexWrap:"wrap",gap:7}}>{pantry.filter(p=>p.useSoon).map(p=><span key={p.id} style={{background:"#fff",borderRadius:999,padding:"7px 11px",fontSize:12,fontWeight:650}}>{p.name}</span>)}</div></div>}
 
-      {LOCATIONS.filter(loc => visibleGrouped[loc.id]?.length).map(loc => (
+      {LOCATIONS.filter(loc => loc.id === selectedStorage && visibleGrouped[loc.id]?.length).map(loc => (
         <details className="expandable" key={loc.id} open style={{ marginBottom: 14, background:"#fff",borderRadius:20,padding:"7px 15px",border:"1px solid #ECE5DD",boxShadow:"0 5px 18px rgba(65,47,34,.035)" }}>
           <summary style={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
