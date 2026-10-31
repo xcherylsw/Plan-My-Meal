@@ -703,25 +703,58 @@ function adaptMealForDiets(meal, diets) {
 // Swaps out (or drops) individual ingredients the household dislikes, rather
 // than excluding the whole dish — e.g. curry fish head keeps its place in the
 // rotation, it just loses the okra (or gets it swapped for something else).
-function applyDislikeSubs(meal, dislikes) {
-  if (!dislikes.length) return meal;
-  let changed = false;
-  const notes = [...(meal.adaptNotes || [])];
-  const ingredients = meal.ingredients
-    .map(i => {
-      const hit = dislikes.find(d => d.name && wordMatch(String(d.name ?? "").toLowerCase(), String(i.name ?? "").toLowerCase()));
-      if (!hit) return i;
-      changed = true;
-      if (hit.substitute) {
-        notes.push(`Swapped ${i.name} → ${hit.substitute} (your preference)`);
-        return { ...i, name: hit.substitute };
+// Conservative culinary substitutions. Prefer ingredients actually in the kitchen;
+// never invent a substitute for an unfamiliar ingredient.
+const VEGETABLE_SWAPS = [
+  ["peas", "carrots", "sweetcorn", "green beans", "baby corn"],
+  ["spinach", "choy sum", "kailan", "bok choy", "sweet potato leaves"],
+  ["kailan", "choy sum", "bok choy", "spinach"],
+  ["bok choy", "choy sum", "kailan", "spinach"],
+  ["cabbage", "napa cabbage", "bok choy", "choy sum"],
+  ["broccoli", "cauliflower", "baby corn", "green beans"],
+  ["carrots", "pumpkin", "sweetcorn", "baby corn"],
+  ["green beans", "long beans", "baby corn", "broccoli"],
+  ["capsicum", "bell pepper", "carrots", "baby corn"],
+  ["mushrooms", "shiitake mushrooms", "button mushrooms", "oyster mushrooms"],
+  ["okra", "green beans", "long beans", "eggplant"],
+  ["eggplant", "zucchini", "mushrooms", "okra"],
+  ["tomatoes", "cherry tomatoes", "capsicum"],
+];
+function ingredientKey(name) {
+  return String(name || "").toLowerCase().trim().replace(/[^a-z0-9 ]/g, "").replace(/\\s+/g," ");
+}
+function matchesAvoidedIngredient(name, avoided) {
+  const a=ingredientKey(name), b=ingredientKey(avoided);
+  if(!a||!b) return false;
+  return a===b || new RegExp("(^| )"+escapeRegex(b)+"( |$)","i").test(a);
+}
+function applyDislikeSubs(meal, dislikes, pantryList = []) {
+  if (!dislikes?.length || !Array.isArray(meal.ingredients)) return meal;
+  let changed=false;
+  const notes=[...(meal.adaptNotes||[])];
+  const ingredients=meal.ingredients.map(i=>{
+    const hit=dislikes.find(d=>matchesAvoidedIngredient(i.name,d.name));
+    if(!hit) return i;
+    changed=true;
+    let replacement=String(hit.substitute||"").trim();
+    if(replacement && dislikes.some(d=>matchesAvoidedIngredient(replacement,d.name))) replacement="";
+    if(!replacement) {
+      const key=ingredientKey(i.name);
+      const family=VEGETABLE_SWAPS.find(group=>group.some(v=>matchesAvoidedIngredient(key,v)));
+      if(family){
+        const options=family.filter(v=>!matchesAvoidedIngredient(key,v) && !dislikes.some(d=>matchesAvoidedIngredient(v,d.name)));
+        const inStock=options.find(v=>pantryList.some(p=>matchesAvoidedIngredient(p.name,v) || matchesAvoidedIngredient(v,p.name)));
+        replacement=inStock || options[0] || "";
       }
-      notes.push(`Left out ${i.name} (not eaten in your household)`);
-      return null;
-    })
-    .filter(Boolean);
-  if (!changed) return meal;
-  return { ...meal, ingredients, adapted: true, adaptNotes: notes };
+    }
+    if(replacement){
+      notes.push(`Swapped ${i.name} → ${replacement} (${hit.substitute?"your choice":"suggested alternative"})`);
+      return {...i,name:replacement};
+    }
+    notes.push(`Left out ${i.name} (no suitable substitute found)`);
+    return null;
+  }).filter(Boolean);
+  return changed?{...meal,ingredients,adapted:true,adaptNotes:notes}:meal;
 }
 
 function shuffle(arr) {
@@ -1271,7 +1304,7 @@ export default function MakanLedger() {
       ? prev
       : { ...prev, dislikedIngredients: [...prev.dislikedIngredients, { id: "dis" + Date.now(), name: n, substitute: (substitute || "").trim() }] });
   }
-  function removeDislike(id) {
+  function updateDislikeSubstitute(id, substitute) {\n    setHousehold(prev=>({...prev,dislikedIngredients:prev.dislikedIngredients.map(d=>d.id===id?{...d,substitute}:d)}));\n  }\n  function removeDislike(id) {
     setHousehold(prev => ({ ...prev, dislikedIngredients: prev.dislikedIngredients.filter(d => d.id !== id) }));
   }
   function toggleMealSlot(type) {
@@ -1302,7 +1335,7 @@ export default function MakanLedger() {
       .filter(m => !m.isComponent)
       .map(withDefaults)
       .map(m => adaptMealForDiets(m, household.diets))
-      .map(m => applyDislikeSubs(m, household.dislikedIngredients));
+      .map(m => applyDislikeSubs(m, household.dislikedIngredients, pantry));
     let softFallback = false;
     if (household.diets.includes("soft")) {
       const softPool = pool.filter(m => m.soft);
@@ -1315,7 +1348,7 @@ export default function MakanLedger() {
     if (household.preferredProteins.length) pool = pool.filter(m => m.custom || household.preferredProteins.includes(m.protein));
 
     return { pool, softFallback };
-  }, [myRecipes, household]);
+  }, [myRecipes, household, pantry]);
 
   // The same pool getPool() draws from, sorted alphabetically, for the
   // "pick a specific dish" control — for when you already know what you
@@ -1335,7 +1368,7 @@ export default function MakanLedger() {
     let pool = [...MEALS, ...myRecipes.map(r => ({ ...r, custom: true }))]
       .filter(m => !m.isComponent)
       .map(withDefaults)
-      .map(m => applyDislikeSubs(m, household.dislikedIngredients));
+      .map(m => applyDislikeSubs(m, household.dislikedIngredients, pantry));
     if (household.preferredCuisines.length) pool = pool.filter(m => m.custom || household.preferredCuisines.includes(m.cuisine));
     if (household.preferredProteins.length) pool = pool.filter(m => m.custom || household.preferredProteins.includes(m.protein));
     return [...pool].sort((a, b) => a.name.localeCompare(b.name));
@@ -1613,7 +1646,7 @@ export default function MakanLedger() {
     let swappedCount = 0;
     const updated = plan.map(meal => {
       let m = adaptMealForDiets(meal, household.diets);
-      m = applyDislikeSubs(m, household.dislikedIngredients);
+      m = applyDislikeSubs(m, household.dislikedIngredients, pantry);
       if (household.diets.includes("soft") && !m.soft) {
         const softPool = pool.filter(p => p.soft && p.id !== m.id && (!m.mealType || p.mealTypes.includes(m.mealType)));
         if (softPool.length) {
@@ -4071,13 +4104,13 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
    HOUSEHOLD SCREEN
 ------------------------------------------------------------------*/
 function HouseholdScreen({
-  household, toggleDiet, setHouseholdCount, setMainDishPreference, setDishesPerMealRange, toggleHouseholdList, addDislike, removeDislike,
+  household, toggleDiet, setHouseholdCount, setMainDishPreference, setDishesPerMealRange, toggleHouseholdList, addDislike, removeDislike, updateDislikeSubstitute,
   syncSettings, setSyncField, syncStatus, onPushToCloud, onPullFromCloud, onRestartTour,
 }) {
   const totalPax = household.adults + household.kids + household.elderly;
   const [dislikeInput, setDislikeInput] = useState("");
   const [substituteInput, setSubstituteInput] = useState("");
-  const [addingAvoid, setAddingAvoid] = useState(false);
+  const [addingAvoid, setAddingAvoid] = useState(false);\n  const [editingAvoidId, setEditingAvoidId] = useState(null);
 
   return (
     <div style={{padding:"20px 16px 40px",background:"#F8F8F3",minHeight:"70vh"}}>
@@ -4152,9 +4185,14 @@ function HouseholdScreen({
 
         <div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:12}}>
           {household.dislikedIngredients.map(d=><span key={d.id} style={{display:"inline-flex",alignItems:"center",gap:7,borderRadius:999,background:"#F4F2EE",padding:"8px 9px 8px 12px",fontSize:12.5,color:C.ink}}>
-            {d.name}{d.substitute?" → "+d.substitute:""}
+            <button type="button" onClick={()=>setEditingAvoidId(editingAvoidId===d.id?null:d.id)} style={{border:0,background:"transparent",padding:0,color:"inherit",font:"inherit",cursor:"pointer"}}>{d.name}{d.substitute?" → "+d.substitute:" (auto)"}</button>
             <button type="button" aria-label={"Remove "+d.name} onClick={()=>removeDislike(d.id)} style={{border:0,background:"transparent",color:C.inkSoft,padding:0,display:"flex"}}><X size={14}/></button>
           </span>)}
+          {editingAvoidId && household.dislikedIngredients.some(d=>d.id===editingAvoidId) && <div style={{flexBasis:"100%",background:"#F5F8F4",padding:12,borderRadius:12}}>
+            <div style={{fontSize:12,fontWeight:750,marginBottom:7}}>Replacement for {household.dislikedIngredients.find(d=>d.id===editingAvoidId)?.name}</div>
+            <input aria-label="Preferred replacement" value={household.dislikedIngredients.find(d=>d.id===editingAvoidId)?.substitute||""} onChange={e=>updateDislikeSubstitute(editingAvoidId,e.target.value)} placeholder="Leave blank for automatic swaps" style={{width:"100%",boxSizing:"border-box",border:"1px solid #DDE4DB",borderRadius:10,padding:11,fontSize:14}}/>
+            <button type="button" onClick={()=>setEditingAvoidId(null)} style={{marginTop:8,border:0,background:"#365C4B",color:"#fff",borderRadius:9,padding:"8px 15px"}}>Done</button>
+          </div>}
           <button type="button" onClick={()=>setAddingAvoid(v=>!v)} style={{border:"1px dashed #A7B9AA",background:"#F0F6F0",borderRadius:999,padding:"8px 12px",fontSize:12.5,fontWeight:750,color:"#365C4B"}}>{addingAvoid?"Cancel":"+ Add ingredient"}</button>
         </div>
         {addingAvoid && <div style={{display:"grid",gap:9,background:"#F7F9F6",borderRadius:13,padding:12,marginBottom:10}}>
