@@ -4232,10 +4232,6 @@ function HouseholdScreen({
         })}
       </SettingsSection>
 
->
-          ))}
-        </div>
-      </SettingsSection>
 
 
       <SettingsSection title="Help" defaultOpen={false} last>
