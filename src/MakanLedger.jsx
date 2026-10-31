@@ -413,6 +413,29 @@ function estimatedMealMinutes(meal, pantry) {
   }).length;
   return Math.max(1, original - Math.min(ready * 3, Math.floor(original * 0.25)));
 }
+// Estimate elapsed dinner time rather than summing dish durations.
+// Shared-wok recipes need more sequential attention; steaming/baking can overlap.
+function estimatedDinnerMinutes(main, side, pantry) {
+  const a = estimatedMealMinutes(main, pantry);
+  if (!(a > 0)) return Infinity;
+  if (!side) return a;
+  const b = estimatedMealMinutes(side, pantry);
+  if (!(b > 0)) return Infinity;
+  const cookingMode = meal => {
+    const text = [meal?.name, ...(meal?.steps || [])].join(" ").toLowerCase();
+    if (/steam|steamed|steaming/.test(text)) return "steam";
+    if (/bake|baked|roast|oven|simmer|braise|stew/.test(text)) return "passive";
+    if (/stir.fry|stir fried|stir-fried|saute|sauté|pan.fry|pan fried|fry/.test(text)) return "active";
+    return "mixed";
+  };
+  const modes = [cookingMode(main), cookingMode(side)];
+  const bothActive = modes.every(m => m === "active");
+  const bothPassive = modes.every(m => m === "passive" || m === "steam");
+  // Allow overlapping work, but reserve a few minutes for switching and plating.
+  const overhead = bothActive ? Math.min(10, Math.ceil(Math.min(a,b) * 0.45))
+    : bothPassive ? 2 : Math.min(5, Math.ceil(Math.min(a,b) * 0.2));
+  return Math.max(a,b) + overhead;
+}
 function pantryHasPrepReady(pantry, ingredient, info) {
   const explicit = requiredPrepForm(ingredient, info);
   if (explicit) return pantryHasPreparedForm(pantry, ingredient.name, explicit);
@@ -1536,7 +1559,7 @@ export default function MakanLedger() {
         // Conservatively sum dish times: parallel cooking cannot be assumed for every recipe.
         const quickSideFor = (main) => {
           if (!hasCategory(main, "vegetable")) {
-            const sides = q.vegSideBase.filter(m => m.id !== main.id && estimatedMealMinutes(m, kitchen) > 0);
+            const sides = q.vegSideBase.filter(m => m.id !== main.id && estimatedMealMinutes(m, kitchen) > 0 && estimatedDinnerMinutes(main, m, kitchen) <= 30);
             return [...sides].sort((a,b) => estimatedMealMinutes(a, kitchen) - estimatedMealMinutes(b, kitchen))[0] || null;
           }
           if (mainPreference === "meat-fish" && !hasRealMeat(main) && !isOneDishMeal(main)) {
@@ -1550,7 +1573,7 @@ export default function MakanLedger() {
           if (!(base > 0)) return Infinity;
           const side = quickSideFor(main);
           if (side === null) return Infinity; // required side unavailable
-          return base + (side ? estimatedMealMinutes(side, kitchen) : 0);
+          return estimatedDinnerMinutes(main, side, kitchen);
         };
         const quickEligible = quickDay ? q.base.filter(m => fullDinnerMinutes(m) <= 30) : q.base;
         // Never silently bypass the user's 30-minute limit.
@@ -1612,11 +1635,11 @@ export default function MakanLedger() {
         while (!skipBonusPadding && dishCount < targetCount) {
           let side = null, filledKind = null;
           if (needsMeat) {
-            const candidates = q.proteinSideBase.filter(m => !usedSideIds.has(m.id) && (!quickDay || estimatedMealMinutes(choice, kitchen) + estimatedMealMinutes(m, kitchen) <= 30));
+            const candidates = q.proteinSideBase.filter(m => !usedSideIds.has(m.id) && (!quickDay || estimatedDinnerMinutes(choice, m, kitchen) <= 30));
             if (candidates.length) { side = quickDay ? [...candidates].sort((a,b)=>estimatedMealMinutes(a,kitchen)-estimatedMealMinutes(b,kitchen))[0] : pickMatchingSide(candidates, choice.cuisine); filledKind = "meat"; }
           }
           if (!side && needsVeg) {
-            const candidates = q.vegSideBase.filter(m => !usedSideIds.has(m.id) && (!quickDay || estimatedMealMinutes(choice, kitchen) + estimatedMealMinutes(m, kitchen) <= 30));
+            const candidates = q.vegSideBase.filter(m => !usedSideIds.has(m.id) && (!quickDay || estimatedDinnerMinutes(choice, m, kitchen) <= 30));
             if (candidates.length) { side = quickDay ? [...candidates].sort((a,b)=>estimatedMealMinutes(a,kitchen)-estimatedMealMinutes(b,kitchen))[0] : pickMatchingSide(candidates, choice.cuisine); filledKind = "veg"; }
           }
           // No arbitrary bonus side: if the meal is complete, stop rather than pairing two dinners.
