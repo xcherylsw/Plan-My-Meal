@@ -1552,7 +1552,10 @@ export default function MakanLedger() {
         // meal. Stops early if the side pool runs out before reaching the
         // target — better a short meal than a repeated dish.
         const standalone = isOneDishMeal(choice);
-        const targetCount = standalone ? 1 : Math.min(2, (isHeavyDish(choice) ? minCount : maxCount));
+        // A one-dish label describes the recipe format, not whether it contains vegetables.
+        // Even a standalone fish/rice dish needs a vegetable side when vegetables are absent.
+        const missingVegetables = !hasCategory(choice, "vegetable");
+        const targetCount = missingVegetables ? Math.max(2, Math.min(2, maxCount)) : (standalone ? 1 : Math.min(2, (isHeavyDish(choice) ? minCount : maxCount)));
         // Egg/tofu are valid mains; don't automatically add a second protein
         // to fried egg when what the household actually wants is greens.
         let needsMeat = mainPreference === "meat-fish" && !hasRealMeat(choice) && !standalone;
@@ -1569,7 +1572,7 @@ export default function MakanLedger() {
         // meat or veg) always gets filled in — that's covering a real gap,
         // not optional variety, so it isn't left to chance.
         const isCompleteOnItsOwn = !needsMeat && !needsVeg;
-        const skipBonusPadding = standalone || isCompleteOnItsOwn;
+        const skipBonusPadding = (standalone && !needsVeg) || isCompleteOnItsOwn;
         while (!skipBonusPadding && dishCount < targetCount) {
           let side = null, filledKind = null;
           if (needsMeat) {
