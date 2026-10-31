@@ -721,7 +721,7 @@ const VEGETABLE_SWAPS = [
   ["tomatoes", "cherry tomatoes", "capsicum"],
 ];
 function ingredientKey(name) {
-  return String(name || "").toLowerCase().trim().replace(/[^a-z0-9 ]/g, "").replace(/\\s+/g," ");
+  return String(name || "").toLowerCase().trim().replace(/[^a-z0-9 ]/g, "").replace(/\s+/g," ");
 }
 function matchesAvoidedIngredient(name, avoided) {
   const a=ingredientKey(name), b=ingredientKey(avoided);
