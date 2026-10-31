@@ -2726,7 +2726,7 @@ function GenerateScreen(props) {
             <strong style={{display:"block",fontSize:15}}>{label}</strong><span style={{display:"block",fontSize:12,color:C.inkSoft,marginTop:5}}>{description}</span>
           </button>)}
         </div>
-      </section>
+      </section>}
       {planningMode!=="auto" && <section style={{background:"#fff",border:`1px solid ${C.line}`,borderRadius:22,padding:17,marginBottom:16}}>
         <div style={{display:"flex",alignItems:"center",gap:12}}><FoodArt kind={planningMode==="custom"?"meal":"prep"} size={75}/><div>
           <strong style={{fontFamily:FONT_DISPLAY,fontSize:22}}>{planningMode==="custom"?"Make it yours":"Every detail, your way"}</strong>
