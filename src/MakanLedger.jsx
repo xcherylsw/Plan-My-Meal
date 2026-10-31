@@ -3950,62 +3950,34 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
         <div style={{fontSize:13,color:"#F1F4EA",maxWidth:265,lineHeight:1.6}}>{pantry.length} ingredients ready for your next meal · {pantry.filter(p=>p.useSoon).length} to use soon</div>
       </div>}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,gap:12}}><div><h2 style={{fontFamily:FONT_DISPLAY,fontSize:28,margin:"0 0 3px"}}>My kitchen</h2><span style={{fontSize:13,color:C.inkSoft}}>{pantry.length} ingredients on hand</span></div><button onClick={()=>{ setAddingIngredient(v=>!v); setMoreIngredientOptions(false); }} aria-expanded={addingIngredient} style={{background:"#E9A28F",border:0,borderRadius:14,padding:"12px 14px",fontWeight:800,color:C.ink}}>{addingIngredient?"Cancel":"＋ Add"}</button></div>
-      {addingIngredient && <div style={{background:"#fff",border:"1px solid #E9E3DF",borderRadius:20,padding:16,marginBottom:20}}><SectionLabel>Add an ingredient</SectionLabel>
-      <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-        <input
-          value={newPantryName}
-          onChange={e => setNewPantryName(e.target.value)}
-          onKeyDown={e => { if (e.key === "Enter" && newPantryName.trim()) { addPantryItem(); setAddingIngredient(false); } }}
-          placeholder="e.g. Dried noodles, or chicken thigh you got on sale"
-          style={{ flex: 1, border: `1px solid ${C.line}`, borderRadius: 8, padding: "9px 10px", fontFamily: FONT_BODY, fontSize: 13, background: "#fff", color: C.ink }}
-        />
-        <button aria-label="Save ingredient" disabled={!newPantryName.trim()} onClick={()=>{ addPantryItem(); setAddingIngredient(false); setMoreIngredientOptions(false); }} style={{ background: C.mustard, border: "none", borderRadius: 8, padding: "0 12px", color: C.jade900, opacity:newPantryName.trim()?1:0.5 }}>
-          <Plus size={16} />
-        </button>
-      </div>
-
-      {moreIngredientOptions && <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-        <Chip active={newPantryUseSoon} onClick={() => setNewPantryUseSoon(v => !v)}>Use soon</Chip>
-        <span style={{ fontSize: 10.5, color: C.inkSoft, lineHeight: 1.3 }}>
-          A staple and something bought on sale can be the same thing — toggle this on and the generator will prioritize it.
-        </span>
-      </div>}
-
-      <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-        <input
-          type="number"
-          value={newPantryQuantity}
-          onChange={e => setNewPantryQuantity(e.target.value)}
-          placeholder="Qty (optional)"
-          style={{ flex: 2, minWidth: 0, border: `1px solid ${C.line}`, borderRadius: 8, padding: "9px 10px", fontFamily: FONT_MONO, fontSize: 12.5, background: "#fff", color: C.ink }}
-        />
-        <input
-          value={newPantryUnit}
-          onChange={e => setNewPantryUnit(e.target.value)}
-          placeholder="kg, pcs…"
-          style={{ flex: 1, minWidth: 0, maxWidth: 90, border: `1px solid ${C.line}`, borderRadius: 8, padding: "9px 10px", fontFamily: FONT_MONO, fontSize: 12.5, background: "#fff", color: C.ink }}
-        />
-      </div>
-      <p style={{ fontSize: 10.5, color: C.inkSoft, marginTop: -4, marginBottom: 10, fontStyle: "italic" }}>
-        Leave quantity blank for "I always have this." Set a quantity when you bulk-buy something on sale —
-        it'll only ask you to top it up once you're running low, not the moment you have any at all.
-      </p>
-
-      <div style={{ fontSize: 11.5, fontWeight: 600, color: C.inkSoft, marginBottom: 6 }}>Where it's stored</div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
-        {LOCATIONS.map(loc => (
-          <Chip key={loc.id} active={newPantryLocation === loc.id} onClick={() => setNewPantryLocation(loc.id)}>{loc.label}</Chip>
-        ))}
-      </div>
-
-      <button type="button" onClick={()=>setMoreIngredientOptions(v=>!v)} aria-expanded={moreIngredientOptions} style={{border:0,background:"transparent",color:C.jade700,fontWeight:750,padding:"8px 0 12px"}}>{moreIngredientOptions?"− Fewer options":"＋ More options (use soon)"}</button>
-      <div style={{ fontSize: 11.5, fontWeight: 600, color: C.inkSoft, marginBottom: 6 }}>Category</div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 20 }}>
-        {CATEGORY_ORDER.map(cat => (
-          <Chip key={cat} active={newPantryCategory === cat} onClick={() => setNewPantryCategory(cat)}>{CATEGORY_LABEL[cat]}</Chip>
-        ))}
-      </div>
-
+      {addingIngredient && <div style={{background:"#fff",border:"1px solid #E9E3DF",borderRadius:20,padding:16,marginBottom:20,boxShadow:"0 8px 24px rgba(30,50,35,.05)"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+          <strong style={{fontSize:17,color:C.ink}}>Add to my kitchen</strong>
+          <button type="button" aria-label="Close add ingredient" onClick={()=>setAddingIngredient(false)} style={{border:0,background:"transparent",fontSize:22,color:C.inkSoft,padding:"4px 8px"}}>×</button>
+        </div>
+        <label style={{display:"block",fontSize:12,fontWeight:750,marginBottom:6,color:C.inkSoft}}>Ingredient</label>
+        <input autoFocus value={newPantryName} onChange={e=>setNewPantryName(e.target.value)} placeholder="e.g. Chicken thigh" style={{...fieldStyle,width:"100%",boxSizing:"border-box",borderRadius:12,padding:"13px 14px",fontSize:16,marginBottom:14}} />
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,marginBottom:8}}>
+          <strong style={{fontSize:13}}>Use soon</strong>
+          <button type="button" role="switch" aria-checked={newPantryUseSoon} onClick={()=>setNewPantryUseSoon(v=>!v)} style={{border:0,borderRadius:999,background:newPantryUseSoon?"#365C4B":"#E7E6E4",width:48,height:28,padding:3,display:"flex",justifyContent:newPantryUseSoon?"flex-end":"flex-start",alignItems:"center"}}><span style={{display:"block",background:"#fff",borderRadius:"50%",width:22,height:22,boxShadow:"0 1px 3px #0002"}} /></button>
+        </div>
+        <div style={{fontSize:12,color:C.inkSoft,marginBottom:16}}>Prioritise this ingredient in your next meal plan.</div>
+        <div style={{fontSize:12,fontWeight:750,color:C.inkSoft,marginBottom:8}}>Stored in</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:7,marginBottom:16}}>
+          {LOCATIONS.map(loc=><button key={loc.id} type="button" aria-pressed={newPantryLocation===loc.id} onClick={()=>setNewPantryLocation(loc.id)} style={{padding:"11px 3px",borderRadius:12,border:newPantryLocation===loc.id?"2px solid #365C4B":"1px solid #DDDCD8",background:newPantryLocation===loc.id?"#EAF3EE":"#fff",color:C.ink,fontSize:12,fontWeight:750}}>{loc.id==="pantry"?"Pantry":loc.label}</button>)}
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+          <label style={{fontSize:12,fontWeight:750,color:C.inkSoft}}>Category
+            <select value={newPantryCategory} onChange={e=>setNewPantryCategory(e.target.value)} style={{...fieldStyle,width:"100%",boxSizing:"border-box",marginTop:6,borderRadius:11,padding:"11px 8px",background:"#fff",fontSize:14}}>{CATEGORY_ORDER.map(cat=><option key={cat} value={cat}>{CATEGORY_LABEL[cat]}</option>)}</select>
+          </label>
+          <label style={{fontSize:12,fontWeight:750,color:C.inkSoft}}>Quantity <span style={{fontWeight:400}}>(optional)</span>
+            <div style={{display:"flex",gap:5,marginTop:6}}>
+              <input type="number" min="0" value={newPantryQuantity} onChange={e=>setNewPantryQuantity(e.target.value)} placeholder="Qty" style={{...fieldStyle,width:"52%",minWidth:0,boxSizing:"border-box",borderRadius:11,padding:"11px 8px",fontSize:14}} />
+              <input value={newPantryUnit} onChange={e=>setNewPantryUnit(e.target.value)} placeholder="Unit" aria-label="Unit" style={{...fieldStyle,width:"48%",minWidth:0,boxSizing:"border-box",borderRadius:11,padding:"11px 6px",fontSize:14}} />
+            </div>
+          </label>
+        </div>
+        <button type="button" disabled={!newPantryName.trim()} onClick={()=>{addPantryItem();setAddingIngredient(false);}} style={{width:"100%",border:0,borderRadius:13,padding:"14px 16px",fontSize:15,fontWeight:800,background:"#365C4B",color:"#fff",opacity:newPantryName.trim()?1:.5}}>Add ingredient</button>
       </div>}
       <div role="group" aria-label="Storage location" style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:8,marginBottom:16}}>{LOCATIONS.map(loc=>{const count=grouped[loc.id]?.length||0;const active=selectedStorage===loc.id;return <button key={loc.id} type="button" onClick={()=>{setSelectedStorage(loc.id);setEditingPantryId(null);}} aria-pressed={active} style={{border:active?"2px solid #456D55":"1px solid #E5E3DD",borderRadius:16,background:active?"#EAF3EE":"#fff",padding:"13px 5px",display:"grid",gap:5,justifyItems:"center",color:C.ink}}><span style={{fontSize:22}}>{loc.id==="pantry"?"🫙":loc.id==="fridge"?"🥬":"❄️"}</span><strong style={{fontSize:13}}>{loc.id==="pantry"?"Pantry":loc.label}</strong><span style={{fontSize:15,fontWeight:800}}>{count}</span></button>})}</div>
       <input aria-label="Search your ingredients" placeholder="Search your ingredients…" value={pantrySearch} onChange={e=>setPantrySearch(e.target.value)} style={{...fieldStyle,background:"#fff",borderRadius:14,padding:"12px 14px",marginBottom:16}} />
