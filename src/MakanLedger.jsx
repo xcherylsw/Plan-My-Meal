@@ -357,25 +357,29 @@ const CUT_HINTS = [
   { match: "scallion", note: "cut into short lengths" },
   { match: "spring onion", note: "cut into short lengths" },
   { match: "lemongrass", note: "bruise, then slice the white part" },
-  { match: "cabbage", note: "cut into bite-sized pieces" },
+  { match: "cabbage", note: "chop into strips" },
   { match: "spinach", note: "trim the roots and wash well" },
   { match: "carrot", note: "peel, then slice or julienne" },
   { match: "long beans", note: "trim ends, cut into short lengths" },
   { match: "bean sprouts", note: "rinse; trim tails if you like" },
-  { match: "mixed vegetables", note: "wash and cut into bite-sized pieces" },
+  { match: "mixed vegetables", note: "wash and dice or slice as needed" },
 ];
 function getCutHint(name) {
   const n = String(name ?? "").toLowerCase();
   const hit = CUT_HINTS.find(h => n.includes(h.match));
-  return hit ? hit.note : "wash and cut into bite-sized pieces";
+  if (hit) return hit.note;
+  if (/potato/.test(n)) return "peel and dice; cut into wedges for roasting";
+  if (/tomato/.test(n)) return "wash and cut into wedges";
+  if (/cucumber/.test(n)) return "wash and slice";
+  return "wash and chop";
 }
-const PREP_FORMS = ["whole", "minced", "sliced", "julienned", "diced", "chopped", "paste", "washed & cut", "bite-sized pieces", "other"];
+const PREP_FORMS = ["whole", "minced", "sliced", "julienned", "diced", "chopped", "paste", "washed & cut", "wedges", "other"];
 function requiredPrepForm(ingredient, info) {
   const explicit = String(ingredient.prepForm || ingredient.preparation || "").toLowerCase().trim();
   if (explicit && PREP_FORMS.includes(explicit)) return explicit;
   if (info.kind !== "aggregate") return "";
   const hint = String(info.hint || "").toLowerCase();
-  if (/bite[- ]sized pieces?/.test(hint)) return "bite-sized pieces";
+  if (/\bwedges?\b/.test(hint) && !/\b(or|either)\b/.test(hint)) return "wedges";
   if (/\b(or|either)\b/.test(hint)) return "";
   if (/\bmince(?:d)?\b/.test(hint)) return "minced";
   if (/\bslic(?:e|ed)\b/.test(hint)) return "sliced";
@@ -409,7 +413,7 @@ function pantryHasPrepReady(pantry, ingredient, info) {
   if (/\bjulienne(?:d)?\b/.test(hint)) forms.push("julienned");
   if (/\bdic(?:e|ed)\b/.test(hint)) forms.push("diced");
   if (/\bchop(?:ped)?\b/.test(hint)) forms.push("chopped");
-  if (/bite[- ]sized pieces?/.test(hint)) forms.push("bite-sized pieces");
+  if (/\bwedges?\b/.test(hint)) forms.push("wedges");
   if (/\bwash(?:ed)?\b/.test(hint) && /\bcut\b/.test(hint)) forms.push("washed & cut");
   return forms.some(form => pantryHasPreparedForm(pantry, ingredient.name, form));
 }
