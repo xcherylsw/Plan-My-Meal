@@ -3926,6 +3926,7 @@ function Checkbox({ checked }) {
 ------------------------------------------------------------------*/
 function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUseSoon, updatePantryLocation, togglePantryPreparedForm, clearAllUseSoon, newPantryName, setNewPantryName, newPantryCategory, setNewPantryCategory, newPantryLocation, setNewPantryLocation, newPantryQuantity, setNewPantryQuantity, newPantryUnit, setNewPantryUnit, newPantryUseSoon, setNewPantryUseSoon, addPantryItem }) {
   const [addingIngredient, setAddingIngredient] = useState(false);
+  const [moreIngredientOptions, setMoreIngredientOptions] = useState(false);
   const [pantrySearch, setPantrySearch] = useState("");
   const [editingPantryId, setEditingPantryId] = useState(null);
   const grouped = useMemo(() => {
@@ -3943,22 +3944,22 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
         <div style={{fontFamily:FONT_DISPLAY,fontSize:34,lineHeight:1.08,maxWidth:230,marginBottom:12}}>Good food starts here.</div>
         <div style={{fontSize:13,color:"#F1F4EA",maxWidth:265,lineHeight:1.6}}>{pantry.length} ingredients ready for your next meal · {pantry.filter(p=>p.useSoon).length} to use soon</div>
       </div>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,gap:12}}><div><h2 style={{fontFamily:FONT_DISPLAY,fontSize:28,margin:"0 0 3px"}}>My kitchen</h2><span style={{fontSize:13,color:C.inkSoft}}>{pantry.length} ingredients on hand</span></div><button onClick={()=>setAddingIngredient(v=>!v)} aria-expanded={addingIngredient} style={{background:"#E9A28F",border:0,borderRadius:14,padding:"12px 14px",fontWeight:800,color:C.ink}}>{addingIngredient?"Close":"＋ Add"}</button></div>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,gap:12}}><div><h2 style={{fontFamily:FONT_DISPLAY,fontSize:28,margin:"0 0 3px"}}>My kitchen</h2><span style={{fontSize:13,color:C.inkSoft}}>{pantry.length} ingredients on hand</span></div><button onClick={()=>{ setAddingIngredient(v=>!v); setMoreIngredientOptions(false); }} aria-expanded={addingIngredient} style={{background:"#E9A28F",border:0,borderRadius:14,padding:"12px 14px",fontWeight:800,color:C.ink}}>{addingIngredient?"Cancel":"＋ Add ingredient"}</button></div>
       {addingIngredient && <div style={{background:"#fff",border:"1px solid #E9E3DF",borderRadius:20,padding:16,marginBottom:20}}><SectionLabel>Add an ingredient</SectionLabel>
       <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
         <input
           value={newPantryName}
           onChange={e => setNewPantryName(e.target.value)}
-          onKeyDown={e => { if (e.key === "Enter") addPantryItem(); }}
+          onKeyDown={e => { if (e.key === "Enter" && newPantryName.trim()) { addPantryItem(); setAddingIngredient(false); } }}
           placeholder="e.g. Dried noodles, or chicken thigh you got on sale"
           style={{ flex: 1, border: `1px solid ${C.line}`, borderRadius: 8, padding: "9px 10px", fontFamily: FONT_BODY, fontSize: 13, background: "#fff", color: C.ink }}
         />
-        <button onClick={addPantryItem} style={{ background: C.mustard, border: "none", borderRadius: 8, padding: "0 12px", color: C.jade900 }}>
+        <button aria-label="Save ingredient" disabled={!newPantryName.trim()} onClick={()=>{ addPantryItem(); setAddingIngredient(false); setMoreIngredientOptions(false); }} style={{ background: C.mustard, border: "none", borderRadius: 8, padding: "0 12px", color: C.jade900, opacity:newPantryName.trim()?1:0.5 }}>
           <Plus size={16} />
         </button>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+      {moreIngredientOptions && <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
         <Chip active={newPantryUseSoon} onClick={() => setNewPantryUseSoon(v => !v)}>Use soon</Chip>
         <span style={{ fontSize: 10.5, color: C.inkSoft, lineHeight: 1.3 }}>
           A staple and something bought on sale can be the same thing — toggle this on and the generator will prioritize it.
@@ -3992,12 +3993,13 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
         ))}
       </div>
 
-      <div style={{ fontSize: 11.5, fontWeight: 600, color: C.inkSoft, marginBottom: 6 }}>Category</div>
+      <button type="button" onClick={()=>setMoreIngredientOptions(v=>!v)} aria-expanded={moreIngredientOptions} style={{border:0,background:"transparent",color:C.jade700,fontWeight:750,padding:"8px 0 12px"}}>{moreIngredientOptions?"− Fewer options":"＋ More options (category, use soon)"}</button>
+      {moreIngredientOptions && <><div style={{ fontSize: 11.5, fontWeight: 600, color: C.inkSoft, marginBottom: 6 }}>Category</div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 20 }}>
         {CATEGORY_ORDER.map(cat => (
           <Chip key={cat} active={newPantryCategory === cat} onClick={() => setNewPantryCategory(cat)}>{CATEGORY_LABEL[cat]}</Chip>
         ))}
-      </div>
+      </div></>}
 
       </div>}
       <input aria-label="Search your ingredients" placeholder="Search your ingredients…" value={pantrySearch} onChange={e=>setPantrySearch(e.target.value)} style={{...fieldStyle,background:"#fff",borderRadius:14,padding:"12px 14px",marginBottom:16}} />
