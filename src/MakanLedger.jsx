@@ -3822,22 +3822,21 @@ function ShoppingListScreen({ toBuyByCategory, haveIt, checkedItems, toggleCheck
         </div>
       ) : (
         <>
-          <ZigZag />
-          <div style={{ background: C.paper, padding: "14px 18px 4px" }}>
-            <div style={{ fontFamily: FONT_MONO, fontSize: 11, color: C.inkSoft, letterSpacing: 0.5, display: "flex", justifyContent: "space-between" }}>
-              <span>MAKAN LEDGER</span>
+          <div style={{ background: "#fff", border: `1px solid ${C.line}`, borderRadius: 22, padding: "20px 18px", boxShadow: "0 6px 24px rgba(31,55,44,.045)" }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: 12, color: C.inkSoft, letterSpacing: 0, display: "flex", justifyContent: "space-between" }}>
+              <span style={{ fontFamily: FONT_BODY, fontWeight: 800, fontSize: 18, letterSpacing: 0, color: C.ink }}>Your shopping list</span>
               <span>{new Date().toLocaleDateString("en-SG", { day: "2-digit", month: "short" })}</span>
             </div>
             {targetPax > 0 && (
-              <div style={{ fontFamily: FONT_MONO, fontSize: 10.5, color: C.jade700, marginTop: 4 }}>
-                Quantities scaled to each meal's headcount (default {targetPax} pax) where a recipe has amounts saved
+              <div style={{ fontFamily: FONT_BODY, fontSize: 12, color: C.inkSoft, marginTop: 8, lineHeight: 1.45 }}>
+                For your planned meals · {targetPax} people. Check quantities before shopping.
               </div>
             )}
-            <div style={{ borderTop: `1.5px dashed ${C.line}`, margin: "10px 0" }} />
+            <div style={{ borderTop: `1px solid ${C.line}`, margin: "16px 0" }} />
 
             {CATEGORY_ORDER.filter(cat => toBuyByCategory[cat]?.length).map(cat => (
               <div key={cat} style={{ marginBottom: 12 }}>
-                <div style={{ fontFamily: FONT_MONO, fontSize: 10.5, fontWeight: 700, color: C.jade700, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 4 }}>
+                <div style={{ fontFamily: FONT_BODY, fontSize: 14, fontWeight: 800, color: C.jade700, textTransform: "none", letterSpacing: 0, marginBottom: 10 }}>
                   {CATEGORY_LABEL[cat]}
                 </div>
                 {toBuyByCategory[cat].map(item => (
@@ -3848,7 +3847,7 @@ function ShoppingListScreen({ toBuyByCategory, haveIt, checkedItems, toggleCheck
 
             {extraItems.length > 0 && (
               <div style={{ marginBottom: 12 }}>
-                <div style={{ fontFamily: FONT_MONO, fontSize: 10.5, fontWeight: 700, color: C.jade700, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 4 }}>
+                <div style={{ fontFamily: FONT_BODY, fontSize: 14, fontWeight: 800, color: C.jade700, textTransform: "none", letterSpacing: 0, marginBottom: 10 }}>
                   Added by you
                 </div>
                 {extraItems.map(item => (
@@ -3891,7 +3890,7 @@ function ShoppingListScreen({ toBuyByCategory, haveIt, checkedItems, toggleCheck
               <span>{checkedCount}/{totalCount + extraItems.length}</span>
             </div>
           </div>
-          <ZigZag flip />
+
 
           <button
             onClick={handleMarkUsed}
@@ -3939,35 +3938,35 @@ function ReceiptRow({ item, checked, onToggle, onSwapMeal, onPostponeMeal, canPo
   const [expanded, setExpanded] = useState(false);
   const refs = item.mealRefs || [];
   return (
-    <div style={{ padding: "5px 0" }}>
+    <div style={{ padding: "12px 0", borderBottom: `1px solid ${C.line}` }}>
       <div onClick={onToggle} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
           <Checkbox checked={checked} />
           <CategoryDot category={item.category} />
           <span style={{
-            fontFamily: FONT_MONO, fontSize: 13, color: checked ? C.inkSoft : C.ink,
+            fontFamily: FONT_BODY, fontSize: 15, color: checked ? C.inkSoft : C.ink,
             textDecoration: checked ? "line-through" : "none",
           }}>{item.name}{item.fromStock && <span style={{ color: C.sageText, fontStyle: "italic" }}> (top up)</span>}</span>
         </div>
         {item.amount != null ? (
-          <span style={{ fontFamily: FONT_MONO, fontSize: 11.5, color: C.inkSoft, flexShrink: 0 }}>
+          <span style={{ fontFamily: FONT_BODY, fontSize: 13, fontWeight: 650, color: C.inkSoft, flexShrink: 0 }}>
             {formatQty(item.amount)} {item.unit}
           </span>
         ) : item.count > 1 && (
-          <span style={{ fontFamily: FONT_MONO, fontSize: 11.5, color: C.inkSoft }}>×{item.count}</span>
+          <span style={{ fontFamily: FONT_BODY, fontSize: 13, color: C.inkSoft }}>×{item.count}</span>
         )}
       </div>
       {refs.length > 0 && !checked && (
-        <div style={{ marginLeft: 30, marginTop: 4 }}>
+        <div style={{ marginLeft: 32, marginTop: 2 }}>
           <button
             onClick={(e) => { e.stopPropagation(); setExpanded(v => !v); }}
             style={{
               display: "inline-flex", alignItems: "center", gap: 5,
-              fontFamily: FONT_BODY, fontSize: 11.5, fontWeight: 600, color: C.clayText, cursor: "pointer",
-              background: "#F7E6DC", border: "1px solid #E3C2A8", borderRadius: 999, padding: "4px 10px",
+              fontFamily: FONT_BODY, fontSize: 12, fontWeight: 600, color: C.jade700, cursor: "pointer",
+              background: "transparent", border: "none", borderRadius: 8, padding: "5px 0",
             }}
           >
-            <AlertTriangle size={12} /> Can't find this? <span style={{ opacity: 0.7 }}>{expanded ? "▾" : "▸"}</span>
+            Options <span style={{ opacity: 0.7 }}>{expanded ? "▾" : "▸"}</span>
           </button>
           {expanded && (
             <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 5 }}>
