@@ -4113,7 +4113,8 @@ function HouseholdScreen({
   const totalPax = household.adults + household.kids + household.elderly;
   const [dislikeInput, setDislikeInput] = useState("");
   const [substituteInput, setSubstituteInput] = useState("");
-  const [addingAvoid, setAddingAvoid] = useState(false);\n  const [editingAvoidId, setEditingAvoidId] = useState(null);
+  const [addingAvoid, setAddingAvoid] = useState(false);
+  const [editingAvoidId, setEditingAvoidId] = useState(null);
 
   return (
     <div style={{padding:"20px 16px 40px",background:"#F8F8F3",minHeight:"70vh"}}>
