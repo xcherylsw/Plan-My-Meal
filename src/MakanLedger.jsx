@@ -4079,42 +4079,29 @@ function HouseholdScreen({
   const [substituteInput, setSubstituteInput] = useState("");
 
   return (
-    <div style={{ padding: "24px 18px 36px",background:"#FAF7F2",minHeight:"70vh" }}>
-      <div style={{background:"linear-gradient(125deg,#534A72,#82769F)",color:"#fff",borderRadius:24,padding:"26px 22px",marginBottom:18,position:"relative",overflow:"hidden"}}><div style={{position:"absolute",right:-10,top:5,fontSize:96,opacity:.16,pointerEvents:"none"}}>🏡</div><div style={{fontSize:11,fontWeight:800,letterSpacing:2,color:"#EAE4FF",marginBottom:9}}>MADE FOR YOUR TABLE</div><h2 style={{fontFamily:FONT_DISPLAY,fontSize:32,lineHeight:1.1,margin:"0 0 12px",maxWidth:250}}>Everyone eats happy.</h2><div style={{fontSize:13,lineHeight:1.6,color:"#F4F0FF"}}>{totalPax} people · {household.dishesPerMealMin}–{household.dishesPerMealMax} dishes per meal</div></div>
-      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:18}}>{[`${household.adults} adults`,`${household.kids} kids`,`${household.elderly} elderly`].filter(x=>!x.startsWith("0 ")).map(x=><span key={x} style={{background:"#F2EBF6",border:"1px solid #E6DAEF",borderRadius:999,padding:"10px 14px",fontSize:13,fontWeight:700,color:"#584B70"}}>{x}</span>)}</div>
-      <details style={{background:"#fff",borderRadius:18,padding:"16px 18px",marginBottom:14,border:"1px solid #E9E3DF"}}><summary style={{fontWeight:800,fontSize:15,cursor:"pointer"}}>Adjust people & portions <span style={{float:"right",color:"#887A91"}}>＋</span></summary><div style={{paddingTop:18}}>
-      <SectionLabel>Who's eating</SectionLabel>
-      <Stepper label="Adults" value={household.adults} min={0} max={12} onChange={v => setHouseholdCount("adults", v)} />
-      <Stepper label="Kids" value={household.kids} min={0} max={12} onChange={v => setHouseholdCount("kids", v)} />
-      <Stepper label="Elderly" value={household.elderly} min={0} max={12} onChange={v => setHouseholdCount("elderly", v)} />
-
-      <div style={{
-        marginTop: 4, marginBottom: 20, fontFamily: FONT_MONO, fontSize: 12, color: C.inkSoft,
-        display: "flex", alignItems: "center", gap: 6,
-      }}>
-        <Users size={13} color={C.jade700} />
-        <span>{totalPax} pax total</span>
+    <div style={{padding:"20px 16px 40px",background:"#F8F8F3",minHeight:"70vh"}}>
+      <div style={{marginBottom:18}}>
+        <div style={{fontSize:11,fontWeight:800,letterSpacing:1.3,color:"#527663",marginBottom:6}}>YOUR HOUSEHOLD</div>
+        <h2 style={{fontFamily:FONT_DISPLAY,fontSize:29,margin:"0 0 6px"}}>Make it yours.</h2>
+        <p style={{fontSize:13,color:C.inkSoft,margin:0}}>Set it once. We'll plan around your family.</p>
       </div>
-
-      <SectionLabel>How you eat</SectionLabel>
-      <Stepper
-        label="Dishes per meal — minimum"
-        value={household.dishesPerMealMin}
-        min={1} max={6}
-        onChange={v => setDishesPerMealRange("min", v)}
-      />
-      <Stepper
-        label="Dishes per meal — maximum"
-        value={household.dishesPerMealMax}
-        min={1} max={6}
-        onChange={v => setDishesPerMealRange("max", v)}
-      />
-      <p style={{ fontSize: 10.5, color: C.inkSoft, marginTop: -8, marginBottom: 20, lineHeight: 1.4 }}>
-        {household.dishesPerMealMin === household.dishesPerMealMax
-          ? <>Set the same number for both to always aim for exactly {household.dishesPerMealMax} dish{household.dishesPerMealMax > 1 ? "es" : ""}. A couple might just want one all-in-one dish; a bigger household eating family-style might set both to 4 or 5.</>
-          : <>A big family eating family-style can set a range like {household.dishesPerMealMin}–{household.dishesPerMealMax}. Rich, already-filling mains (curry, rendang, and the like) aim for the low end since they don't need much padding out; lighter mains aim for the high end so the table still gets the variety.</>}
-      </p>
-      </div></details>
+      <div style={{background:"#EAF3EC",border:"1px solid #D4E5D8",borderRadius:18,padding:"16px",marginBottom:14,display:"flex",alignItems:"center",gap:12}}>
+        <span style={{fontSize:27}}>🏡</span><div><strong style={{fontSize:17}}>{totalPax} people at your table</strong>
+        <div style={{fontSize:12,color:"#54705E",marginTop:4}}>{household.adults} adults · {household.kids} kids · {household.elderly} elderly · {household.dishesPerMealMin}–{household.dishesPerMealMax} dishes</div></div>
+      </div>
+      <details style={{background:"#fff",border:"1px solid #E4E7E1",borderRadius:17,marginBottom:12,overflow:"hidden"}}>
+        <summary style={{padding:"16px",cursor:"pointer",fontSize:14,fontWeight:800,listStyle:"none",display:"flex",justifyContent:"space-between"}}>People & portions <span style={{fontSize:12,color:"#527663"}}>Edit ⌄</span></summary>
+        <div style={{padding:"12px 16px 16px",borderTop:"1px solid #F1F1ED"}}>
+          <strong style={{fontSize:12}}>Who's eating?</strong>
+          <Stepper label="Adults" value={household.adults} min={0} max={12} onChange={v=>setHouseholdCount("adults",v)}/>
+          <Stepper label="Kids" value={household.kids} min={0} max={12} onChange={v=>setHouseholdCount("kids",v)}/>
+          <Stepper label="Elderly" value={household.elderly} min={0} max={12} onChange={v=>setHouseholdCount("elderly",v)}/>
+          <strong style={{fontSize:12}}>Dishes per meal</strong>
+          <Stepper label="Minimum" value={household.dishesPerMealMin} min={1} max={6} onChange={v=>setDishesPerMealRange("min",v)}/>
+          <Stepper label="Maximum" value={household.dishesPerMealMax} min={1} max={6} onChange={v=>setDishesPerMealRange("max",v)}/>
+          <p style={{fontSize:12,color:C.inkSoft,margin:"8px 0 0"}}>Set a range, or use the same number for both.</p>
+        </div>
+      </details>
       <SettingsSection
         title="Dietary needs"
         countLabel={household.diets.length ? `${household.diets.length} set` : null}
@@ -4201,7 +4188,7 @@ function HouseholdScreen({
       <SettingsSection
         title="Taste preferences"
         countLabel={(household.preferredCuisines.length + household.preferredProteins.length) ? `${household.preferredCuisines.length + household.preferredProteins.length} set` : null}
-        defaultOpen={household.preferredCuisines.length + household.preferredProteins.length > 0}
+        defaultOpen={false}
       >
         <p style={{ fontSize: 11.5, color: C.inkSoft, marginTop: 0, marginBottom: 10 }}>
           Optional — narrows the built-in idea pool to these. Leave blank for no restriction.
@@ -4253,30 +4240,14 @@ function HouseholdScreen({
 // everyone already reads as "there's more here", so it does the explaining
 // instead of the label having to; the "settings-section" class picks up the
 // rotate-on-open rule from the global stylesheet below.
-function SettingsSection({ title, countLabel, defaultOpen, last, children }) {
-  return (
-    <details className="expandable" open={defaultOpen} style={{ marginBottom: last ? 0 : 22 }}>
-      <summary style={{
-        display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer",
-        listStyle: "none", marginBottom: 4, background: C.paperDim, borderRadius: 10, padding: "10px 12px",
-      }}>
-        <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{
-            fontFamily: FONT_MONO, fontSize: 10.5, fontWeight: 600, color: C.inkSoft,
-            textTransform: "uppercase", letterSpacing: 0.8,
-          }}>{title}</span>
-          {countLabel && (
-            <span style={{
-              fontFamily: FONT_MONO, fontSize: 10, fontWeight: 700, color: C.jade700,
-              background: "#EAF3EE", borderRadius: 999, padding: "2px 8px",
-            }}>{countLabel}</span>
-          )}
-        </span>
-        <ChevronDown className="chevron" size={16} color={C.jade700} style={{ flexShrink: 0, transition: "transform .15s" }} />
-      </summary>
-      <div style={{ paddingTop: 10 }}>{children}</div>
-    </details>
-  );
+function SettingsSection({title,countLabel,defaultOpen,last,children}) {
+  return <details className="expandable" open={defaultOpen} style={{marginBottom:last?0:12,background:"#fff",border:"1px solid #E4E7E1",borderRadius:17,overflow:"hidden"}}>
+    <summary style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,cursor:"pointer",listStyle:"none",padding:"16px"}}>
+      <span style={{display:"flex",alignItems:"center",gap:9,minWidth:0}}><strong style={{fontSize:14,color:C.ink}}>{title}</strong>{countLabel&&<span style={{fontSize:11,fontWeight:700,color:"#426953",background:"#EAF3EC",borderRadius:99,padding:"4px 8px"}}>{countLabel}</span>}</span>
+      <ChevronDown className="chevron" size={17} color="#66806F" style={{flexShrink:0}}/>
+    </summary>
+    <div style={{padding:"12px 16px 17px",borderTop:"1px solid #F1F1ED"}}>{children}</div>
+  </details>;
 }
 
 function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, setDraft, libraryEdit, setLibraryEdit, libraryIntent, clearLibraryIntent }) {
