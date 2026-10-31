@@ -4203,7 +4203,10 @@ function HouseholdScreen({
         {addingAvoid && <div style={{display:"grid",gap:9,background:"#F7F9F6",borderRadius:13,padding:12,marginBottom:10}}>
           <input aria-label="Ingredient to avoid" value={dislikeInput} onChange={e=>setDislikeInput(e.target.value)} placeholder="Ingredient to avoid" style={{width:"100%",boxSizing:"border-box",border:"1px solid #DDE4DB",borderRadius:10,padding:"12px",fontSize:14}}/>
           <input aria-label="Replacement ingredient" value={substituteInput} onChange={e=>setSubstituteInput(e.target.value)} placeholder="Replace with (optional)" style={{width:"100%",boxSizing:"border-box",border:"1px solid #DDE4DB",borderRadius:10,padding:"12px",fontSize:14}}/>
-          <button type="button" disabled={!dislikeInput.trim()} onClick={()=>{addDislike(dislikeInput,substituteInput);setDislikeInput("");setSubstituteInput("");setAddingAvoid(false);}} style={{border:0,background:"#365C4B",color:"#fff",borderRadius:10,padding:12,fontWeight:750,opacity:dislikeInput.trim()?1:.5}}>Save ingr      <SettingsSection title="Taste preferences" countLabel={(household.preferredCuisines.length+household.preferredProteins.length)?`${household.preferredCuisines.length+household.preferredProteins.length} selected`:null} defaultOpen={false}>
+          <button type="button" disabled={!dislikeInput.trim()} onClick={()=>{addDislike(dislikeInput,substituteInput);setDislikeInput("");setSubstituteInput("");setAddingAvoid(false);}} style={{border:0,background:"#365C4B",color:"#fff",borderRadius:10,padding:12,fontWeight:750,opacity:dislikeInput.trim()?1:.5}}>Save ingredient</button>
+        </div>}
+      </SettingsSection>
+      <SettingsSection title="Taste preferences" countLabel={(household.preferredCuisines.length+household.preferredProteins.length)?`${household.preferredCuisines.length+household.preferredProteins.length} selected`:null} defaultOpen={false}>
         <p style={{fontSize:12,color:C.inkSoft,margin:"0 0 14px",lineHeight:1.5}}>Optional. Leave blank to enjoy more variety.</p>
         {[
           {key:"preferredCuisines",label:"Favourite cuisines",items:CUISINES,empty:"All cuisines"},
