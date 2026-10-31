@@ -2396,8 +2396,9 @@ export default function MakanLedger() {
           <nav aria-label="Sections" className="pmm-tabs">
             <TabButton icon={ChefHat} label="Home" active={tab === "home"} onClick={() => { setTab("home"); setMoreOpen(false); }} />
             <TabButton icon={Calendar} label="My week" active={["week","custom","prep"].includes(tab)} onClick={() => { setTab("week"); setMoreOpen(false); }} />
-            <TabButton icon={Package} label="Kitchen" active={["me","pantry","library","import","household","admin"].includes(tab)} onClick={() => { setTab("me"); setMoreOpen(false); }} />
             <TabButton icon={ShoppingCart} label="Shop" active={tab === "list"} onClick={() => { setTab("list"); setMoreOpen(false); }} badge={toBuy.length || null} />
+            <TabButton icon={Package} label="Kitchen" active={tab === "pantry"} onClick={() => { setTab("pantry"); setMoreOpen(false); }} />
+            <TabButton icon={Users} label="Me" active={["me","library","import","household","admin"].includes(tab)} onClick={() => { setTab("me"); setMoreOpen(false); }} />
           </nav>
 
         </div>
@@ -2459,10 +2460,9 @@ export default function MakanLedger() {
 
           </>)}
           {tab === "me" && <main style={{ padding: "24px 20px", display: "grid", gap: 14, background:"#FAF7F2", minHeight:"65vh" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#F1EFFB", borderRadius: 20, padding: 16 }}><h2 style={{ margin: 0, fontSize: 28, color: C.ink }}>Your kitchen, your way.</h2><FoodArt kind="fridge" size={95}/></div>
-            <p style={{ color: C.inkSoft, margin: "0 0 14px" }}>Everything behind your meals, neatly in one place.</p>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#F1EFFB", borderRadius: 20, padding: 16 }}><h2 style={{ margin: 0, fontSize: 28, color: C.ink }}>Made for you.</h2><FoodArt kind="meal" size={95}/></div>
+            <p style={{ color: C.inkSoft, margin: "0 0 14px" }}>Your household, personal recipes and cooking preferences, all in one place.</p>
             {[
-              ["My kitchen", "pantry", "Pantry, fridge and freezer · ingredients on hand"],
               ["Household & preferences", "household", "People, portions and dietary preferences"],
               ["My cookbook", "import", "Your saved family recipes and cooking steps"],
               ["Discover recipes", "library", "Explore recipes from the community"],
@@ -2532,13 +2532,13 @@ export default function MakanLedger() {
               canPostponeMeal={canPostponeMeal}
             />
           )}
-          {["pantry","household","import","library","admin"].includes(tab) && (
+          {["household","import","library","admin"].includes(tab) && (
             <nav aria-label="Me section navigation" style={{padding:"14px 18px 12px",background:"#FAF7F2",borderBottom:"1px solid #E9E3DF"}}>
               <button onClick={()=>setTab("me")} style={{display:"inline-flex",alignItems:"center",gap:7,background:"transparent",border:0,color:C.ink,fontWeight:750,fontSize:14,padding:"8px 0",marginBottom:10}}>
-                <span aria-hidden="true">←</span> Back to Kitchen
+                <span aria-hidden="true">←</span> Back to Me
               </button>
               <div style={{display:"flex",gap:8,flexWrap:"wrap",paddingBottom:4}}>
-                {[["pantry","Ingredients"],["household","Household"],["import","My cookbook"],["library","Discover"],...(isAdmin?[["admin","Admin"]]:[])].map(([id,label])=>(
+                {[["household","Household"],["import","My cookbook"],["library","Discover"],...(isAdmin?[["admin","Admin"]]:[])].map(([id,label])=>(
                   <button key={id} onClick={()=>setTab(id)} aria-current={tab===id?"page":undefined} style={{flexShrink:0,border:tab===id?"1px solid #D88D79":"1px solid #E9E3DF",background:tab===id?"#FCE5DE":"#fff",color:C.ink,borderRadius:999,padding:"10px 13px",fontSize:13,fontWeight:tab===id?800:600}}>
                     {label}
                   </button>
