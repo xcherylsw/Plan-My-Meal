@@ -2494,6 +2494,7 @@ export default function MakanLedger() {
               canPostponeMeal={canPostponeMeal}
             />}
           /></>}
+          {["pantry","prep"].includes(tab) && <nav aria-label="Kitchen options" style={{display:"flex",gap:8,padding:"16px 18px 0",maxWidth:760,margin:"0 auto"}}><button onClick={()=>setTab("pantry")} aria-pressed={tab==="pantry"} style={{flex:1,border:"1px solid #E5E3EE",borderRadius:12,padding:12,fontWeight:750,background:tab==="pantry"?"#FCE5DE":"#fff",color:C.ink}}>Ingredients</button><button onClick={()=>setTab("prep")} aria-pressed={tab==="prep"} style={{flex:1,border:"1px solid #E5E3EE",borderRadius:12,padding:12,fontWeight:750,background:tab==="prep"?"#FCE5DE":"#fff",color:C.ink}}>Prep{pendingPrepCount ? ` (${pendingPrepCount})` : ""}</button></nav>}
           {tab === "prep" && <main style={{ padding: "28px 20px 100px", display: "grid", gap: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 15, borderRadius: 20, background: "#E9F3F8" }}><div><div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1.5, color: C.inkSoft }}>PREP, MADE SIMPLE</div><strong>Little jobs. Big relief.</strong></div><FoodArt kind="prep" size={95}/></div>
             <h2 style={{ fontFamily: FONT_DISPLAY, fontSize: 30, lineHeight: 1.2, margin: 0 }}>A little now. Less later.</h2>
@@ -2546,7 +2547,7 @@ export default function MakanLedger() {
               </div>
             </nav>
           )}
-          {["pantry","prep"].includes(tab) && <nav aria-label="Kitchen options" style={{display:"flex",gap:8,padding:"16px 18px 0",maxWidth:760,margin:"0 auto"}}><button onClick={()=>setTab("pantry")} aria-pressed={tab==="pantry"} style={{flex:1,border:"1px solid #E5E3EE",borderRadius:12,padding:12,fontWeight:750,background:tab==="pantry"?"#FCE5DE":"#fff",color:C.ink}}>Ingredients</button><button onClick={()=>setTab("prep")} aria-pressed={tab==="prep"} style={{flex:1,border:"1px solid #E5E3EE",borderRadius:12,padding:12,fontWeight:750,background:tab==="prep"?"#FCE5DE":"#fff",color:C.ink}}>Prep{pendingPrepCount ? ` (${pendingPrepCount})` : ""}</button></nav>}
+
           {tab === "pantry" && (
             <PantryScreen
               pantry={pantry}
