@@ -3966,7 +3966,7 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
         <span style={{ fontSize: 10.5, color: C.inkSoft, lineHeight: 1.3 }}>
           A staple and something bought on sale can be the same thing — toggle this on and the generator will prioritize it.
         </span>
-      </div>
+      </div>}
 
       <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
         <input
