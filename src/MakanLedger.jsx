@@ -4120,33 +4120,28 @@ function HouseholdScreen({
         defaultOpen={false}
       >
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {DIET_OPTIONS.map(opt => {
-            const active = household.diets.includes(opt.id);
-            return (
-              <button
-                key={opt.id}
-                onClick={() => toggleDiet(opt.id)}
-                style={{
-                  textAlign: "left", border: `1px solid ${active ? "#527B61" : "#E5E7E3"}`,
-                  background: active ? "#EFF7F0" : "#fff", borderRadius: 12, padding: "11px 12px",
-                  display: "flex", gap: 10, alignItems: "flex-start",
-                }}
-              >
-                <Checkbox checked={active} />
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: 13.5, color: C.ink, fontFamily: FONT_BODY }}>{opt.label}</div>
-                  <div style={{ fontSize: 11.5, color: C.inkSoft, marginTop: 2, lineHeight: 1.4 }}>{opt.blurb}</div>
-                </div>
-              </button>
-            );
+        <div style={{display:"grid",gap:0}}>
+          {DIET_OPTIONS.map((opt,i)=>{
+            const active=household.diets.includes(opt.id);
+            return <button key={opt.id} type="button" aria-pressed={active} onClick={()=>toggleDiet(opt.id)} style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,width:"100%",textAlign:"left",padding:"13px 2px",border:0,borderBottom:i<DIET_OPTIONS.length-1?"1px solid #EDF0EA":"none",background:"transparent",color:C.ink}}>
+              <span style={{minWidth:0}}><strong style={{fontSize:14}}>{opt.label}</strong><span style={{display:"block",fontSize:11.5,color:C.inkSoft,marginTop:3,lineHeight:1.4}}>{opt.blurb}</span></span>
+              <span aria-hidden="true" style={{flexShrink:0,width:39,height:23,borderRadius:20,background:active?"#4E7B60":"#E4E8E3",padding:3,display:"flex",justifyContent:active?"flex-end":"flex-start",alignItems:"center",boxSizing:"border-box"}}><span style={{width:17,height:17,borderRadius:"50%",background:"#fff",boxShadow:"0 1px 3px #0002"}}/></span>
+            </button>;
           })}
         </div>
       </SettingsSection>
 
       <SettingsSection title="Main dish preference" countLabel={household.mainDishPreference === "flexible" ? "Flexible" : household.mainDishPreference === "vegetarian" ? "Vegetarian" : "Meat or fish"} defaultOpen={false}>
 
-        {[["meat-fish","Meat or fish preferred","Tofu, eggs and vegetables can be supporting dishes."],["flexible","Flexible mains","Tofu, egg and plant-based dishes can be the main."],["vegetarian","Plant-based mains preferred","Set Dietary needs to Vegetarian too if you want to exclude meat and fish."]].map(([value,label,desc])=><button key={value} type="button" aria-pressed={(household.mainDishPreference||"meat-fish")===value} onClick={()=>setMainDishPreference(value)} style={{display:"flex",alignItems:"center",gap:10,width:"100%",textAlign:"left",border:(household.mainDishPreference||"meat-fish")===value?"1.5px solid #527B61":"1px solid #E5E7E3",background:(household.mainDishPreference||"meat-fish")===value?"#EFF7F0":"#fff",borderRadius:12,padding:"12px 13px",marginBottom:8,color:C.ink}}><span aria-hidden="true" style={{height:18,width:18,flexShrink:0,borderRadius:"50%",border:(household.mainDishPreference||"meat-fish")===value?"5px solid #527B61":"2px solid #BFC9C2",boxSizing:"border-box",background:"#fff"}}/><span><strong style={{fontSize:13.5}}>{label}</strong><span style={{display:"block",fontSize:11.5,color:C.inkSoft,marginTop:3,lineHeight:1.45}}>{desc}</span></span></button>)}
+        <div style={{display:"grid",gap:0}}>
+          {[["meat-fish","Meat or fish","Tofu and vegetables are sides"],["flexible","Flexible","Tofu and eggs can be mains"],["vegetarian","Plant-based","Prefer vegetarian main dishes"]].map(([value,label,desc],i)=>{
+            const active=(household.mainDishPreference||"meat-fish")===value;
+            return <button key={value} type="button" aria-pressed={active} onClick={()=>setMainDishPreference(value)} style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,width:"100%",padding:"13px 2px",textAlign:"left",background:"transparent",border:0,borderBottom:i<2?"1px solid #EDF0EA":"none",color:C.ink}}>
+              <span><strong style={{fontSize:14}}>{label}</strong><span style={{display:"block",fontSize:11.5,color:C.inkSoft,marginTop:3}}>{desc}</span></span>
+              <span aria-hidden="true" style={{width:21,height:21,borderRadius:"50%",border:active?"6px solid #4E7B60":"2px solid #C8D0C9",background:"#fff",boxSizing:"border-box",flexShrink:0}}/>
+            </button>;
+          })}
+        </div>
       </SettingsSection>
       <SettingsSection
         title="Ingredients to avoid"
