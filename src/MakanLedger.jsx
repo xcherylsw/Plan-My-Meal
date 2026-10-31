@@ -914,6 +914,14 @@ export default function MakanLedger() {
   const [rescueOpen, setRescueOpen] = useState(false);
   const [rescueText, setRescueText] = useState("");
   useEffect(() => { try { sessionStorage.setItem("pmm-tab", tab); } catch (e) { /* ignore */ } }, [tab]);
+  // Changing sections must not leave users at the previous screen\'s scroll position.
+  const previousTabRef = useRef(tab);
+  useEffect(() => {
+    if (previousTabRef.current !== tab) {
+      previousTabRef.current = tab;
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
+  }, [tab]);
   const [ready, setReady] = useState(false);
   // Desktop side tabs only appear once the app (below the story section) is in view.
   const [atApp, setAtApp] = useState(false);
