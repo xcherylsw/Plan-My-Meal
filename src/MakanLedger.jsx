@@ -4107,9 +4107,7 @@ function HouseholdScreen({
         countLabel={household.diets.length ? `${household.diets.length} set` : null}
         defaultOpen={false}
       >
-        <p style={{ fontSize: 11.5, color: C.inkSoft, marginTop: 0, marginBottom: 12 }}>
-          These apply to every plan you generate — meals get swapped or filtered to fit.
-        </p>
+
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {DIET_OPTIONS.map(opt => {
             const active = household.diets.includes(opt.id);
@@ -4118,8 +4116,8 @@ function HouseholdScreen({
                 key={opt.id}
                 onClick={() => toggleDiet(opt.id)}
                 style={{
-                  textAlign: "left", border: `1.5px solid ${active ? C.jade700 : C.line}`,
-                  background: active ? "#EAF3EE" : "#fff", borderRadius: 12, padding: "12px 14px",
+                  textAlign: "left", border: `1px solid ${active ? "#527B61" : "#E5E7E3"}`,
+                  background: active ? "#EFF7F0" : "#fff", borderRadius: 12, padding: "11px 12px",
                   display: "flex", gap: 10, alignItems: "flex-start",
                 }}
               >
@@ -4135,31 +4133,28 @@ function HouseholdScreen({
       </SettingsSection>
 
       <SettingsSection title="Main dish preference" countLabel={household.mainDishPreference === "flexible" ? "Flexible" : household.mainDishPreference === "vegetarian" ? "Vegetarian" : "Meat or fish"} defaultOpen={false}>
-        <p style={{fontSize:12,color:C.inkSoft,marginTop:0}}>Choose what makes dinner feel complete for your household.</p>
-        {[["meat-fish","Meat or fish preferred","Tofu, eggs and vegetables can be supporting dishes."],["flexible","Flexible mains","Tofu, egg and plant-based dishes can be the main."],["vegetarian","Plant-based mains preferred","Set Dietary needs to Vegetarian too if you want to exclude meat and fish."]].map(([value,label,desc])=><button key={value} type="button" aria-pressed={(household.mainDishPreference||"meat-fish")===value} onClick={()=>setMainDishPreference(value)} style={{display:"block",width:"100%",textAlign:"left",border:(household.mainDishPreference||"meat-fish")===value?"2px solid #365C4B":"1px solid #E5E3DD",background:(household.mainDishPreference||"meat-fish")===value?"#EAF3EE":"#fff",borderRadius:12,padding:"12px 14px",marginBottom:8,color:C.ink}}><strong>{label}</strong><div style={{fontSize:12,color:C.inkSoft,marginTop:3}}>{desc}</div></button>)}
+
+        {[["meat-fish","Meat or fish preferred","Tofu, eggs and vegetables can be supporting dishes."],["flexible","Flexible mains","Tofu, egg and plant-based dishes can be the main."],["vegetarian","Plant-based mains preferred","Set Dietary needs to Vegetarian too if you want to exclude meat and fish."]].map(([value,label,desc])=><button key={value} type="button" aria-pressed={(household.mainDishPreference||"meat-fish")===value} onClick={()=>setMainDishPreference(value)} style={{display:"flex",alignItems:"center",gap:10,width:"100%",textAlign:"left",border:(household.mainDishPreference||"meat-fish")===value?"1.5px solid #527B61":"1px solid #E5E7E3",background:(household.mainDishPreference||"meat-fish")===value?"#EFF7F0":"#fff",borderRadius:12,padding:"12px 13px",marginBottom:8,color:C.ink}}><span aria-hidden="true" style={{height:18,width:18,flexShrink:0,borderRadius:"50%",border:(household.mainDishPreference||"meat-fish")===value?"5px solid #527B61":"2px solid #BFC9C2",boxSizing:"border-box",background:"#fff"}}/><span><strong style={{fontSize:13.5}}>{label}</strong><span style={{display:"block",fontSize:11.5,color:C.inkSoft,marginTop:3,lineHeight:1.45}}>{desc}</span></span></button>)}
       </SettingsSection>
       <SettingsSection
         title="Ingredients to avoid"
         countLabel={household.dislikedIngredients.length ? `${household.dislikedIngredients.length} excluded` : null}
         defaultOpen={false}
       >
-        <p style={{ fontSize: 11.5, color: C.inkSoft, marginTop: 0, marginBottom: 10 }}>
-          Nobody eats this, but the dish otherwise works — so we swap it out instead of skipping the whole recipe.
-          Leave "swap with" blank to just drop it.
-        </p>
-        <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
+
+        <div style={{ display: "grid", gridTemplateColumns:"minmax(0,1fr)", gap: 8, marginBottom: 10 }}>
           <input
             value={dislikeInput}
             onChange={e => setDislikeInput(e.target.value)}
-            placeholder="e.g. okra"
-            style={{ flex: 1, border: `1px solid ${C.line}`, borderRadius: 8, padding: "9px 10px", fontFamily: FONT_BODY, fontSize: 13, background: "#fff", color: C.ink }}
+            placeholder="Ingredient to avoid, e.g. okra"
+            style={{ width:"100%",boxSizing:"border-box",border:`1px solid ${C.line}`,borderRadius:11,padding:"12px 13px",fontFamily:FONT_BODY,fontSize:14,background:"#fff",color:C.ink }}
           />
           <input
             value={substituteInput}
             onChange={e => setSubstituteInput(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter") { addDislike(dislikeInput, substituteInput); setDislikeInput(""); setSubstituteInput(""); } }}
-            placeholder="swap with (optional)"
-            style={{ flex: 1, border: `1px solid ${C.line}`, borderRadius: 8, padding: "9px 10px", fontFamily: FONT_BODY, fontSize: 13, background: "#fff", color: C.ink }}
+            placeholder="Replace with… (optional)"
+            style={{ width:"100%",boxSizing:"border-box",border:`1px solid ${C.line}`,borderRadius:11,padding:"12px 13px",fontFamily:FONT_BODY,fontSize:14,background:"#fff",color:C.ink }}
           />
         </div>
         <button
@@ -4190,10 +4185,7 @@ function HouseholdScreen({
         countLabel={(household.preferredCuisines.length + household.preferredProteins.length) ? `${household.preferredCuisines.length + household.preferredProteins.length} set` : null}
         defaultOpen={false}
       >
-        <p style={{ fontSize: 11.5, color: C.inkSoft, marginTop: 0, marginBottom: 10 }}>
-          Optional — narrows the built-in idea pool to these. Leave blank for no restriction.
-          Recipes you've saved from links are never filtered out by this, since you already chose them.
-        </p>
+
         <div style={{ fontSize: 11.5, fontWeight: 600, color: C.inkSoft, marginBottom: 6 }}>Cuisine</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
           {CUISINES.map(c => (
