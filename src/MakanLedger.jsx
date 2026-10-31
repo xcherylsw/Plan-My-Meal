@@ -907,7 +907,7 @@ export default function MakanLedger() {
   const [tab, setTab] = useState(() => {
     try {
       const saved = sessionStorage.getItem("pmm-tab");
-      return saved === "generate" ? "week" : (saved && ["home", "week", "prep", "me", "manual", "list", "pantry", "library", "import", "household"].includes(saved) ? saved : "home");
+      return saved === "generate" ? "week" : (saved && ["home", "week", "custom", "prep", "me", "manual", "list", "pantry", "library", "import", "household"].includes(saved) ? saved : "home");
     } catch (e) { return "home"; }
   });
   const [moreOpen, setMoreOpen] = useState(false);
@@ -2396,6 +2396,7 @@ export default function MakanLedger() {
           <nav aria-label="Sections" className="pmm-tabs">
             <TabButton icon={ChefHat} label="Home" active={tab === "home"} onClick={() => { setTab("home"); setMoreOpen(false); }} />
             <TabButton icon={Calendar} label="My week" active={tab === "week"} onClick={() => { setTab("week"); setMoreOpen(false); }} />
+            <TabButton icon={Pencil} label="Custom" active={tab === "custom"} onClick={() => { setTab("custom"); setMoreOpen(false); }} />
             <TabButton icon={ShoppingCart} label="Shop" active={tab === "list"} onClick={() => { setTab("list"); setMoreOpen(false); }} badge={toBuy.length || null} />
             <TabButton icon={Check} label="Prep" active={tab === "prep"} onClick={() => { setTab("prep"); setMoreOpen(false); }} badge={pendingPrepCount || null} />
             <TabButton icon={Users} label="Me" active={["me","pantry","library","import","household","admin"].includes(tab)} onClick={() => { setTab("me"); setMoreOpen(false); }} />
@@ -2408,6 +2409,7 @@ export default function MakanLedger() {
         <div style={{ flex: 1, background: C.paper }}>
           {tab === "home" && (<>
             <GenerateScreen
+              variant="home"
               scope={scope} setScope={setScope}
               mealSlots={mealSlots} toggleMealSlot={toggleMealSlot}
               onAddOn={handleAddOn}
@@ -2473,6 +2475,7 @@ export default function MakanLedger() {
               <span style={{ display: "block", marginTop: 5, color: C.inkSoft, fontSize: 13 }}>{description}</span>
             </button>)}
           </main>}
+          {tab === "custom" && <GenerateScreen variant="custom" scope={scope} setScope={setScope} mealSlots={mealSlots} toggleMealSlot={toggleMealSlot} onAddOn={handleAddOn} onRedo={handleRedo} generateNote={generateNote} grouped={grouped} onRegenerate={regenerateOne} onPickMeal={pickMealById} pickableMeals={pickableMeals} rawPickableMeals={rawPickableMeals} onAddExtraDish={addExtraDish} slotPax={slotPax} onSetSlotPax={setSlotHeadcount} onSetMealPax={setMealPax} cookNowRanked={cookNowRanked} onGenerateOne={generateOne} onCookNow={cookNow} pantryCount={pantry.length} todayDishes={plan.filter(m => m.date === todayDateStr()).map(m => m.mealType)} onReapplyHousehold={reapplyHouseholdToPlan} onRemove={removeOne} household={household} skippedDays={skippedDays} toggleSkipDay={toggleSkipDay} onMarkCooked={markMealCooked} prepList={prepList} prepChecked={prepChecked} togglePrepChecked={togglePrepChecked} onCompleteComponentBatch={completeComponentBatch} prepCardOpen={prepCardOpen} onTogglePrepCard={setPrepCardOpen} onAutoPlan={planMyWeek} hasWeekPlan={plan.some(m => m.mealType === "dinner" && m.date >= todayDateStr() && m.date <= addDaysToDateStr(todayDateStr(), 6))} />}
           {tab === "week" && <><div style={{padding:"0 18px"}}>{justGeneratedWeek && <div role="status" style={{margin:"16px 0",padding:16,background:"#F1EFFB",borderRadius:16,border:"1px solid #DCD7F0"}}><strong>✨ Your 7 dinners are ready!</strong><p style={{margin:"6px 0 10px",fontSize:13,color:C.inkSoft}}>This is your week. Swap a dish, skip a day or add another dish whenever you like.</p><button onClick={()=>setJustGeneratedWeek(false)} style={{background:"#EAA28F",border:0,borderRadius:10,padding:"9px 16px",fontWeight:700,color:C.ink}}>Got it</button></div>}</div><SimpleWeek
             plan={plan} skippedDays={skippedDays} onSkip={toggleSkipDay}
             onSwap={pickMealById} onRemove={removeOne} onMove={movePlannedMeal}
@@ -2662,7 +2665,7 @@ function GenerateScreen(props) {
   const [cookOffset, setCookOffset] = useState(0);
   const [cookOpen, setCookOpen] = useState(false);
   const [showLegacyPlan, setShowLegacyPlan] = useState(false);
-  const [planningMode, setPlanningMode] = useState("auto");
+  const [planningMode, setPlanningMode] = useState(props.variant === "custom" ? "custom" : "auto");
   const [cookPaxOverride, setCookPaxOverride] = useState(null); // null = follow the lunch/dinner headcount
   const cookPax = cookPaxOverride != null ? cookPaxOverride : (slotPax && slotPax[cookType] != null ? slotPax[cookType] : totalPax);
   const cookList = (cookNowRanked && cookNowRanked[cookType]) || [];
@@ -2705,7 +2708,7 @@ function GenerateScreen(props) {
 
   return (
     <div style={{ padding: "18px 18px 28px", maxWidth: 760, margin: "0 auto", color:C.ink }}>
-      {<section style={{background:"#FCE9E5",borderRadius:24,padding:20,display:"grid",gap:14,marginBottom:18}}>
+      {props.variant !== "custom" && <section style={{background:"#FCE9E5",borderRadius:24,padding:20,display:"grid",gap:14,marginBottom:18}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12}}>
           <div><span style={{fontSize:11,fontWeight:800,letterSpacing:1.5,color:"#A65D4E"}}>POINT & SHOOT</span>
             <h3 style={{fontFamily:FONT_DISPLAY,fontSize:27,lineHeight:1.2,margin:"7px 0"}}>Dinner, handled.</h3>
@@ -2715,7 +2718,8 @@ function GenerateScreen(props) {
         <button onClick={onAutoPlan} style={{border:0,borderRadius:16,background:"#EAA28F",padding:17,color:C.ink,fontSize:16,fontWeight:800,boxShadow:"0 3px 0 #C87865"}}>{hasWeekPlan ? "↻ Refresh my 7 dinners →" : "🍳 Plan my 7 dinners →"}</button>
         <span style={{fontSize:12,color:C.inkSoft,textAlign:"center"}}>{hasWeekPlan ? "Your current dinners will be kept until you confirm a refresh." : "Get 7 dinner ideas in one tap. Your shopping list and prep tasks will be created automatically."}</span>
       </section>}
-      <section style={{marginBottom:18}} aria-label="More planning options">
+      {props.variant === "custom" && <h2 style={{fontFamily:FONT_DISPLAY,fontSize:28,margin:"0 0 12px"}}>Custom meal planning</h2>}
+      {props.variant === "custom" && <section style={{marginBottom:18}} aria-label="More planning options">
         <div style={{fontSize:13,fontWeight:800,marginBottom:10,color:C.ink}}>Need a different plan?</div>
         <div style={{display:"grid",gridTemplateColumns:"1fr",gap:10}}>
           {[["custom","🎛 Custom","Choose days and meals"]].map(([id,label,description])=><button key={id} onClick={()=>setPlanningMode(planningMode===id?"auto":id)} aria-pressed={planningMode===id} style={{textAlign:"left",minWidth:0,border:planningMode===id?"2px solid #EAA28F":"1px solid #E5E3EE",borderRadius:16,padding:"14px 12px",background:planningMode===id?"#F1EFFB":"#fff",color:C.ink,cursor:"pointer"}}>
