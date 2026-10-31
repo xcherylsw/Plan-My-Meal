@@ -1989,8 +1989,8 @@ export default function MakanLedger() {
   const shoppingName = name => {
     const n = String(name ?? "").trim().toLowerCase();
     if (/^eggs?$/.test(n)) return "egg";
-    if (/^potatoes?$/.test(n)) return "potato";
-    if (/^tomatoes?$/.test(n)) return "tomato";
+    if (/^(potato|potatoes)$/.test(n)) return "potato";
+    if (/^(tomato|tomatoes)$/.test(n)) return "tomato";
     if (/^carrots?$/.test(n)) return "carrot";
     return n;
   };
