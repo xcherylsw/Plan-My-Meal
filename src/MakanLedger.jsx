@@ -4089,35 +4089,50 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
                   </button>
                 </div>
                 <div style={{ fontSize: 11.5, color: C.inkSoft,paddingLeft:17 }}>{item.quantity != null ? `${item.quantity} ${item.unit || ""}` : "Always on hand"}{item.useSoon ? " · ✦ Use soon" : ""}{(item.preparedForms || []).length ? ` · Prepared: ${(item.preparedForms || []).join(", ")}` : ""}</div>
-                {editingPantryId === item.id && <div style={{ display: "flex", flexDirection:"column", gap: 9 }}>
-                  <div><div style={{fontSize:12,fontWeight:800,marginBottom:7}}>Category</div><div style={{display:"flex",flexWrap:"wrap",gap:6}}>{CATEGORY_ORDER.map(cat=><button key={cat} type="button" aria-pressed={item.category===cat} onClick={()=>updatePantryCategory(item.id,cat)} style={{padding:"7px 10px",borderRadius:999,border:"1px solid #DCD5CC",background:item.category===cat?"#365C4B":"#fff",color:item.category===cat?"#fff":"#514C49",fontSize:12,fontWeight:650}}>{CATEGORY_LABEL[cat]}</button>)}</div></div>
-                  <div><div style={{fontSize:12,fontWeight:800,marginBottom:7}}>Stored in</div><div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{LOCATIONS.map(loc=><button key={loc.id} type="button" aria-pressed={(item.location||"pantry")===loc.id} onClick={()=>{updatePantryLocation(item.id,loc.id);setSelectedStorage(loc.id);}} style={{padding:"8px 12px",borderRadius:999,border:"1px solid #DCD5CC",background:(item.location||"pantry")===loc.id?"#365C4B":"#fff",color:(item.location||"pantry")===loc.id?"#fff":"#514C49",fontSize:12,fontWeight:650}}>{loc.label}</button>)}</div></div>
-                  <div><div style={{fontSize:11,fontWeight:800,color:C.inkSoft,marginBottom:6}}>Already prepared as (optional)</div><div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{PREP_FORMS.map(form => <button key={form} type="button" aria-pressed={(item.preparedForms || []).includes(form)} onClick={()=>togglePantryPreparedForm(item.id,form)} style={{padding:"6px 9px",borderRadius:999,fontSize:11,border:"1px solid #DCD5CC",background:(item.preparedForms || []).includes(form)?"#365C4B":"#fff",color:(item.preparedForms || []).includes(form)?"#fff":"#514C49"}}>{form}</button>)}</div><p style={{fontSize:10,color:C.inkSoft,margin:"6px 0 0"}}>Only matching recipe cuts skip prep. Stock availability stays separate.</p></div><div style={{display:"flex",alignItems:"center",flexWrap:"wrap",gap:6}}>
-                  <button
-                    onClick={() => toggleUseSoon(item.id)}
-                    style={{
-                      fontSize: 9.5, fontWeight: 700, borderRadius: 999, padding: "2px 7px", flexShrink: 0,
-                      background: item.useSoon ? C.clay : "transparent", color: item.useSoon ? "#fff" : C.inkSoft,
-                      border: `1px solid ${item.useSoon ? C.clay : C.line}`,
-                    }}
-                  >
-                    use soon
-                  </button>
-                  {item.quantity != null ? (
-                    <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
-                      <input
-                        type="number"
-                        value={item.quantity}
-                        onChange={e => updatePantryQuantity(item.id, e.target.value)}
-                        style={{ width: 44, border: `1px solid ${C.line}`, borderRadius: 6, padding: "4px 5px", fontFamily: FONT_MONO, fontSize: 11.5, background: C.paperDim, color: C.ink }}
-                      />
-                      <span style={{ fontSize: 10.5, color: C.inkSoft, fontFamily: FONT_MONO }}>{item.unit}</span>
-                    </div>
-                  ) : (
-                    <span style={{ fontSize: 10, color: C.inkSoft, fontFamily: FONT_MONO, fontStyle: "italic" }}>always have</span>
-                  )}
-                  <button onClick={() => { removePantryItem(item.id); setEditingPantryId(null); }} style={{ fontSize: 12, color: C.clayText, padding: "6px 8px" }}>Remove ingredient</button>
-                </div></div>}
+                {editingPantryId === item.id && <div style={{display:"flex",flexDirection:"column",gap:15,background:"#FAFBF9",border:"1px solid #E4E9E2",borderRadius:16,padding:15,marginTop:12}}>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:10}}>
+                    <label style={{fontSize:12,fontWeight:750,color:C.inkSoft}}>Category
+                      <select aria-label={`Category for ${item.name}`} value={item.category} onChange={e=>updatePantryCategory(item.id,e.target.value)} style={{display:"block",width:"100%",marginTop:6,border:"1px solid #D6DED6",borderRadius:10,padding:"11px 7px",background:"#fff",fontSize:13,color:C.ink}}>
+                        {CATEGORY_ORDER.map(cat=><option key={cat} value={cat}>{CATEGORY_LABEL[cat]}</option>)}
+                      </select>
+                    </label>
+                    <label style={{fontSize:12,fontWeight:750,color:C.inkSoft}}>Stored in
+                      <select aria-label={`Storage for ${item.name}`} value={item.location||"pantry"} onChange={e=>{updatePantryLocation(item.id,e.target.value);setSelectedStorage(e.target.value);}} style={{display:"block",width:"100%",marginTop:6,border:"1px solid #D6DED6",borderRadius:10,padding:"11px 7px",background:"#fff",fontSize:13,color:C.ink}}>
+                        {LOCATIONS.map(loc=><option key={loc.id} value={loc.id}>{loc.label}</option>)}
+                      </select>
+                    </label>
+                  </div>
+                  <div>
+                    <div style={{fontSize:12,fontWeight:750,color:C.inkSoft,marginBottom:7}}>Already prepared</div>
+                    <details style={{border:"1px solid #D6DED6",borderRadius:11,background:"#fff",padding:"11px 12px"}}>
+                      <summary style={{cursor:"pointer",fontSize:13,fontWeight:700,color:C.ink}}>
+                        {(item.preparedForms||[]).length?(item.preparedForms||[]).join(", "):"Not prepared yet"} <span style={{color:"#527B61",fontWeight:600}}> · Edit</span>
+                      </summary>
+                      <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:7,marginTop:12}}>
+                        {PREP_FORMS.map(form=><label key={form} style={{display:"flex",alignItems:"center",gap:8,fontSize:12.5,padding:"8px 4px",cursor:"pointer"}}>
+                          <input type="checkbox" checked={(item.preparedForms||[]).includes(form)} onChange={()=>togglePantryPreparedForm(item.id,form)} style={{accentColor:"#365C4B",width:17,height:17}}/>{form}
+                        </label>)}
+                      </div>
+                    </details>
+                    <div style={{fontSize:11,color:C.inkSoft,marginTop:6}}>Matching preparation can skip a Prep task.</div>
+                  </div>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
+                    <label style={{fontSize:12,fontWeight:750,color:C.inkSoft}}>Quantity
+                      <div style={{display:"flex",alignItems:"center",gap:6,marginTop:5}}>
+                        <input aria-label={`Quantity for ${item.name}`} type="number" min="0" value={item.quantity??""} placeholder="Always on hand" onChange={e=>updatePantryQuantity(item.id,e.target.value)} style={{width:100,maxWidth:"38vw",border:"1px solid #D6DED6",borderRadius:10,padding:"10px 8px",background:"#fff",fontSize:13}}/>
+                        <span style={{fontSize:12,color:C.inkSoft}}>{item.unit}</span>
+                      </div>
+                    </label>
+                    <label style={{display:"flex",alignItems:"center",gap:9,fontSize:12.5,fontWeight:750,color:C.ink}}>
+                      Use soon
+                      <input type="checkbox" role="switch" checked={!!item.useSoon} onChange={()=>toggleUseSoon(item.id)} style={{width:20,height:20,accentColor:"#365C4B"}}/>
+                    </label>
+                  </div>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,borderTop:"1px solid #E5E9E3",paddingTop:12}}>
+                    <button type="button" onClick={()=>{removePantryItem(item.id);setEditingPantryId(null);}} style={{border:0,background:"transparent",color:C.clayText,fontSize:12,fontWeight:650,padding:"9px 0"}}>Remove ingredient</button>
+                    <button type="button" onClick={()=>setEditingPantryId(null)} style={{border:0,background:"#365C4B",color:"#fff",borderRadius:10,padding:"10px 18px",fontWeight:750,fontSize:13}}>Done</button>
+                  </div>
+                </div>}
               </div>
             ))}
           </div>
