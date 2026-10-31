@@ -368,7 +368,7 @@ function getCutHint(name) {
   const n = String(name ?? "").toLowerCase();
   const hit = CUT_HINTS.find(h => n.includes(h.match));
   if (hit) return hit.note;
-  if (/potato/.test(n)) return "peel and dice; cut into wedges for roasting";
+  if (/potato/.test(n)) return "peel and dice (wedges for roasting)";
   if (/tomato/.test(n)) return "wash and cut into wedges";
   if (/cucumber/.test(n)) return "wash and slice";
   return "wash and chop";
@@ -379,7 +379,7 @@ function requiredPrepForm(ingredient, info) {
   if (explicit && PREP_FORMS.includes(explicit)) return explicit;
   if (info.kind !== "aggregate") return "";
   const hint = String(info.hint || "").toLowerCase();
-  if (/\bwedges?\b/.test(hint) && !/\b(or|either)\b/.test(hint)) return "wedges";
+  if (/\bwedges?\b/.test(hint) && !/\b(or|either|dice|diced)\b/.test(hint)) return "wedges";
   if (/\b(or|either)\b/.test(hint)) return "";
   if (/\bmince(?:d)?\b/.test(hint)) return "minced";
   if (/\bslic(?:e|ed)\b/.test(hint)) return "sliced";
