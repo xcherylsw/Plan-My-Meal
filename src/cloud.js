@@ -462,6 +462,10 @@ export async function loadLibrary() {
   const snap = await getDocs(collection(db, "library"));
   const out = [];
   snap.forEach(d => {
+    if (d.data().kind === "builtin-override") {
+      try { out.push({ ...JSON.parse(d.data().json), id: d.id, kind: "builtin-override", mealId: d.data().mealId }); } catch (e) { /* skip damaged override */ }
+      return;
+    }
     if (d.data().kind === "builtin-photo") {
       out.push({ id: d.id, kind: "builtin-photo", mealId: d.data().mealId, photo: d.data().photo });
       return;
@@ -484,6 +488,16 @@ export async function saveBuiltinRecipePhoto(mealId, photo) {
     throw new Error("Photo is too large. Please choose a smaller image.");
   await setDoc(doc(db, "library", "builtin-photo-" + mealId), {
     kind: "builtin-photo", mealId, photo, updatedAt: Date.now(),
+  });
+}
+
+export async function saveBuiltinRecipeOverride(mealId, recipe) {
+  if (!db || !auth?.currentUser) throw new Error("Sign in as admin to edit recipes.");
+  if (!/^[a-zA-Z0-9_-]+$/.test(mealId)) throw new Error("Invalid built-in recipe ID.");
+  const clean = { ...recipe, id: mealId, kind: undefined, builtIn: undefined };
+  delete clean.kind; delete clean.builtIn;
+  await setDoc(doc(db, "library", "builtin-override-" + mealId), {
+    kind: "builtin-override", mealId, json: JSON.stringify(clean), updatedAt: Date.now(),
   });
 }
 
