@@ -4650,24 +4650,43 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
 
   function importRecipeText() {
     const raw = recipeTextPaste.trim();
-    if (!raw) return;
-    const lines = raw.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+    if (!raw) { setError("Paste a recipe first."); return; }
+    const lines = raw.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
     let section = "intro";
     const ingredients = [], steps = [];
     let name = "";
+    const ingredientHeading = /^(?:ingredients?|what you need)(?:\s*\([^)]*\))?\s*:?$/i;
+    const methodHeading = /^(?:instructions?|method|directions?|steps?|how to (?:cook|make it))(?:\s*\([^)]*\))?\s*:?$/i;
+    const bullet = /^[-•*]\s*/;
+    const numbered = /^(?:step\s*)?\d{1,2}[.)]\s+/i;
+    const quantity = /^(\d+(?:\.\d+)?|\d+\/\d+|[¼½¾⅓⅔⅛⅜⅝⅞])\s*(kg|g|gm|grams?|ml|l|tbsp|tsp|cups?|pcs?|pieces?|cloves?|blocks?|cans?|packs?|slices?)?\s+(.+)$/i;
+    const fractions = {"¼":0.25,"½":0.5,"¾":0.75,"⅓":1/3,"⅔":2/3,"⅛":0.125,"⅜":0.375,"⅝":0.625,"⅞":0.875};
+    const action = /^(?:mix|stir|whisk|heat|cook|add|pour|cut|slice|dice|chop|boil|simmer|fry|bake|preheat|knead|combine|serve|remove|transfer|cover|marinate|drain|wash|rinse|season|fold|blend|steam|roast|bring|let|place|put|set|prepare)\b/i;
+    let sawHeading = false;
     for (const line of lines) {
-      if (/^(ingredients?|what you need)\s*:?$/i.test(line)) {section="ingredients";continue;}
-      if (/^(instructions?|method|directions?|steps?|how to cook)\s*:?$/i.test(line)) {section="steps";continue;}
-      if (!name && section==="intro" && !/^(https?:|@|#)/.test(line)) {name=line.replace(/^recipe\s*:\s*/i,"").slice(0,100);continue;}
-      if (section==="ingredients") {
-        const cleaned=line.replace(/^[-•*]\s*/,"");
-        const m=cleaned.match(/^(\d+(?:\.\d+)?|\d+\/\d+)\s*(kg|g|ml|l|tbsp|tsp|cups?|pcs?|pieces?|cloves?)?\s+(.+)$/i);
-        const amount=m?(m[1].includes("/")?Number(m[1].split("/")[0])/Number(m[1].split("/")[1]):Number(m[1])):null;
-        ingredients.push({id:"import-"+Date.now()+"-"+ingredients.length,name:m?m[3]:cleaned,category:"other",amount,unit:m?(m[2]||""):"",componentId:null});
-      } else if (section==="steps") {steps.push(line.replace(/^(?:\d+[.)]|[-•*])\s*/,""));}
+      if (ingredientHeading.test(line)) { section="ingredients"; sawHeading=true; continue; }
+      if (methodHeading.test(line)) { section="steps"; sawHeading=true; continue; }
+      if (!name && section==="intro" && !/^(https?:|@|#)/.test(line) && !bullet.test(line) && !quantity.test(line) && !numbered.test(line)) {
+        name=line.replace(/^recipe\s*:\s*/i,"").slice(0,100); continue;
+      }
+      const cleaned=line.replace(bullet,"").trim();
+      const m=cleaned.match(quantity);
+      const looksIngredient=!!m && !action.test(cleaned);
+      if (section==="intro" && (looksIngredient || bullet.test(line))) section="ingredients";
+      if (section==="ingredients" && (numbered.test(line) || (!looksIngredient && action.test(cleaned)))) section="steps";
+      if (section==="ingredients" && (looksIngredient || bullet.test(line) || (sawHeading && !action.test(cleaned)))) {
+        const amt=m?m[1]:null;
+        const amount=amt==null?null:(fractions[amt]??(amt.includes("/")?Number(amt.split("/")[0])/Number(amt.split("/")[1]):Number(amt)));
+        ingredients.push({id:"import-"+Date.now()+"-"+ingredients.length,name:m?m[3].trim():cleaned,category:"other",amount,unit:m?(m[2]||""):"",componentId:null});
+      } else if (section==="steps" || numbered.test(line) || action.test(cleaned)) {
+        steps.push(line.replace(numbered,"").replace(bullet,"").trim());
+      }
     }
-    if (!ingredients.length) {setError("Add an Ingredients heading and list ingredients on separate lines. Add a Steps heading for instructions.");return;}
-    setDraft(prev=>({...prev,name:name||prev?.name||"",ingredients,steps:steps.length?steps:[""],sourceNote:raw.slice(0,3000)}));
+    if (!ingredients.length) {
+      setError("Couldn't identify ingredients. Keep each ingredient on a separate line, or add an Ingredients heading. Your pasted text is still here.");
+      return;
+    }
+    setDraft(prev=>({...blankDraft(),...prev,name:name||prev?.name||"",ingredients,steps:steps.length?normaliseRecipeSteps(steps):[""],sourceNote:raw.slice(0,3000)}));
     setShowTextImporter(false);setRecipeTextPaste("");setError("");
   }
 
