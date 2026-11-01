@@ -2899,7 +2899,7 @@ export default function MakanLedger() {
           )}
           {tab === "import" && (
             <ImportScreen myRecipes={myRecipes} saveRecipe={saveRecipe} deleteRecipe={deleteRecipe} household={household} draft={recipeDraft} setDraft={setRecipeDraft}
-              libraryEdit={libraryEdit} setLibraryEdit={setLibraryEdit} libraryIntent={libraryIntent} clearLibraryIntent={() => setLibraryIntent(null)} />
+              libraryEdit={libraryEdit} setLibraryEdit={setLibraryEdit} libraryIntent={libraryIntent} clearLibraryIntent={() => setLibraryIntent(null)} isAdmin={isAdmin} onPublishRecipe={publishMyCookbookRecipe} />
           )}
           {tab === "household" && (
             <HouseholdScreen
@@ -4612,7 +4612,7 @@ function SettingsSection({title,countLabel,defaultOpen,last,children}) {
   </details>;
 }
 
-function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, setDraft, libraryEdit, setLibraryEdit, libraryIntent, clearLibraryIntent }) {
+function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, setDraft, libraryEdit, setLibraryEdit, libraryIntent, clearLibraryIntent, isAdmin, onPublishRecipe }) {
   const [error, setError] = useState("");
   const [ingredientPaste, setIngredientPaste] = useState("");
   const [recipeTextPaste, setRecipeTextPaste] = useState("");
@@ -5212,7 +5212,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {filteredRecipes.map(r => (
-                <SavedRecipeCard key={r.id} recipe={r} onDelete={() => deleteRecipe(r.id)} onEdit={() => handleEditRecipe(r)} onPublish={isAdmin ? () => publishMyCookbookRecipe(r) : null} defaultPax={householdPax || r.baseServings || 1} />
+                <SavedRecipeCard key={r.id} recipe={r} onDelete={() => deleteRecipe(r.id)} onEdit={() => handleEditRecipe(r)} onPublish={isAdmin ? () => onPublishRecipe(r) : null} defaultPax={householdPax || r.baseServings || 1} />
               ))}
             </div>
           )}
