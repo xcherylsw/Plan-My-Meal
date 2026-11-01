@@ -4,7 +4,7 @@ import {
   Check, Clock, Sparkles, Tags, AlertTriangle, ChevronDown,
   BookmarkPlus, Link2, Users, UploadCloud, DownloadCloud, Pencil, Calendar, BookOpen, Play,
 } from "lucide-react";
-import { subscribe as cloudSubscribe, getSnapshot as cloudSnapshot, isAdminUser, loadLibrary, saveLibraryRecipe, deleteLibraryRecipe, saveBuiltinRecipePhoto } from "./cloud.js";
+import { subscribe as cloudSubscribe, getSnapshot as cloudSnapshot, isAdminUser, loadLibrary, saveLibraryRecipe, deleteLibraryRecipe, saveBuiltinRecipePhoto, saveBuiltinRecipeOverride } from "./cloud.js";
 import { pushState, pullState } from "./syncClient.js";
 import { SplashScreen } from "@capacitor/splash-screen";
 // Ads live entirely behind src/ads.js — the ads build ships the real AdMob
@@ -1420,7 +1420,7 @@ export default function MakanLedger() {
   }
 
   const getPool = useCallback(() => {
-    let pool = [...MEALS, ...myRecipes.map(r => ({ ...r, custom: true }))]
+    let pool = [...MEALS.map(m => ({ ...m, ...((library.items || []).find(r => r.kind === "builtin-override" && r.mealId === m.id) || {}), id: m.id })), ...myRecipes.map(r => ({ ...r, custom: true }))]
       // A component recipe (sambal, curry roux, a spice paste — something
       // eaten as part of other dishes, never on its own) is never a
       // candidate for a meal slot or a side pairing. It only ever gets
@@ -1442,7 +1442,7 @@ export default function MakanLedger() {
     if (household.preferredProteins.length) pool = pool.filter(m => m.custom || household.preferredProteins.includes(m.protein));
 
     return { pool, softFallback };
-  }, [myRecipes, household, pantry]);
+  }, [myRecipes, household, pantry, library.items]);
 
   // The same pool getPool() draws from, sorted alphabetically, for the
   // "pick a specific dish" control — for when you already know what you
@@ -1459,7 +1459,7 @@ export default function MakanLedger() {
   // deliberately wants it). Dislikes and cuisine/protein taste preferences
   // still apply here — those aren't the restriction being bypassed.
   const rawPickableMeals = useMemo(() => {
-    let pool = [...MEALS, ...myRecipes.map(r => ({ ...r, custom: true }))]
+    let pool = [...MEALS.map(m => ({ ...m, ...((library.items || []).find(r => r.kind === "builtin-override" && r.mealId === m.id) || {}), id: m.id })), ...myRecipes.map(r => ({ ...r, custom: true }))]
       .filter(m => !m.isComponent)
       .map(withDefaults)
       .map(m => applyDislikeSubs(m, household.dislikedIngredients, pantry));
@@ -2531,7 +2531,11 @@ export default function MakanLedger() {
     if (!isAdmin) { showToast("Only admins can publish community recipes."); return; }
     if (!window.confirm(`Publish "${recipe.name}" to the public Community Library? Everyone can view it. This does not publish your private recipe collection.`)) return;
     try {
-      await saveLibraryRecipe(recipe);
+      if (String(recipe.id || "").startsWith("builtin-")) {
+        await saveBuiltinRecipeOverride(String(recipe.id).slice(8), recipe);
+      } else {
+        await saveLibraryRecipe(recipe);
+      }
       setLibraryEdit(false);
       await refreshLibrary();
       setTab("library");
@@ -5161,8 +5165,9 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
   const [photoSaving, setPhotoSaving] = useState(null);
   const [photoMessage, setPhotoMessage] = useState("");
   const photoRecords = (library.items || []).filter(r => r.kind === "builtin-photo");
-  const communityItems = (library.items || []).filter(r => r.kind !== "builtin-photo");
-  const items = [...MEALS.map(r => ({...r, id: `builtin-${r.id}`, builtIn: true, photo: photoRecords.find(p=>p.mealId===r.id)?.photo || r.photo})), ...communityItems];
+  const overrides = (library.items || []).filter(r => r.kind === "builtin-override");
+  const communityItems = (library.items || []).filter(r => r.kind !== "builtin-photo" && r.kind !== "builtin-override");
+  const items = [...MEALS.map(r => ({...r, ...(overrides.find(p=>p.mealId===r.id) || {}), id: `builtin-${r.id}`, builtIn: true, photo: overrides.find(p=>p.mealId===r.id)?.photo || photoRecords.find(p=>p.mealId===r.id)?.photo || r.photo})), ...communityItems];
   async function publishPhoto(mealId,file) {
     if (!file) return;
     setPhotoSaving(mealId);setPhotoMessage("");
@@ -5234,7 +5239,7 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
                 <div style={{padding:"0 12px 12px"}}>
                   {isAdmin && r.builtIn && <label style={{display:"block",textAlign:"center",padding:"9px 4px",fontSize:11,fontWeight:800,color:"#365C4B",cursor:photoSaving===r.id.slice(8)?"wait":"pointer"}}>📷 {photoSaving===r.id.slice(8)?"Publishing…":r.photo?"Replace official photo":"Upload official photo"}<input type="file" accept="image/*" disabled={!!photoSaving} style={{display:"none"}} onChange={e=>{publishPhoto(r.id.slice(8),e.target.files?.[0]);e.target.value=""}}/></label>}
                   <button onClick={()=>!r.builtIn&&!added(r.id)&&onAdd(r)} disabled={r.builtIn||added(r.id)} style={{width:"100%",padding:"9px 5px",borderRadius:10,background:r.builtIn||added(r.id)?"#EDF1EA":"#365C4B",color:r.builtIn||added(r.id)?"#45624F":"#fff",fontSize:11,fontWeight:800}}>{r.builtIn?"In meal planner":added(r.id)?"✓ Saved":"＋ Save recipe"}</button>
-                  {isAdmin&&!r.builtIn&&<div style={{display:"flex",justifyContent:"space-between",marginTop:8}}><button onClick={()=>onEdit(r)} style={{fontSize:11,fontWeight:800,color:"#365C4B"}}>✎ Edit recipe, tags & photo</button><button onClick={()=>{if(confirmDel===r.id){setConfirmDel(null);onDelete(r.id)}else setConfirmDel(r.id)}} style={{fontSize:11,color:C.clayText}}>{confirmDel===r.id?"Confirm remove":"Remove"}</button></div>}
+                  {isAdmin&&<div style={{display:"flex",justifyContent:"space-between",marginTop:8}}><button onClick={()=>onEdit(r)} style={{fontSize:11,fontWeight:800,color:"#365C4B"}}>✎ Edit recipe, tags & photo</button>{!r.builtIn && <button onClick={()=>{if(confirmDel===r.id){setConfirmDel(null);onDelete(r.id)}else setConfirmDel(r.id)}} style={{fontSize:11,color:C.clayText}}>{confirmDel===r.id?"Confirm remove":"Remove"}</button>}</div>}
                 </div>
                 {open===r.id&&<div style={{padding:"12px",borderTop:"1px solid #EDE8E1",fontSize:12,lineHeight:1.55}}>
                   <CreditLine r={r}/>
