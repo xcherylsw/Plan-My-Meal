@@ -31,8 +31,15 @@ export default function AccountBar() {
 
   if (!s.configured) return null;
 
-  const dot = { saving: MUSTARD, saved: "#B6B2E0", offline: "#9A9184", error: "#EAA28F", idle: "#B6B2E0" }[s.sync] || "#B6B2E0";
-  const label = { saving: "Saving…", saved: "Saved to your account", offline: "Offline — will save when you're back", error: "Couldn't save just now", idle: "Signed in" }[s.sync];
+  const backedUp = !!(s.user && s.household && s.sync === "saved");
+  const dot = !s.user || !s.household ? "#D89B75" : { saving: MUSTARD, saved: "#4E9B72", offline: "#9A9184", error: "#D36C56", idle: "#D89B75" }[s.sync] || "#D89B75";
+  const label = !s.user ? "Not backed up — sign in with Google" : !s.household ? "Connecting your cloud backup…" : {
+    saving: "Saving to Google cloud…",
+    saved: "Saved to cloud · Safe across devices",
+    offline: "Offline · Changes saved on this device",
+    error: "Cloud backup needs attention",
+    idle: "Checking cloud backup…"
+  }[s.sync];
   const initial = (s.user?.name || s.user?.email || "?").trim().charAt(0).toUpperCase();
 
   return (
@@ -78,6 +85,9 @@ export default function AccountBar() {
               {s.user.name && <div style={{ fontSize: 11.5, color: "#666A73", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.user.email}</div>}
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, fontSize: 11.5, color: "#666A73" }}>
                 <span style={{ width: 8, height: 8, borderRadius: 999, background: dot, flexShrink: 0 }} /> {label}
+              </div>
+              <div style={{fontSize:11.5,color:"#666A73",lineHeight:1.5,marginTop:8,padding:"9px 10px",background:backedUp?"#EEF7F0":"#FFF5EC",borderRadius:9}}>
+                {backedUp ? "Your recipes, Kitchen and meal plans are backed up. Sign in with this Google account on another phone to restore them." : "Your data is still on this device. Wait for Saved to cloud before clearing browser data or changing phones."}
               </div>
               {s.household && s.household.members.length > 0 && (
                 <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${LINE}` }}>
