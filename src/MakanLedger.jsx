@@ -670,10 +670,30 @@ function wordMatch(a, b) {
   return false;
 }
 // Match recipe ingredients to stock without treating every fish, meat cut or vegetable as interchangeable.
+// Purchase-level grouping: ordinary chicken cuts are supplied from a whole bird.
+// Keep named recipes unchanged; only shopping/stock matching uses this mapping.
+function isOrdinaryChicken(name) {
+  const n = String(name || "").toLowerCase();
+  return /\bchicken\b/.test(n) && !/\b(stock|broth|powder|essence|flavour|flavor|sausage|ham|nugget|paste|egg|liver|heart|gizzard|feet|foot|skin|fat|blood)\b/.test(n);
+}
+function chickenEquivalentGrams(amount, unit, name) {
+  const n = Number(amount);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  const u = String(unit || "").toLowerCase();
+  if (/^(kg|kilogram|kilograms)$/.test(u)) return n * 1000;
+  if (/^(g|gm|gram|grams)$/.test(u)) return n;
+  if (/^(pcs?|pieces?|each|units?)$/.test(u) || !u) {
+    if (/\bwhole\b/i.test(name)) return n * 900;
+    if (/\b(wings?|drumsticks?|thighs?|breasts?|legs?)\b/i.test(name)) return n * 180;
+    return null;
+  }
+  return null;
+}
 function stockIngredientMatch(recipeName, stockName) {
   const recipe = String(recipeName || "").toLowerCase().trim();
   const stock = String(stockName || "").toLowerCase().trim();
   if (!recipe || !stock) return false;
+  if (isOrdinaryChicken(recipe) && isOrdinaryChicken(stock)) return true;
   const fishNames = ["sea bream","seabream","snapper","sea bass","seabass","barramundi","tilapia","grouper","pomfret","cod","salmon","mackerel","threadfin","dory","sole","haddock","halibut","tuna","sardine"];
   const fishType = name => fishNames.find(f => new RegExp("\\b"+f+"\\b","i").test(name));
   const rf = fishType(recipe), sf = fishType(stock);
@@ -2081,6 +2101,7 @@ export default function MakanLedger() {
   // Canonical shopping names keep singular/plural variants on one line.
   const shoppingName = name => {
     const n = String(name ?? "").trim().toLowerCase();
+    if (isOrdinaryChicken(n)) return "whole chicken";
     if (/^eggs?$/.test(n)) return "egg";
     if (/^(potato|potatoes)$/.test(n)) return "potato";
     if (/^(tomato|tomatoes)$/.test(n)) return "tomato";
@@ -2110,11 +2131,20 @@ export default function MakanLedger() {
         // however many batches are actually needed.
         if (i.componentId) return;
         const key = shoppingName(i.name);
-        if (!map[key]) map[key] = { key, name: key === "egg" ? "Eggs" : i.name, category: i.category, count: 0, amount: null, unit: null, mealRefs: [], neededFor: [] };
+        const chicken = key === "whole chicken";
+        const grams = chicken ? chickenEquivalentGrams(i.amount, i.unit, i.name) : null;
+        if (!map[key]) map[key] = { key, name: key === "egg" ? "Eggs" : key === "whole chicken" ? "Whole chicken" : i.name, category: i.category, count: 0, amount: null, unit: null, mealRefs: [], neededFor: [] };
         map[key].count++;
         if (i.amount != null) {
-          map[key].amount = (map[key].amount || 0) + i.amount * scale;
-          map[key].unit = shoppingUnit(i.unit);
+          if (chicken && grams != null) {
+            map[key].amount = (map[key].amount || 0) + grams * scale;
+            map[key].unit = "g";
+          } else if (!chicken) {
+            map[key].amount = (map[key].amount || 0) + i.amount * scale;
+            map[key].unit = shoppingUnit(i.unit);
+          } else {
+            map[key].unknownChickenQuantity = true;
+          }
         }
         // Track which specific planned meals need this ingredient, so if it
         // turns out to be unavailable at the shop, those exact meals can be
@@ -2130,20 +2160,42 @@ export default function MakanLedger() {
       need.recipe.ingredients.forEach(i => {
         if (i.componentId) return; // nested components aren't supported yet
         const key = shoppingName(i.name);
-        if (!map[key]) map[key] = { key, name: key === "egg" ? "Eggs" : i.name, category: i.category, count: 0, amount: null, unit: null, mealRefs: [], neededFor: [] };
+        const chicken = key === "whole chicken";
+        const grams = chicken ? chickenEquivalentGrams(i.amount, i.unit, i.name) : null;
+        if (!map[key]) map[key] = { key, name: key === "egg" ? "Eggs" : key === "whole chicken" ? "Whole chicken" : i.name, category: i.category, count: 0, amount: null, unit: null, mealRefs: [], neededFor: [] };
         map[key].count++;
         if (i.amount != null) {
-          map[key].amount = (map[key].amount || 0) + i.amount * need.batches;
-          map[key].unit = shoppingUnit(i.unit);
+          if (chicken && grams != null) {
+            map[key].amount = (map[key].amount || 0) + grams * need.batches;
+            map[key].unit = "g";
+          } else if (!chicken) {
+            map[key].amount = (map[key].amount || 0) + i.amount * need.batches;
+            map[key].unit = shoppingUnit(i.unit);
+          } else {
+            map[key].unknownChickenQuantity = true;
+          }
         }
         if (!map[key].neededFor.includes(need.recipe.name)) map[key].neededFor.push(need.recipe.name);
       });
     });
     extraItems.forEach(i => {
       const key = shoppingName(i.name);
-      if (!map[key]) map[key] = { key, name: key === "egg" ? "Eggs" : i.name, category: i.category, count: 0, amount: null, unit: null, manual: true };
+      if (!map[key]) map[key] = { key, name: key === "egg" ? "Eggs" : key === "whole chicken" ? "Whole chicken" : i.name, category: i.category, count: 0, amount: null, unit: null, manual: true };
       map[key].count++;
     });
+    if (map["whole chicken"]) {
+      const item = map["whole chicken"];
+      // Approx. 1.5 kg bird at 60% usable yield; round up to whole birds.
+      if (item.amount != null && !item.unknownChickenQuantity) {
+        item.amount = Math.ceil(item.amount / 900);
+        item.unit = "pcs";
+        item.estimateNote = "Approximate: 1 whole chicken yields about 900g usable meat; check bird size.";
+      } else {
+        item.amount = null;
+        item.unit = "pcs";
+        item.estimateNote = "Chicken quantities need review; some recipes do not specify usable amounts.";
+      }
+    }
     return Object.values(map);
   }, [shoppingPlan, extraItems, targetPax, skippedDays, componentNeeds]);
 
