@@ -1430,6 +1430,9 @@ export default function MakanLedger() {
       .map(withDefaults)
       .map(m => adaptMealForDiets(m, household.diets))
       .map(m => applyDislikeSubs(m, household.dislikedIngredients, pantry));
+    // Only hearted recipes may enter automatic meal generation.
+    const favourites = new Set(household.favouriteRecipeIds || []);
+    pool = pool.filter(m => favourites.has(m.libraryId || (m.custom ? m.id : `builtin-${m.id}`)));
     let softFallback = false;
     if (household.diets.includes("soft")) {
       const softPool = pool.filter(m => m.soft);
@@ -1497,7 +1500,7 @@ export default function MakanLedger() {
     const usesKitchenStock = (meal) => useSoonItems.some(k => meal.ingredients.some(i => stockIngredientMatch(i.name, k.name)));
     const stockScore = meal => meal.ingredients.reduce((score, ingredient) => score + stocked.reduce((n, item) =>
       n + (stockIngredientMatch(ingredient.name, item.name) ? (item.useSoon ? 6 : 2) : 0), 0), 0);
-    const kitchenFirstOrder = list => shuffle(list).sort((a,b) => (stockScore(a) + ((household.favouriteRecipeIds || []).includes(a.libraryId || (a.custom ? a.id : `builtin-${a.id}`)) ? -5 : 0)) - (stockScore(b) + ((household.favouriteRecipeIds || []).includes(b.libraryId || (b.custom ? b.id : `builtin-${b.id}`)) ? -5 : 0)));
+    const kitchenFirstOrder = list => shuffle(list).sort((a,b) => stockScore(b) - stockScore(a));
 
     const results = [];
     // Balance mains across the whole week, not merely unique recipe IDs.
@@ -1689,7 +1692,7 @@ export default function MakanLedger() {
   // The underlying household, pantry, recipes, shopping and prep state is shared.
   function planMyWeek() {
     const { pool } = getPool();
-    if (!pool.some(m => !m.side && !m.isComponent)) { showToast("No complete main dishes match your household preferences."); return; }
+    if (!pool.some(m => !m.side && !m.isComponent)) { showToast("No hearted main dishes are available. Heart recipes in the Library to build your cooking rotation."); return; }
     const today = todayDateStr();
     const weekEnd = addDaysToDateStr(today, 6);
     const existingDinners = plan.filter(m => m.mealType === "dinner" && m.date >= today && m.date <= weekEnd);
@@ -1718,7 +1721,7 @@ export default function MakanLedger() {
   function handleAddOn() {
     const { pool, softFallback } = getPool();
     if (pool.length === 0) {
-      setGenerateNote("No meals match those filters — try loosening them.");
+      setGenerateNote("No hearted recipes match. Choose recipes in the Library first.");
       return;
     }
     const notes = [];
