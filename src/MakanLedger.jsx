@@ -694,6 +694,15 @@ function chickenEquivalentGrams(amount, unit, name) {
   }
   return null;
 }
+// Free, offline starter catalogue. Product-specific ingredients and serving
+// instructions are intentionally not guessed from these generic entries.
+const COOKING_PACKET_PRESETS = [
+  "Laksa paste", "Rendang paste", "Tom yum paste", "Black pepper sauce",
+  "Curry paste", "Japanese curry roux", "Satay sauce", "Teriyaki sauce",
+  "Sweet and sour sauce", "Sambal paste", "Bak kut teh soup base",
+  "Mala paste", "Mapo tofu sauce", "Butter chicken sauce",
+  "Green curry paste", "Red curry paste"
+];
 function packetFlavour(name) {
   const n = String(name || "").toLowerCase();
   if (!/(premix|paste|sauce|soup base|curry cube|roux|seasoning packet|concentrate)/.test(n)) return "";
@@ -4292,6 +4301,13 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
             </div>
           </label>
         </div>
+        <details style={{marginBottom:12,padding:"10px 12px",background:"#F4F7F1",borderRadius:12}}>
+          <summary style={{fontSize:13,fontWeight:750,cursor:"pointer"}}>Cooking sauce or premix? Pick a common type</summary>
+          <div style={{fontSize:12,color:C.inkSoft,margin:"8px 0"}}>No AI or photo scanning. Choose a type, then add the brand or packet size to its name if you like. Check the packet for extra ingredients.</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+            {COOKING_PACKET_PRESETS.map(name=><button key={name} type="button" onClick={()=>{setNewPantryName(name);setNewPantryCategory("seasoning");setNewPantryLocation("pantry");setNewPantryQuantity("1");setNewPantryUnit("packet");}} style={{border:"1px solid #C9D9CB",background:newPantryName===name?"#DCECDF":"#fff",borderRadius:999,padding:"7px 10px",fontSize:12,color:C.ink}}>{name}</button>)}
+          </div>
+        </details>
         <button type="button" disabled={!newPantryName.trim()} onClick={()=>{addPantryItem();setAddingIngredient(false);}} style={{width:"100%",border:0,borderRadius:13,padding:"14px 16px",fontSize:15,fontWeight:800,background:"#365C4B",color:"#fff",opacity:newPantryName.trim()?1:.5}}>Add ingredient</button>
       </div>}
       <div role="group" aria-label="Storage location" style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:8,marginBottom:16}}>{LOCATIONS.map(loc=>{const count=grouped[loc.id]?.length||0;const active=selectedStorage===loc.id;return <button key={loc.id} type="button" onClick={()=>{setSelectedStorage(loc.id);setEditingPantryId(null);}} aria-pressed={active} style={{border:active?"2px solid #456D55":"1px solid #E5E3DD",borderRadius:16,background:active?"#EAF3EE":"#fff",padding:"13px 5px",display:"grid",gap:5,justifyItems:"center",color:C.ink}}><span style={{fontSize:22}}>{loc.id==="pantry"?"🫙":loc.id==="fridge"?"🥬":"❄️"}</span><strong style={{fontSize:13}}>{loc.id==="pantry"?"Pantry":loc.label}</strong><span style={{fontSize:15,fontWeight:800}}>{count}</span></button>})}</div>
