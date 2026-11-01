@@ -2132,6 +2132,7 @@ export default function MakanLedger() {
   const shoppingUnit = unit => {
     const u = String(unit ?? "").trim().toLowerCase();
     if (!u || /^(pc|pcs|piece|pieces|unit|units|each|ea)$/.test(u)) return "pcs";
+    if (/^(whole|whole chicken|whole chickens|bird|birds|chicken|chickens|packet|packets)$/.test(u)) return "pcs";
     if (/^(egg|eggs)$/.test(u)) return "pcs";
     if (/^(g|gram|grams)$/.test(u)) return "g";
     if (/^(kg|kilogram|kilograms)$/.test(u)) return "kg";
@@ -2230,7 +2231,11 @@ export default function MakanLedger() {
     // Track remaining stock by pantry entry so variants cannot spend the same eggs twice.
     const remaining = new Map(pantry.map(p => [p.id, p.quantity == null || p.quantity === "" ? null : Number(p.quantity)]));
     return aggregated.map(item => {
-      const match = findPantryMatch(item.name, pantry);
+      // Chicken is stocked as "Chicken · 2 Whole", but the shopping line is
+      // "Whole chicken · 3 pcs". Both represent whole birds.
+      const match = item.key === "whole chicken"
+        ? pantry.find(p => isOrdinaryChicken(p.name) && (p.quantity == null || /^(whole|whole chicken|whole chickens|bird|birds|pcs?|pieces?|each)$/i.test(String(p.unit || "").trim())))
+        : findPantryMatch(item.name, pantry);
       if (!match) return { ...item, covered: false };
       const available = remaining.get(match.id);
       if (available == null) return { ...item, covered: true };
