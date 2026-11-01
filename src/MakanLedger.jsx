@@ -1430,9 +1430,12 @@ export default function MakanLedger() {
       .map(withDefaults)
       .map(m => adaptMealForDiets(m, household.diets))
       .map(m => applyDislikeSubs(m, household.dislikedIngredients, pantry));
-    // Only hearted recipes may enter automatic meal generation.
+    // Personal cookbook recipes are opted in by their creator. Public library
+    // recipes require an explicit heart; removing a heart removes eligibility.
     const favourites = new Set(household.favouriteRecipeIds || []);
-    pool = pool.filter(m => favourites.has(m.libraryId || (m.custom ? m.id : `builtin-${m.id}`)));
+    pool = pool.filter(m => m.custom
+      ? (!m.libraryId || favourites.has(m.libraryId))
+      : favourites.has(`builtin-${m.id}`));
     let softFallback = false;
     if (household.diets.includes("soft")) {
       const softPool = pool.filter(m => m.soft);
@@ -1692,7 +1695,7 @@ export default function MakanLedger() {
   // The underlying household, pantry, recipes, shopping and prep state is shared.
   function planMyWeek() {
     const { pool } = getPool();
-    if (!pool.some(m => !m.side && !m.isComponent)) { showToast("No hearted main dishes are available. Heart recipes in the Library to build your cooking rotation."); return; }
+    if (!pool.some(m => !m.side && !m.isComponent)) { showToast("No eligible main dishes found. Add a recipe to My Cookbook or heart recipes in Discover."); return; }
     const today = todayDateStr();
     const weekEnd = addDaysToDateStr(today, 6);
     const existingDinners = plan.filter(m => m.mealType === "dinner" && m.date >= today && m.date <= weekEnd);
@@ -1721,7 +1724,7 @@ export default function MakanLedger() {
   function handleAddOn() {
     const { pool, softFallback } = getPool();
     if (pool.length === 0) {
-      setGenerateNote("No hearted recipes match. Choose recipes in the Library first.");
+      setGenerateNote("No eligible recipes match. Add recipes to My Cookbook or heart recipes in Discover.");
       return;
     }
     const notes = [];
