@@ -2630,6 +2630,20 @@ export default function MakanLedger() {
       showToast("Couldn't publish. Check you're signed in with the admin account.");
     }
   }
+  async function publishMyCookbookRecipe(recipe) {
+    if (!isAdmin) { showToast("Publishing is currently available to the admin only."); return; }
+    if (!window.confirm(`Publish "${recipe.name}" to Discover? Your private R&D copy stays in My Cookbook, and later edits to it will not update the public recipe.`)) return;
+    try {
+      // Publish a snapshot with a distinct public ID, never the private recipe ID.
+      const { id: privateId, ...publicFields } = recipe;
+      const publicCopy = { ...publicFields, id: "community-" + Date.now() + "-" + Math.random().toString(36).slice(2, 7) };
+      await saveLibraryRecipe(publicCopy);
+      await refreshLibrary();
+      showToast("Published to Discover. Your private recipe is unchanged.");
+    } catch (e) {
+      showToast("Could not publish. Check admin sign-in and try again.");
+    }
+  }
   async function removeLibraryRecipe(id) {
     try { await deleteLibraryRecipe(id); await refreshLibrary(); showToast("Removed from the library"); }
     catch (e) { showToast("Couldn't remove it. Check you're signed in with the admin account."); }
@@ -5198,7 +5212,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {filteredRecipes.map(r => (
-                <SavedRecipeCard key={r.id} recipe={r} onDelete={() => deleteRecipe(r.id)} onEdit={() => handleEditRecipe(r)} defaultPax={householdPax || r.baseServings || 1} />
+                <SavedRecipeCard key={r.id} recipe={r} onDelete={() => deleteRecipe(r.id)} onEdit={() => handleEditRecipe(r)} onPublish={isAdmin ? () => publishMyCookbookRecipe(r) : null} defaultPax={householdPax || r.baseServings || 1} />
               ))}
             </div>
           )}
@@ -5208,7 +5222,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
   );
 }
 
-function SavedRecipeCard({ recipe, onDelete, onEdit, defaultPax }) {
+function SavedRecipeCard({ recipe, onDelete, onEdit, onPublish, defaultPax }) {
   const [pax, setPax] = useState(defaultPax);
   const [actionsOpen, setActionsOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -5240,7 +5254,7 @@ function SavedRecipeCard({ recipe, onDelete, onEdit, defaultPax }) {
             <CreditLine r={recipe} />
           </div>
         </div>
-        <div style={{flexShrink:0,position:"relative"}}><button aria-label="Recipe options" aria-expanded={actionsOpen} onClick={()=>setActionsOpen(v=>!v)} style={{border:"1px solid #E9E3DF",background:"#FAF7F2",borderRadius:12,padding:"8px 12px",fontWeight:800,color:C.ink}}>•••</button>{actionsOpen && <div style={{display:"grid",gap:6,marginTop:6}}><button onClick={()=>{setActionsOpen(false);onEdit();}} style={{padding:8,borderRadius:10,background:"#F1EFFB",color:C.ink}}>Edit</button><button onClick={()=>{setActionsOpen(false);onDelete();}} style={{padding:8,borderRadius:10,background:"#FBE9E3",color:C.clayText}}>Delete</button></div>}</div>
+        <div style={{flexShrink:0,position:"relative"}}><button aria-label="Recipe options" aria-expanded={actionsOpen} onClick={()=>setActionsOpen(v=>!v)} style={{border:"1px solid #E9E3DF",background:"#FAF7F2",borderRadius:12,padding:"8px 12px",fontWeight:800,color:C.ink}}>•••</button>{actionsOpen && <div style={{display:"grid",gap:6,marginTop:6}}><button onClick={()=>{setActionsOpen(false);onEdit();}} style={{padding:8,borderRadius:10,background:"#F1EFFB",color:C.ink}}>Edit</button>{onPublish && <button onClick={()=>{setActionsOpen(false);onPublish();}} style={{padding:8,borderRadius:10,background:"#E4F2E8",color:"#285B42"}}>Publish to Discover</button>}<button onClick={()=>{setActionsOpen(false);onDelete();}} style={{padding:8,borderRadius:10,background:"#FBE9E3",color:C.clayText}}>Delete</button></div>}</div>
       </div>
 
       <button onClick={()=>setDetailsOpen(v=>!v)} aria-expanded={detailsOpen} style={{width:"100%",marginTop:14,display:"flex",justifyContent:"space-between",alignItems:"center",background:"#FAF7F2",border:"1px solid #E9E3DF",borderRadius:13,padding:"12px 14px",fontSize:14,fontWeight:750,color:C.ink}}><span>{detailsOpen?"Hide recipe":"View ingredients & cooking steps"}</span><ChevronDown size={17} style={{transform:detailsOpen?"rotate(180deg)":"none",transition:"transform .2s"}} /></button>
