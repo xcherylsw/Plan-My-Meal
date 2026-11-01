@@ -3492,10 +3492,28 @@ function ToggleSwitch({ on, onClick, label, light }) {
   );
 }
 
+// Split pasted recipe instructions conservatively, preserving every word.
+// Handles line breaks and inline numbered steps; does not split decimals or temperatures.
+function normaliseRecipeSteps(steps) {
+  return (Array.isArray(steps) ? steps : [steps]).flatMap(raw => {
+    const text = String(raw || "").replace(/\r\n?/g, "\n").trim();
+    if (!text) return [];
+    const lines = text
+      .replace(/([.!?])\s+(?=(?:Step\s+)?\d{1,2}[.)]\s+[A-Za-z])/gi, "$1\n")
+      .replace(/\s+(?=Instructions\s*:?\s*(?:Step\s+)?1[.)]\s)/gi, "\n")
+      .split(/\n+/).map(x => x.trim()).filter(Boolean);
+    return lines.flatMap(line => {
+      const pieces = line.split(/\s+(?=(?:Step\s+)?\d{1,2}[.)]\s+[A-Za-z])/i);
+      return pieces.map(x => x.replace(/^(?:Step\s+)?\d{1,2}[.)]\s+/i, "").trim()).filter(Boolean);
+    });
+  });
+}
+
 function StepsList({ steps }) {
+  const displaySteps = normaliseRecipeSteps(steps);
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
-      {steps.map((s, i) => (
+      {displaySteps.map((s, i) => (
         <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
           <span style={{
             flexShrink: 0, width: 22, height: 22, borderRadius: 999, background: C.jade700, color: "#fff",
@@ -3790,7 +3808,7 @@ function MealCard({ meal, onRegenerate, onPick, pickableMeals, rawPickableMeals,
       {!compact && meal.steps?.length > 0 && (
         <div style={{ marginTop: 8 }}>
           <div style={{ fontFamily: FONT_MONO, fontSize: 12.5, fontWeight: 700, color: C.jade700, display: "flex", alignItems: "center", gap: 6 }}>
-            <ChefHat size={14} /> How to cook ({meal.steps.length} steps)
+            <ChefHat size={14} /> How to cook ({normaliseRecipeSteps(meal.steps).length} steps)
           </div>
           <StepsList steps={meal.steps} />
         </div>
@@ -4657,7 +4675,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
 
   function handleSave() {
     const cleanIngredients = draft.ingredients.filter(i => i.name.trim());
-    const cleanSteps = draft.steps.map(s => s.trim()).filter(Boolean);
+    const cleanSteps = normaliseRecipeSteps(draft.steps);
     if (!draft.name.trim() || cleanIngredients.length === 0) {
       setError("Give the recipe a name and at least one ingredient before saving.");
       return;
@@ -4725,7 +4743,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
       baseServings: recipe.baseServings || 4,
       ingredients: (recipe.ingredients && recipe.ingredients.length ? recipe.ingredients : [{ name: "", category: "other", amount: null, unit: "" }])
         .map(i => ({ id: "d" + Date.now() + Math.random().toString(36).slice(2, 6), name: i.name, category: i.category, amount: i.amount, unit: i.unit || "", componentId: i.componentId || null })),
-      steps: recipe.steps && recipe.steps.length ? [...recipe.steps] : [""],
+      steps: recipe.steps && recipe.steps.length ? normaliseRecipeSteps(recipe.steps) : [""],
       sourceNote: recipe.sourceNote || "",
       creatorName: recipe.creatorName || "", creatorUrl: recipe.creatorUrl || "", videoUrl: recipe.videoUrl || "",
       photo: recipe.photo || null,
@@ -5134,7 +5152,7 @@ function SavedRecipeCard({ recipe, onDelete, onEdit, defaultPax }) {
       {recipe.steps?.length > 0 && (
         <div style={{ marginTop: 8 }}>
           <div style={{ fontFamily: FONT_MONO, fontSize: 12.5, fontWeight: 700, color: C.jade700, display: "flex", alignItems: "center", gap: 6 }}>
-            <ChefHat size={14} /> How to cook ({recipe.steps.length} steps)
+            <ChefHat size={14} /> How to cook ({normaliseRecipeSteps(recipe.steps).length} steps)
           </div>
           <StepsList steps={recipe.steps} />
         </div>
@@ -5268,7 +5286,7 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onToggl
                   <CreditLine r={r}/>
                   <div style={{fontWeight:800,margin:"8px 0 4px"}}>Ingredients · serves {r.baseServings||4}</div>
                   <ul style={{paddingLeft:18,margin:"0 0 10px"}}>{(r.ingredients||[]).map((i,k)=><li key={k}>{[i.amount,i.unit,i.name].filter(x=>x!==null&&x!==undefined&&x!=="").join(" ")}</li>)}</ul>
-                  {!!r.steps?.length&&<><div style={{fontWeight:800,marginBottom:4}}>How to cook</div><ol style={{paddingLeft:18,margin:0}}>{r.steps.map((step,k)=><li key={k}>{step}</li>)}</ol></>}
+                  {!!r.steps?.length&&<><div style={{fontWeight:800,marginBottom:4}}>How to cook</div><ol style={{paddingLeft:18,margin:0}}>{normaliseRecipeSteps(r.steps).map((step,k)=><li key={k}>{step}</li>)}</ol></>}
                 </div>}
               </article>
             ))}
