@@ -1497,7 +1497,7 @@ export default function MakanLedger() {
     const usesKitchenStock = (meal) => useSoonItems.some(k => meal.ingredients.some(i => stockIngredientMatch(i.name, k.name)));
     const stockScore = meal => meal.ingredients.reduce((score, ingredient) => score + stocked.reduce((n, item) =>
       n + (stockIngredientMatch(ingredient.name, item.name) ? (item.useSoon ? 6 : 2) : 0), 0), 0);
-    const kitchenFirstOrder = list => shuffle(list).sort((a,b) => (stockScore(a) + ((household.favouriteRecipeIds || []).includes(a.libraryId || (a.custom ? a.id : `builtin-${a.id}`)) ? 5 : 0)) - (stockScore(b) + ((household.favouriteRecipeIds || []).includes(b.libraryId || (b.custom ? b.id : `builtin-${b.id}`)) ? 5 : 0)));
+    const kitchenFirstOrder = list => shuffle(list).sort((a,b) => (stockScore(a) + ((household.favouriteRecipeIds || []).includes(a.libraryId || (a.custom ? a.id : `builtin-${a.id}`)) ? -5 : 0)) - (stockScore(b) + ((household.favouriteRecipeIds || []).includes(b.libraryId || (b.custom ? b.id : `builtin-${b.id}`)) ? -5 : 0)));
 
     const results = [];
     // Balance mains across the whole week, not merely unique recipe IDs.
