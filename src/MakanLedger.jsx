@@ -2040,6 +2040,12 @@ export default function MakanLedger() {
     showToast(`Added ${choice.name} to today's ${mealType}`, () => setPlan(prev => prev.filter(m => m.uid !== uid)));
   }
 
+  // Shopping reflects the active seven-day planning window, not every future
+  // add-on ever saved. Older dates and future weeks must not inflate today's list.
+  const shoppingWindowStart = todayDateStr();
+  const shoppingWindowEnd = addDaysToDateStr(shoppingWindowStart, 6);
+  const shoppingPlan = plan.filter(m => m.date && m.date >= shoppingWindowStart && m.date <= shoppingWindowEnd);
+
   // How many batches of each component recipe (sambal, curry roux, a spice
   // paste — something made from scratch, never planned as its own meal) this
   // plan's dishes actually call for, beyond what's already sitting in the
@@ -2047,7 +2053,7 @@ export default function MakanLedger() {
   // this is what turns "3 dishes need sambal" into "make 1 batch of sambal".
   const componentNeeds = useMemo(() => {
     const demand = {};
-    plan.forEach(meal => {
+    shoppingPlan.forEach(meal => {
       // Already cooked — whatever component batch it needed has already
       // been made/used, so it shouldn't keep demanding more sambal, roux,
       // etc. on its account.
@@ -2070,7 +2076,7 @@ export default function MakanLedger() {
       const batches = shortfall > 0 ? Math.ceil(shortfall / recipe.yieldAmount) : 0;
       return { componentId, recipe, amountNeeded: d.amount, neededFor: [...d.neededFor], batches };
     }).filter(n => n && n.batches > 0);
-  }, [plan, skippedDays, targetPax, myRecipes, pantry]);
+  }, [shoppingPlan, skippedDays, targetPax, myRecipes, pantry]);
 
   // Canonical shopping names keep singular/plural variants on one line.
   const shoppingName = name => {
@@ -2091,7 +2097,7 @@ export default function MakanLedger() {
   };
   const aggregated = useMemo(() => {
     const map = {};
-    plan.forEach(meal => {
+    shoppingPlan.forEach(meal => {
       // Already cooked — its ingredients were already bought and just got
       // deducted from Kitchen stock when it was marked cooked, so it
       // shouldn't still be demanding more of them on the shopping list.
@@ -2139,7 +2145,7 @@ export default function MakanLedger() {
       map[key].count++;
     });
     return Object.values(map);
-  }, [plan, extraItems, targetPax, skippedDays, componentNeeds]);
+  }, [shoppingPlan, extraItems, targetPax, skippedDays, componentNeeds]);
 
   // Weighs each ingredient against pantry stock. A pantry entry with no
   // quantity set behaves as before (always covered). One with a quantity set
