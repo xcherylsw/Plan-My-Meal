@@ -2937,7 +2937,7 @@ function GenerateScreen(props) {
   return (
     <div style={{ padding: "18px 18px 28px", maxWidth: 760, margin: "0 auto", color:C.ink }}>
       {props.variant !== "custom" && <div style={{display:"flex",flexDirection:"column",gap:16,marginBottom:22}}>
-        {(household.favouriteRecipeIds || []).length === 0 && <p style={{fontSize:13,color:C.inkSoft,margin:"0 2px"}}>Start by hearting the recipes you want to cook. Only those dishes will enter your meal rotation.</p>}
+        
         {[
           {key:"plan",bg:"#FCE9E5",accent:"#EAA28F",eyebrow:"YOUR WEEK, SORTED",heading:"Dinner, handled.",description:"Seven dinners planned around your favourite recipes and what’s in your kitchen.",action:hasWeekPlan?"↻ Refresh my 7 dinners →":"🍳 Plan my 7 dinners →",click:onAutoPlan,art:"meal"},
           {key:"discover",bg:"#E6F0E7",accent:"#A9CDB1",eyebrow:"FIND YOUR FAVOURITES",heading:"Discover something delicious.",description:"Browse recipes, tap the heart, and build your own cooking rotation.",action:"Explore recipes →",click:props.onDiscover,art:"book"},
