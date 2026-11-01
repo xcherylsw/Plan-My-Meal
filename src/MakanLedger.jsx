@@ -2680,6 +2680,7 @@ export default function MakanLedger() {
               prepCardOpen={prepCardOpen}
               onTogglePrepCard={setPrepCardOpen}
               onAutoPlan={planMyWeek}
+              onDiscover={() => { setTab("library"); window.scrollTo({top:0,behavior:"smooth"}); }}
               hasWeekPlan={plan.some(m => m.mealType === "dinner" && m.date >= todayDateStr() && m.date <= addDaysToDateStr(todayDateStr(), 6))}
             />
 
@@ -2935,16 +2936,26 @@ function GenerateScreen(props) {
 
   return (
     <div style={{ padding: "18px 18px 28px", maxWidth: 760, margin: "0 auto", color:C.ink }}>
-      {props.variant !== "custom" && <section style={{background:"#FCE9E5",borderRadius:24,padding:20,display:"grid",gap:14,marginBottom:18}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12}}>
-          <div>
-            <h3 style={{fontFamily:FONT_DISPLAY,fontSize:27,lineHeight:1.2,margin:"7px 0"}}>Dinner, handled.</h3>
-            <p style={{fontSize:13,lineHeight:1.6,color:C.inkSoft,margin:0}}>Seven dinners, using what’s in your kitchen first. Shopping and prep update automatically.</p></div>
-          <FoodArt kind="meal" size={112}/>
-        </div>
-        <button onClick={onAutoPlan} style={{border:0,borderRadius:16,background:"#EAA28F",padding:17,color:C.ink,fontSize:16,fontWeight:800,boxShadow:"0 3px 0 #C87865"}}>{hasWeekPlan ? "↻ Refresh my 7 dinners →" : "🍳 Plan my 7 dinners →"}</button>
-        <span style={{fontSize:12,color:C.inkSoft,textAlign:"center"}}>{hasWeekPlan ? "Your current dinners will be kept until you confirm a refresh." : "Get 7 dinner ideas in one tap. Your shopping list and prep tasks will be created automatically."}</span>
-      </section>}
+      {props.variant !== "custom" && <div style={{display:"flex",flexDirection:"column",gap:16,marginBottom:22}}>
+        {(household.favouriteRecipeIds || []).length === 0 && <p style={{fontSize:13,color:C.inkSoft,margin:"0 2px"}}>Start by hearting the recipes you want to cook. Only those dishes will enter your meal rotation.</p>}
+        {[
+          {key:"plan",bg:"#FCE9E5",accent:"#EAA28F",eyebrow:"YOUR WEEK, SORTED",heading:"Dinner, handled.",description:"Seven dinners planned around your favourite recipes and what’s in your kitchen.",action:hasWeekPlan?"↻ Refresh my 7 dinners →":"🍳 Plan my 7 dinners →",click:onAutoPlan,art:"meal"},
+          {key:"discover",bg:"#E6F0E7",accent:"#A9CDB1",eyebrow:"FIND YOUR FAVOURITES",heading:"Discover something delicious.",description:"Browse recipes, tap the heart, and build your own cooking rotation.",action:"Explore recipes →",click:props.onDiscover,art:"book"},
+        ].sort((a,b)=>(household.favouriteRecipeIds || []).length===0?(a.key==="discover"?-1:1):0).map(card=>(
+          <section key={card.key} style={{background:card.bg,borderRadius:24,padding:20,display:"grid",gap:14}}>
+            <div style={{fontSize:10,fontWeight:800,letterSpacing:1.6,color:card.key==="plan"?"#9E6055":"#50755E"}}>{card.eyebrow}</div>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12}}>
+              <div style={{flex:1,minWidth:0}}>
+                <h3 style={{fontFamily:FONT_DISPLAY,fontSize:27,lineHeight:1.2,margin:"0 0 9px"}}>{card.heading}</h3>
+                <p style={{fontSize:13,lineHeight:1.6,color:C.inkSoft,margin:0}}>{card.description}</p>
+              </div>
+              <FoodArt kind={card.art} size={108}/>
+            </div>
+            <button onClick={card.click} style={{border:0,borderRadius:16,background:card.accent,padding:17,color:C.ink,fontSize:16,fontWeight:800,boxShadow:card.key==="plan"?"0 3px 0 #C87865":"0 3px 0 #7CA889",cursor:"pointer"}}>{card.action}</button>
+            {card.key==="plan" && <span style={{fontSize:12,color:C.inkSoft,textAlign:"center"}}>{hasWeekPlan?"Your current dinners will be kept until you confirm a refresh.":"Shopping and prep update automatically."}</span>}
+          </section>
+        ))}
+      </div>}
       {props.variant === "custom" && <h2 style={{fontFamily:FONT_DISPLAY,fontSize:28,margin:"0 0 12px"}}>Custom meal planning</h2>}
       {false && <section style={{marginBottom:18}} aria-label="More planning options">
         <div style={{fontSize:13,fontWeight:800,marginBottom:10,color:C.ink}}>Need a different plan?</div>
