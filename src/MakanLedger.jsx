@@ -4341,29 +4341,13 @@ function HouseholdScreen({
         <h2 style={{fontFamily:FONT_DISPLAY,fontSize:29,margin:"0 0 6px"}}>Make it yours.</h2>
         <p style={{fontSize:13,color:C.inkSoft,margin:0}}>Set it once. We'll plan around your family.</p>
       </div>
-      <div style={{background:"#EAF3EC",border:"1px solid #D4E5D8",borderRadius:18,padding:"16px",marginBottom:14,display:"flex",alignItems:"center",gap:12}}>
-        <span style={{fontSize:27}}>🏡</span><div><strong style={{fontSize:17}}>{totalPax} people at your table</strong>
-        <div style={{fontSize:12,color:"#54705E",marginTop:4}}>{household.adults} adults · {household.kids} kids · {household.elderly} elderly · {household.dishesPerMealMin}–{household.dishesPerMealMax} dishes</div></div>
-      </div>
-      <div style={{background:"#fff",border:"1px solid #E4E7E1",borderRadius:17,padding:"16px",marginBottom:12}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
-          <div><strong style={{fontSize:15}}>Dinner in 30 minutes</strong><div style={{fontSize:12,color:C.inkSoft,marginTop:4}}>Quick meals on your busy days</div></div>
-          <Clock size={20} color="#527663"/>
-        </div>
-        <button type="button" onClick={()=>setShowDinnerDays(v=>!v)} style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",marginTop:14,padding:"11px 0 0",background:"none",border:0,borderTop:"1px solid #EDF0EB",fontWeight:750,color:"#356854",cursor:"pointer"}}>
-          <span>{(household.quickDinnerDays ?? [0,1,2,3,4,5,6]).length===7?"Every day":(household.quickDinnerDays ?? []).length===0?"No days":(household.quickDinnerDays ?? []).map(d=>["Mon","Tue","Wed","Thu","Fri","Sat","Sun"][d]).join(", ")}</span>
-          <ChevronDown size={17} style={{transform:showDinnerDays?"rotate(180deg)":"none"}}/>
-        </button>
-        {showDinnerDays && <div style={{display:"grid",gridTemplateColumns:"repeat(7,minmax(0,1fr))",gap:5,marginTop:14}}>
-          {["M","T","W","T","F","S","S"].map((day,i)=>{
-            const active=(household.quickDinnerDays ?? [0,1,2,3,4,5,6]).includes(i);
-            return <button key={i} type="button" aria-label={["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"][i]} aria-pressed={active} onClick={()=>setQuickDinnerDays(active?(household.quickDinnerDays ?? [0,1,2,3,4,5,6]).filter(d=>d!==i):[...(household.quickDinnerDays ?? []),i].sort((a,b)=>a-b))} style={{aspectRatio:"1",borderRadius:"50%",border:active?"1px solid #356854":"1px solid #DFE5DF",background:active?"#356854":"#F6F8F5",color:active?"#fff":"#526458",fontWeight:800,cursor:"pointer"}}>{day}</button>;
-          })}
-        </div>}
-      </div>
-      <details style={{background:"#fff",border:"1px solid #E4E7E1",borderRadius:17,marginBottom:12,overflow:"hidden"}}>
-        <summary style={{padding:"16px",cursor:"pointer",fontSize:14,fontWeight:800,listStyle:"none",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <span>People & portions</span><span style={{fontSize:12,color:"#527663",fontWeight:650}}>Change <ChevronDown size={15} style={{verticalAlign:"middle"}}/></span>
+      <details style={{background:"#EAF3EC",border:"1px solid #D4E5D8",borderRadius:18,marginBottom:14,overflow:"hidden"}}>
+        <summary style={{padding:16,cursor:"pointer",listStyle:"none",display:"flex",alignItems:"center",gap:12}}>
+          <span style={{fontSize:27}}>🏡</span>
+          <span style={{flex:1,minWidth:0}}><strong style={{fontSize:17}}>{totalPax} people at your table</strong>
+            <span style={{display:"block",fontSize:12,color:"#54705E",marginTop:4}}>{household.adults} adults · {household.kids} kids · {household.elderly} elderly · {household.dishesPerMealMin}–{household.dishesPerMealMax} dishes</span>
+          </span>
+          <ChevronDown size={19} color="#527663"/>
         </summary>
         <div style={{padding:"14px 16px 18px",borderTop:"1px solid #F1F1ED"}}>
           <div style={{fontSize:12,fontWeight:800,color:"#577361",marginBottom:9}}>WHO'S EATING?</div>
@@ -4386,6 +4370,23 @@ function HouseholdScreen({
           </div>
         </div>
       </details>
+      <div style={{background:"#fff",border:"1px solid #E4E7E1",borderRadius:17,padding:"16px",marginBottom:12}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
+          <div><strong style={{fontSize:15}}>Dinner in 30 minutes</strong><div style={{fontSize:12,color:C.inkSoft,marginTop:4}}>Quick meals on your busy days</div></div>
+          <Clock size={20} color="#527663"/>
+        </div>
+        <button type="button" onClick={()=>setShowDinnerDays(v=>!v)} style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",marginTop:14,padding:"11px 0 0",background:"none",border:0,borderTop:"1px solid #EDF0EB",fontWeight:750,color:"#356854",cursor:"pointer"}}>
+          <span>{(household.quickDinnerDays ?? [0,1,2,3,4,5,6]).length===7?"Every day":(household.quickDinnerDays ?? []).length===0?"No days":(household.quickDinnerDays ?? []).map(d=>["Mon","Tue","Wed","Thu","Fri","Sat","Sun"][d]).join(", ")}</span>
+          <ChevronDown size={17} style={{transform:showDinnerDays?"rotate(180deg)":"none"}}/>
+        </button>
+        {showDinnerDays && <div style={{display:"grid",gridTemplateColumns:"repeat(7,minmax(0,1fr))",gap:5,marginTop:14}}>
+          {["M","T","W","T","F","S","S"].map((day,i)=>{
+            const active=(household.quickDinnerDays ?? [0,1,2,3,4,5,6]).includes(i);
+            return <button key={i} type="button" aria-label={["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"][i]} aria-pressed={active} onClick={()=>setQuickDinnerDays(active?(household.quickDinnerDays ?? [0,1,2,3,4,5,6]).filter(d=>d!==i):[...(household.quickDinnerDays ?? []),i].sort((a,b)=>a-b))} style={{aspectRatio:"1",borderRadius:"50%",border:active?"1px solid #356854":"1px solid #DFE5DF",background:active?"#356854":"#F6F8F5",color:active?"#fff":"#526458",fontWeight:800,cursor:"pointer"}}>{day}</button>;
+          })}
+        </div>}
+      </div>
+
       <SettingsSection
         title="Dietary needs"
         countLabel={household.diets.length ? `${household.diets.length} set` : null}
