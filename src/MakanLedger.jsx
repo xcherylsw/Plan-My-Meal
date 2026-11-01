@@ -4846,10 +4846,13 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
           />
 
           <label style={{ ...labelStyle, marginTop: 4 }}>What goes into it? ({draft.baseServings} servings)</label>
-          <p style={{fontSize:12,color:C.inkSoft,margin:"0 0 8px"}}>Paste ingredients, one per line. Review quantities before saving.</p>
-          <textarea value={ingredientPaste} onChange={e=>setIngredientPaste(e.target.value)} rows={3} placeholder={"500g chicken\n2 tbsp soy sauce\n3 cloves garlic"} style={{...fieldStyle,resize:"vertical"}} />
-          <button onClick={addPastedIngredients} disabled={!ingredientPaste.trim()} style={{border:0,borderRadius:10,background:"#F1EFFB",padding:"10px 14px",marginBottom:12,fontWeight:700,color:C.ink,opacity:ingredientPaste.trim()?1:.5}}>Add pasted ingredients</button>
-          <p style={{fontSize:11,color:C.inkSoft,margin:"0 0 8px"}}>Or add and edit ingredients individually:</p>
+          <details style={{border:"1px solid #E5E3EE",borderRadius:12,margin:"10px 0",padding:"11px 12px",background:"#F8F8FB"}}>
+            <summary style={{fontSize:12,fontWeight:700,cursor:"pointer",color:C.jade700}}>＋ Paste ingredients (optional)</summary>
+            <p style={{fontSize:12,color:C.inkSoft,margin:"10px 0 8px"}}>One ingredient per line. Review quantities before saving.</p>
+            <textarea value={ingredientPaste} onChange={e=>setIngredientPaste(e.target.value)} rows={3} placeholder={"500g chicken\n2 tbsp soy sauce\n3 cloves garlic"} style={{...fieldStyle,resize:"vertical"}} />
+            <button onClick={addPastedIngredients} disabled={!ingredientPaste.trim()} style={{border:0,borderRadius:10,background:"#E5EFE7",padding:"10px 14px",fontWeight:700,color:C.ink,opacity:ingredientPaste.trim()?1:.5}}>Add ingredients</button>
+          </details>
+          <p style={{fontSize:11,color:C.inkSoft,margin:"0 0 8px"}}>Ingredients · edit quantities below</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 8 }}>
             {draft.ingredients.map(item => (
               <div key={item.id} style={{ border: `1px solid ${item.componentId ? C.jade600 : C.line}`, borderRadius: 9, padding: 8, background: item.componentId ? "#F2F6EE" : "transparent" }}>
@@ -4939,24 +4942,23 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
           ) : null}
 
           <label style={labelStyle}>How do you cook it?</label>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 8 }}>
-            {draft.steps.map((s, i) => (
-              <div key={i} style={{ display: "flex", gap: 6, alignItems: "flex-start" }}>
-                <span style={{ fontFamily: FONT_MONO, fontSize: 11.5, color: C.inkSoft, marginTop: 9, width: 16, flexShrink: 0 }}>{i + 1}.</span>
-                <textarea
-                  value={s}
-                  onChange={e => updateDraftStep(i, e.target.value)}
-                  placeholder="What to do in this step…"
-                  rows={2}
-                  style={{ ...fieldStyle, marginBottom: 0, flex: 1, resize: "vertical" }}
-                />
-                <button onClick={() => removeDraftStep(i)} style={{ color: C.inkSoft, flexShrink: 0, marginTop: 8 }}><X size={14} /></button>
-              </div>
+          <p style={{fontSize:12,color:C.inkSoft,margin:"0 0 10px"}}>Tap a step to edit it. Check imported instructions: section titles and ingredient lists may need moving.</p>
+          <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:10}}>
+            {draft.steps.map((step,i)=>(
+              <details key={i} style={{border:`1px solid ${C.line}`,borderRadius:12,background:"#fff",overflow:"hidden"}}>
+                <summary style={{padding:"12px",cursor:"pointer",display:"flex",gap:10,alignItems:"flex-start",listStyle:"none"}}>
+                  <span style={{background:C.jade700,color:"#fff",borderRadius:"50%",width:24,height:24,display:"grid",placeItems:"center",flexShrink:0,fontSize:12,fontWeight:700}}>{i+1}</span>
+                  <span style={{flex:1,minWidth:0,fontSize:13,lineHeight:1.5,overflowWrap:"anywhere"}}>{step.trim() ? (step.length>130 ? step.slice(0,130)+"…" : step) : "New step"}</span>
+                  <Pencil size={15} color={C.jade700}/>
+                </summary>
+                <div style={{padding:"0 12px 12px"}}>
+                  <textarea value={step} onChange={e=>updateDraftStep(i,e.target.value)} rows={4} placeholder="What to do in this step…" style={{...fieldStyle,marginBottom:8,resize:"vertical"}}/>
+                  <button type="button" onClick={()=>removeDraftStep(i)} style={{display:"inline-flex",gap:5,alignItems:"center",fontSize:12,color:C.clayText}}><X size={14}/> Remove step</button>
+                </div>
+              </details>
             ))}
           </div>
-          <button onClick={addDraftStep} style={{ display: "flex", alignItems: "center", gap: 5, color: C.jade700, fontSize: 12, fontWeight: 600, marginBottom: 14 }}>
-            <Plus size={13} /> Add step
-          </button>
+          <button onClick={addDraftStep} style={{display:"flex",alignItems:"center",gap:5,color:C.jade700,fontSize:12,fontWeight:700,marginBottom:14}}><Plus size={14}/> Add cooking step</button>
 
           <details style={{border:"1px solid #E5E3EE",borderRadius:14,padding:"12px 14px",marginBottom:16,background:"#F7F7FB"}}>
             <summary style={{fontWeight:700,cursor:"pointer",color:C.ink}}>⚙ More details (optional) · Cuisine, protein, time and tags</summary>
