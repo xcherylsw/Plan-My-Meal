@@ -228,13 +228,18 @@ async function pullAll(mode) {
         // Nothing saved yet: upload whatever this device has.
         SYNC_KEYS.forEach(k => { if (lsGet(P + k) != null) { meta.mod[k] = meta.mod[k] || Date.now(); dirty.add(k); } });
         saveMeta();
-      } else if (hasMeaningfulLocal() && !window.confirm(
-        "This household already has saved meal plans.\n\nOK = load them onto this device (replaces what's here).\nCancel = keep what's on this device and overwrite the household."
-      )) {
-        SYNC_KEYS.forEach(k => { if (lsGet(P + k) != null) { meta.mod[k] = Date.now(); dirty.add(k); } });
-        saveMeta();
-      } else {
+      } else if (!hasMeaningfulLocal()) {
+        // A cleared browser or new phone should restore the existing cloud
+        // household automatically, never upload empty defaults over it.
         cloudWins = true;
+      } else if (window.confirm(
+        "Cloud backup found for this Google account.\\n\\nOK = restore cloud data on this device.\\nCancel = keep this device's data for now (no cloud overwrite)."
+      )) {
+        cloudWins = true;
+      } else {
+        // Do not silently replace a real backup with device-local data.
+        emit({ sync: "error", error: "Cloud restore paused. Your device data is unchanged. Sign in again to choose a backup." });
+        return;
       }
     }
 
