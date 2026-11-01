@@ -680,11 +680,16 @@ function chickenEquivalentGrams(amount, unit, name) {
   const n = Number(amount);
   if (!Number.isFinite(n) || n <= 0) return null;
   const u = String(unit || "").toLowerCase();
-  if (/^(kg|kilogram|kilograms)$/.test(u)) return n * 1000;
-  if (/^(g|gm|gram|grams)$/.test(u)) return n;
+  const label = String(name || "").toLowerCase();
+  // Whole birds and ordinary cut pieces are weighed bone-in. Explicitly
+  // boneless cuts need extra bird weight to supply the requested meat.
+  const boneless = /\b(boneless|skinless boneless|fillets?|deboned)\b/.test(label);
+  const boneInGrams = grams => boneless ? grams / 0.65 : grams;
+  if (/^(kg|kilogram|kilograms)$/.test(u)) return boneInGrams(n * 1000);
+  if (/^(g|gm|gram|grams)$/.test(u)) return boneInGrams(n);
   if (/^(pcs?|pieces?|each|units?)$/.test(u) || !u) {
-    if (/\bwhole\b/i.test(name)) return n * 900;
-    if (/\b(wings?|drumsticks?|thighs?|breasts?|legs?)\b/i.test(name)) return n * 180;
+    if (/\bwhole\b/.test(label)) return n * 1500;
+    if (/\b(wings?|drumsticks?|thighs?|breasts?|legs?)\b/.test(label)) return boneInGrams(n * 180);
     return null;
   }
   return null;
@@ -2185,11 +2190,11 @@ export default function MakanLedger() {
     });
     if (map["whole chicken"]) {
       const item = map["whole chicken"];
-      // Approx. 1.5 kg bird at 60% usable yield; round up to whole birds.
+      // Approx. 1.5 kg whole bird including bones; round up to whole birds.
       if (item.amount != null && !item.unknownChickenQuantity) {
-        item.amount = Math.ceil(item.amount / 900);
+        item.amount = Math.ceil(item.amount / 1500);
         item.unit = "pcs";
-        item.estimateNote = "Approximate: 1 whole chicken yields about 900g usable meat; check bird size.";
+        item.estimateNote = "Approximate: 1 whole chicken weighs 1.5kg bone-in. Boneless requests are adjusted; check bird size and cuts.";
       } else {
         item.amount = null;
         item.unit = "pcs";
