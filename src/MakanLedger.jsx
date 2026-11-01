@@ -694,10 +694,16 @@ function chickenEquivalentGrams(amount, unit, name) {
   }
   return null;
 }
+function packetFlavour(name) {
+  const n = String(name || "").toLowerCase();
+  if (!/(premix|paste|sauce|soup base|curry cube|roux|seasoning packet|concentrate)/.test(n)) return "";
+  return ["laksa","tom yum","rendang","black pepper","curry","satay","teriyaki","sweet and sour","sambal","bak kut teh","mala","mapo tofu","butter chicken","green curry","red curry"].find(f => n.includes(f)) || "";
+}
 function stockIngredientMatch(recipeName, stockName) {
   const recipe = String(recipeName || "").toLowerCase().trim();
   const stock = String(stockName || "").toLowerCase().trim();
   if (!recipe || !stock) return false;
+  if (packetFlavour(recipe) || packetFlavour(stock)) return !!(packetFlavour(recipe) && packetFlavour(recipe) === packetFlavour(stock));
   if (isOrdinaryChicken(recipe) && isOrdinaryChicken(stock)) return true;
   const fishNames = ["sea bream","seabream","snapper","sea bass","seabass","barramundi","tilapia","grouper","pomfret","cod","salmon","mackerel","threadfin","dory","sole","haddock","halibut","tuna","sardine"];
   const fishType = name => fishNames.find(f => new RegExp("\\b"+f+"\\b","i").test(name));
@@ -1528,7 +1534,8 @@ export default function MakanLedger() {
     const usesKitchenStock = (meal) => useSoonItems.some(k => meal.ingredients.some(i => stockIngredientMatch(i.name, k.name)));
     const stockScore = meal => meal.ingredients.reduce((score, ingredient) => score + stocked.reduce((n, item) =>
       n + (stockIngredientMatch(ingredient.name, item.name) ? (item.useSoon ? 6 : 2) : 0), 0), 0);
-    const kitchenFirstOrder = list => shuffle(list).sort((a,b) => stockScore(b) - stockScore(a));
+    const packetScore = meal => stocked.reduce((n, item) => n + (packetFlavour(item.name) && String(meal.name || "").toLowerCase().includes(packetFlavour(item.name)) ? 4 : 0), 0);
+    const kitchenFirstOrder = list => shuffle(list).sort((a,b) => (stockScore(b) + packetScore(b)) - (stockScore(a) + packetScore(a)));
 
     const results = [];
     // Balance mains across the whole week, not merely unique recipe IDs.
