@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import {
   ChefHat, ShoppingCart, Package, RefreshCw, X, Plus, Trash2,
   Check, Clock, Sparkles, Tags, AlertTriangle, ChevronDown,
-  BookmarkPlus, Link2, Users, UploadCloud, DownloadCloud, Pencil, Calendar, BookOpen, Play,
+  BookmarkPlus, Heart, Link2, Users, UploadCloud, DownloadCloud, Pencil, Calendar, BookOpen, Play,
 } from "lucide-react";
 import { subscribe as cloudSubscribe, getSnapshot as cloudSnapshot, isAdminUser, loadLibrary, saveLibraryRecipe, deleteLibraryRecipe, saveBuiltinRecipePhoto, saveBuiltinRecipeOverride } from "./cloud.js";
 import { pushState, pullState } from "./syncClient.js";
@@ -1059,7 +1059,7 @@ export default function MakanLedger() {
 
   const [pantry, setPantry] = useState(DEFAULT_PANTRY);
   const [myRecipes, setMyRecipes] = useState([]);
-  const [household, setHousehold] = useState({ adults: 2, kids: 0, elderly: 0, dishesPerMealMin: 2, dishesPerMealMax: 2, diets: [], preferredCuisines: [], preferredProteins: [], mainDishPreference: "meat-fish", dislikedIngredients: [], quickDinnerDays: [0,1,2,3,4,5,6] });
+  const [household, setHousehold] = useState({ adults: 2, kids: 0, elderly: 0, dishesPerMealMin: 2, dishesPerMealMax: 2, diets: [], preferredCuisines: [], preferredProteins: [], mainDishPreference: "meat-fish", dislikedIngredients: [], favouriteRecipeIds: [], quickDinnerDays: [0,1,2,3,4,5,6] });
   const [plan, setPlan] = useState([]);
   const [justGeneratedWeek, setJustGeneratedWeek] = useState(false);
   const [checkedItems, setCheckedItems] = useState({});
@@ -1497,7 +1497,7 @@ export default function MakanLedger() {
     const usesKitchenStock = (meal) => useSoonItems.some(k => meal.ingredients.some(i => stockIngredientMatch(i.name, k.name)));
     const stockScore = meal => meal.ingredients.reduce((score, ingredient) => score + stocked.reduce((n, item) =>
       n + (stockIngredientMatch(ingredient.name, item.name) ? (item.useSoon ? 6 : 2) : 0), 0), 0);
-    const kitchenFirstOrder = list => shuffle(list).sort((a,b) => stockScore(a) - stockScore(b));
+    const kitchenFirstOrder = list => shuffle(list).sort((a,b) => (stockScore(a) + ((household.favouriteRecipeIds || []).includes(a.libraryId || (a.custom ? a.id : `builtin-${a.id}`)) ? 5 : 0)) - (stockScore(b) + ((household.favouriteRecipeIds || []).includes(b.libraryId || (b.custom ? b.id : `builtin-${b.id}`)) ? 5 : 0)));
 
     const results = [];
     // Balance mains across the whole week, not merely unique recipe IDs.
@@ -2549,6 +2549,15 @@ export default function MakanLedger() {
     try { await deleteLibraryRecipe(id); await refreshLibrary(); showToast("Removed from the library"); }
     catch (e) { showToast("Couldn't remove it. Check you're signed in with the admin account."); }
   }
+  function toggleLibraryFavourite(lib) {
+    const key = lib.id;
+    const wasFavourite = (household.favouriteRecipeIds || []).includes(key);
+    setHousehold(prev => ({...prev, favouriteRecipeIds: wasFavourite ? (prev.favouriteRecipeIds || []).filter(id => id !== key) : [...(prev.favouriteRecipeIds || []), key]}));
+    if (!lib.builtIn) {
+      setMyRecipes(prev => wasFavourite ? prev.filter(r => r.libraryId !== key) : prev.some(r => r.libraryId === key) ? prev : [...prev, {...lib, id:"u"+Date.now(), libraryId:key, ingredients:(lib.ingredients || []).map(i=>({...i,componentId:null}))}]);
+    }
+    showToast(wasFavourite ? "Removed from your rotation" : "Added to your cooking rotation");
+  }
   function addFromLibrary(lib) {
     setMyRecipes(prev => prev.some(r => r.libraryId === lib.id) ? prev : [...prev, {
       ...lib, id: "u" + Date.now(), libraryId: lib.id,
@@ -2783,7 +2792,7 @@ export default function MakanLedger() {
           {(tab === "library" || (tab === "admin" && isAdmin)) && (
             <LibraryScreen
               library={library} isAdmin={isAdmin && tab === "admin"} configured={cloudSnapshot().configured} myRecipes={myRecipes}
-              onAdd={addFromLibrary} onRefresh={refreshLibrary} onDelete={removeLibraryRecipe}
+              onAdd={addFromLibrary} onToggleFavourite={toggleLibraryFavourite} favouriteIds={household.favouriteRecipeIds || []} onRefresh={refreshLibrary} onDelete={removeLibraryRecipe}
               onNew={() => { setRecipeDraft(null); setLibraryEdit(true); setLibraryIntent({}); setTab("import"); }}
               onEdit={(r) => { setRecipeDraft(null); setLibraryEdit(true); setLibraryIntent({ recipe: r }); setTab("import"); }}
             />
@@ -5157,7 +5166,7 @@ function CreditLine({ r }) {
    add, edit or remove them; everyone else can browse and copy a recipe
    into their own list ("Add to my recipes"), credit included.
 ------------------------------------------------------------------*/
-function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefresh, onDelete, onNew, onEdit }) {
+function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onToggleFavourite, favouriteIds, onRefresh, onDelete, onNew, onEdit }) {
   const [q, setQ] = useState("");
   const [cuisine, setCuisine] = useState(null);
   const [open, setOpen] = useState(null);
@@ -5238,8 +5247,8 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onRefre
                 </button>
                 <div style={{padding:"0 12px 12px"}}>
                   {isAdmin && r.builtIn && <label style={{display:"block",textAlign:"center",padding:"9px 4px",fontSize:11,fontWeight:800,color:"#365C4B",cursor:photoSaving===r.id.slice(8)?"wait":"pointer"}}>📷 {photoSaving===r.id.slice(8)?"Publishing…":r.photo?"Replace official photo":"Upload official photo"}<input type="file" accept="image/*" disabled={!!photoSaving} style={{display:"none"}} onChange={e=>{publishPhoto(r.id.slice(8),e.target.files?.[0]);e.target.value=""}}/></label>}
-                  <button onClick={()=>!r.builtIn&&!added(r.id)&&onAdd(r)} disabled={r.builtIn||added(r.id)} style={{width:"100%",padding:"9px 5px",borderRadius:10,background:r.builtIn||added(r.id)?"#EDF1EA":"#365C4B",color:r.builtIn||added(r.id)?"#45624F":"#fff",fontSize:11,fontWeight:800}}>{r.builtIn?"In meal planner":added(r.id)?"✓ Saved":"＋ Save recipe"}</button>
-                  {isAdmin&&<div style={{display:"flex",justifyContent:"space-between",marginTop:8}}><button onClick={()=>onEdit(r)} style={{fontSize:11,fontWeight:800,color:"#365C4B"}}>✎ Edit recipe, tags & photo</button>{!r.builtIn && <button onClick={()=>{if(confirmDel===r.id){setConfirmDel(null);onDelete(r.id)}else setConfirmDel(r.id)}} style={{fontSize:11,color:C.clayText}}>{confirmDel===r.id?"Confirm remove":"Remove"}</button>}</div>}
+                  <button onClick={()=>onToggleFavourite(r)} aria-pressed={favouriteIds.includes(r.id)} aria-label={favouriteIds.includes(r.id) ? `Remove ${r.name} from cooking rotation` : `Add ${r.name} to cooking rotation`} style={{width:"100%",padding:"9px 5px",borderRadius:12,border:"1px solid #E4D9D5",background:favouriteIds.includes(r.id)?"#FFF0EC":"#fff",color:favouriteIds.includes(r.id)?"#C26972":"#365C4B",fontSize:12,fontWeight:750,display:"flex",alignItems:"center",justifyContent:"center",gap:7}}><Heart size={17} fill={favouriteIds.includes(r.id)?"currentColor":"none"}/>{favouriteIds.includes(r.id)?"In my rotation":"Add to my rotation"}</button>
+                  {isAdmin&&<div style={{display:"flex",justifyContent:"flex-end",marginTop:8}}><button onClick={()=>onEdit(r)} aria-label={`Edit ${r.name}`} title="Edit recipe and tags" style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:34,height:34,borderRadius:10,border:"1px solid #E4D9D5",background:"#fff",color:"#365C4B"}}><Pencil size={16}/></button>{!r.builtIn && <button onClick={()=>{if(confirmDel===r.id){setConfirmDel(null);onDelete(r.id)}else setConfirmDel(r.id)}} style={{fontSize:11,color:C.clayText}}>{confirmDel===r.id?"Confirm remove":"Remove"}</button>}</div>}
                 </div>
                 {open===r.id&&<div style={{padding:"12px",borderTop:"1px solid #EDE8E1",fontSize:12,lineHeight:1.55}}>
                   <CreditLine r={r}/>
