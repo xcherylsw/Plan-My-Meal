@@ -2710,6 +2710,19 @@ export default function MakanLedger() {
           .pmm-sitelink { display: block; color: #666A73; font-size: 13px; padding: 6px 12px; }
           .pmm-sitelink:hover { color: #303241; }
         }
+        /* Desktop: use the available space rather than a phone-width column. */
+        @media (min-width: 1000px) {
+          .pmm-column { max-width: 1080px !important; margin-left: auto !important; margin-right: auto !important; padding-left: 196px; box-sizing: border-box; box-shadow: none !important; background: transparent !important; }
+          .pmm-column > div { max-width: 884px; }
+          .pmm-tabs { top: 92px; left: max(16px, calc(50% - 540px)); width: 176px; }
+          .pmm-column > div:first-child { border-radius: 0 0 12px 12px; }
+          .pmm-column > div:nth-child(2) { background: #F7F7FB; }
+        }
+        @media (min-width: 1350px) {
+          .pmm-column { max-width: 1240px !important; padding-left: 216px; }
+          .pmm-column > div { max-width: 1024px; }
+          .pmm-tabs { left: max(20px, calc(50% - 620px)); width: 192px; }
+        }
         @media (min-width: 700px) {
           .pmm-backdrop { background: #EFECE5 !important; }
           .pmm-column { box-shadow: 0 0 0 1px ${C.line}, 0 12px 40px rgba(74,42,31,.18); }
