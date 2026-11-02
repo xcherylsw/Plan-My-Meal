@@ -2874,10 +2874,10 @@ export default function MakanLedger() {
           {["household","import","library","admin"].includes(tab) && (
             <nav aria-label="Me section navigation" style={{padding:"14px 18px 12px",background:"#FAF7F2",borderBottom:"1px solid #E9E3DF"}}>
               <button onClick={()=>setTab("me")} style={{display:"inline-flex",alignItems:"center",gap:7,background:"transparent",border:0,color:C.ink,fontWeight:750,fontSize:14,padding:"8px 0",marginBottom:10}}>
-                <span aria-hidden="true">←</span> Back to Me
+                <span aria-hidden="true">←</span> {t("backMe")}
               </button>
               <div style={{display:"flex",gap:8,flexWrap:"wrap",paddingBottom:4}}>
-                {[["household","Household"],["import","My cookbook"],["library","Discover"],...(isAdmin?[["admin","Admin"]]:[])].map(([id,label])=>(
+                {[["household",t("householdShort")],["import",t("cookbook")],["library",t("discoverShort")],...(isAdmin?[["admin",t("adminShort")]]:[])].map(([id,label])=>(
                   <button key={id} onClick={()=>setTab(id)} aria-current={tab===id?"page":undefined} style={{flexShrink:0,border:tab===id?"1px solid #D88D79":"1px solid #E9E3DF",background:tab===id?"#FCE5DE":"#fff",color:C.ink,borderRadius:999,padding:"10px 13px",fontSize:13,fontWeight:tab===id?800:600}}>
                     {label}
                   </button>
@@ -4629,7 +4629,8 @@ function SettingsSection({title,countLabel,defaultOpen,last,children}) {
   </details>;
 }
 
-function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, setDraft, libraryEdit, setLibraryEdit, libraryIntent, clearLibraryIntent, isAdmin, onPublishRecipe }) {
+function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, setDraft, libraryEdit, libraryIntent, clearLibraryIntent, isAdmin, onPublishRecipe }) {
+  const { t } = useLanguage();
   const [error, setError] = useState("");
   const [ingredientPaste, setIngredientPaste] = useState("");
   const [recipeTextPaste, setRecipeTextPaste] = useState("");
