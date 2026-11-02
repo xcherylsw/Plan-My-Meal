@@ -30,7 +30,7 @@ export default function SimpleWeek({ plan, skippedDays, onSkip, onSwap, onRemove
   const recipeOptions = (pickableMeals || []).filter(m => !query || String(m.name ?? "").toLowerCase().includes(String(query ?? "").toLowerCase())).slice(0,80);
   const openRecipe = (meal) => { setRecipe(meal); setStep(null); };
   const actionStyle = { ...ui.button, fontSize: 12, padding: "8px 10px" };
-  return <main style={{ maxWidth: 760, margin: "0 auto", padding: "26px 18px 90px", color: "#303241", fontFamily: "system-ui, sans-serif" }}>
+  return <main style={{ maxWidth: 1024, margin: "0 auto", padding: "26px 18px 90px", color: "#303241", fontFamily: "system-ui, sans-serif" }}>
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, background: "#F1EFFB", borderRadius: 22, padding: 16 }}>
       <div><div style={{ color: "#67677E", fontSize: 12, fontWeight: 700, letterSpacing: 1.5 }}>{t("weekGlance")}</div>
       <h2 style={{ fontSize: 30, letterSpacing: -1, margin: "7px 0 8px" }}>{t("weekSorted")}</h2>
