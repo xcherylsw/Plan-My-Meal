@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { LANGUAGES, useLanguage } from "./interfaceLanguage.js";
 import {
   ChefHat, ShoppingCart, Package, RefreshCw, X, Plus, Trash2,
   Check, Clock, Sparkles, Tags, AlertTriangle, ChevronDown,
@@ -1068,6 +1069,7 @@ function OnboardingTour({ step, onNext, onBack, onSkip }) {
    MAIN APP
 ------------------------------------------------------------------*/
 export default function MakanLedger() {
+  const { language, t, setLanguage } = useLanguage();
   // The tab survives a restart of the app (a family member's change arriving
   // restarts it), so you stay on the screen you were looking at.
   const [tab, setTab] = useState(() => {
@@ -2736,11 +2738,11 @@ export default function MakanLedger() {
             </h1>
           </div>
           <nav aria-label="Sections" className="pmm-tabs">
-            <TabButton icon={ChefHat} label="Home" active={tab === "home"} onClick={() => { setTab("home"); setMoreOpen(false); }} />
-            <TabButton icon={Calendar} label="My week" active={["week","custom"].includes(tab)} onClick={() => { setTab("week"); setMoreOpen(false); }} />
-            <TabButton icon={ShoppingCart} label="Shop" active={tab === "list"} onClick={() => { setTab("list"); setMoreOpen(false); }} badge={toBuy.length || null} />
-            <TabButton icon={Package} label="Kitchen" active={["pantry","prep"].includes(tab)} onClick={() => { setTab("pantry"); setMoreOpen(false); }} />
-            <TabButton icon={Users} label="Me" active={["me","library","import","household","admin"].includes(tab)} onClick={() => { setTab("me"); setMoreOpen(false); }} />
+            <TabButton icon={ChefHat} label={t("home")} active={tab === "home"} onClick={() => { setTab("home"); setMoreOpen(false); }} />
+            <TabButton icon={Calendar} label={t("week")} active={["week","custom"].includes(tab)} onClick={() => { setTab("week"); setMoreOpen(false); }} />
+            <TabButton icon={ShoppingCart} label={t("shop")} active={tab === "list"} onClick={() => { setTab("list"); setMoreOpen(false); }} badge={toBuy.length || null} />
+            <TabButton icon={Package} label={t("kitchen")} active={["pantry","prep"].includes(tab)} onClick={() => { setTab("pantry"); setMoreOpen(false); }} />
+            <TabButton icon={Users} label={t("me")} active={["me","library","import","household","admin"].includes(tab)} onClick={() => { setTab("me"); setMoreOpen(false); }} />
           </nav>
 
         </div>
@@ -2787,20 +2789,27 @@ export default function MakanLedger() {
 
           </>)}
           {tab === "me" && <main style={{ padding: "24px 20px", display: "grid", gap: 14, background:"#FAF7F2", minHeight:"65vh" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#F1EFFB", borderRadius: 20, padding: 16 }}><h2 style={{ margin: 0, fontSize: 28, color: C.ink }}>Made for you.</h2><FoodArt kind="meal" size={95}/></div>
-            <p style={{ color: C.inkSoft, margin: "0 0 14px" }}>Your household, personal recipes and cooking preferences, all in one place.</p>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#F1EFFB", borderRadius: 20, padding: 16 }}><h2 style={{ margin: 0, fontSize: 28, color: C.ink }}>{t("made")}</h2><FoodArt kind="meal" size={95}/></div>
+            <p style={{ color: C.inkSoft, margin: "0 0 14px" }}>{t("intro")}</p>
+            <section style={{background:"#fff",border:"1px solid #E9E3DF",borderRadius:18,padding:"14px 16px"}}>
+              <label htmlFor="tcw-language" style={{display:"block",fontWeight:750,fontSize:14,marginBottom:8}}>{t("language")}</label>
+              <select id="tcw-language" value={language} onChange={e=>setLanguage(e.target.value)}
+                style={{width:"100%",padding:"11px 12px",borderRadius:10,border:"1px solid #D9DFD9",background:"#fff",fontSize:15,color:C.ink}}>
+                {LANGUAGES.map(item=><option key={item.code} value={item.code}>{item.label}</option>)}
+              </select>
+            </section>
             {[
-              ["Household & preferences", "household", "People, portions and dietary preferences"],
-              ["My cookbook", "import", "Your saved family recipes and cooking steps"],
-              ["Discover recipes", "library", "Explore recipes from the community"],
-              ...(isAdmin ? [["Admin Studio", "admin", "Review and publish community recipes"]] : []),
+              [t("household"), "household", t("householdDesc")],
+              [t("cookbook"), "import", t("cookbookDesc")],
+              [t("discover"), "library", t("discoverDesc")],
+              ...(isAdmin ? [[t("admin"), "admin", t("adminDesc")]] : []),
             ].map(([label,destination,description]) => <button key={label} onClick={() => setTab(destination)}
               style={{ textAlign: "left", background: "#fff", border: "1px solid #E9E3DF", borderRadius: 20, padding: "20px 18px", color: C.ink, boxShadow:"0 5px 18px rgba(47,42,51,.04)" }}>
               <strong style={{ display: "block", fontSize: 17, fontFamily:FONT_DISPLAY }}>{label}</strong>
               <span style={{ display: "block", marginTop: 5, color: C.inkSoft, fontSize: 13 }}>{description}</span>
             </button>)}
           </main>}
-          {["week","custom"].includes(tab) && <nav aria-label="My Week options" style={{display:"flex",gap:8,padding:"16px 18px 0",maxWidth:760,margin:"0 auto"}}><button onClick={()=>setTab("week")} aria-pressed={tab==="week"} style={{flex:1,border:"1px solid #E5E3EE",borderRadius:12,padding:12,fontWeight:750,background:tab==="week"?"#FCE5DE":"#fff",color:C.ink}}>My dinner plan</button><button onClick={()=>setTab("custom")} aria-pressed={tab==="custom"} style={{flex:1,border:"1px solid #E5E3EE",borderRadius:12,padding:12,fontWeight:750,background:tab==="custom"?"#FCE5DE":"#fff",color:C.ink}}>Custom planning</button></nav>}
+          {["week","custom"].includes(tab) && <nav aria-label="My Week options" style={{display:"flex",gap:8,padding:"16px 18px 0",maxWidth:760,margin:"0 auto"}}><button onClick={()=>setTab("week")} aria-pressed={tab==="week"} style={{flex:1,border:"1px solid #E5E3EE",borderRadius:12,padding:12,fontWeight:750,background:tab==="week"?"#FCE5DE":"#fff",color:C.ink}}>{t("dinner")}</button><button onClick={()=>setTab("custom")} aria-pressed={tab==="custom"} style={{flex:1,border:"1px solid #E5E3EE",borderRadius:12,padding:12,fontWeight:750,background:tab==="custom"?"#FCE5DE":"#fff",color:C.ink}}>{t("custom")}</button></nav>}
           {tab === "custom" && <GenerateScreen variant="custom" scope={scope} setScope={setScope} mealSlots={mealSlots} toggleMealSlot={toggleMealSlot} onAddOn={handleAddOn} onRedo={handleRedo} generateNote={generateNote} grouped={grouped} onRegenerate={regenerateOne} onPickMeal={pickMealById} pickableMeals={pickableMeals} rawPickableMeals={rawPickableMeals} onAddExtraDish={addExtraDish} slotPax={slotPax} onSetSlotPax={setSlotHeadcount} onSetMealPax={setMealPax} cookNowRanked={cookNowRanked} onGenerateOne={generateOne} onCookNow={cookNow} pantryCount={pantry.length} todayDishes={plan.filter(m => m.date === todayDateStr()).map(m => m.mealType)} onReapplyHousehold={reapplyHouseholdToPlan} onRemove={removeOne} household={household} skippedDays={skippedDays} toggleSkipDay={toggleSkipDay} onMarkCooked={markMealCooked} prepList={prepList} prepChecked={prepChecked} togglePrepChecked={togglePrepChecked} onCompleteComponentBatch={completeComponentBatch} prepCardOpen={prepCardOpen} onTogglePrepCard={setPrepCardOpen} onAutoPlan={planMyWeek} hasWeekPlan={plan.some(m => m.mealType === "dinner" && m.date >= todayDateStr() && m.date <= addDaysToDateStr(todayDateStr(), 6))} />}
           {tab === "week" && <><div style={{padding:"0 18px"}}>{justGeneratedWeek && <div role="status" style={{margin:"16px 0",padding:16,background:"#F1EFFB",borderRadius:16,border:"1px solid #DCD7F0"}}><strong>✨ Your 7 dinners are ready!</strong><p style={{margin:"6px 0 10px",fontSize:13,color:C.inkSoft}}>This is your week. Swap a dish, skip a day or add another dish whenever you like.</p><button onClick={()=>setJustGeneratedWeek(false)} style={{background:"#EAA28F",border:0,borderRadius:10,padding:"9px 16px",fontWeight:700,color:C.ink}}>Got it</button></div>}</div><SimpleWeek
             plan={plan} skippedDays={skippedDays} onSkip={toggleSkipDay}
