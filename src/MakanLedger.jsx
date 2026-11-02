@@ -4201,7 +4201,7 @@ function ShoppingListScreen({ toBuyByCategory, haveIt, checkedItems, toggleCheck
                 background: "#EAEFE3", borderRadius: 10, padding: "8px 10px",
               }}>
                 <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <Package size={13} /> Already in your kitchen ({haveIt.length})
+                  <Package size={13} /> {translate("alreadyKitchen")} ({haveIt.length})
                 </span>
                 <ChevronDown className="chevron" size={15} color={C.sageText} style={{ flexShrink: 0, transition: "transform .15s" }} />
               </summary>
@@ -4232,7 +4232,7 @@ function ReceiptRow({ item, checked, onToggle, onSwapMeal, onPostponeMeal, canPo
           <span style={{
             fontFamily: FONT_BODY, fontSize: 15, color: checked ? C.inkSoft : C.ink,
             textDecoration: checked ? "line-through" : "none",
-          }}>{item.name}{item.fromStock && <span style={{ color: C.sageText, fontStyle: "italic" }}> (top up)</span>}</span>
+          }}>{item.name}{item.fromStock && <span style={{ color: C.sageText, fontStyle: "italic" }}> ({translate("topUp")})</span>}</span>
         </div>
         {item.amount != null ? (
           <span style={{ fontFamily: FONT_BODY, fontSize: 13, fontWeight: 650, color: C.inkSoft, flexShrink: 0 }}>
@@ -4256,7 +4256,7 @@ function ReceiptRow({ item, checked, onToggle, onSwapMeal, onPostponeMeal, canPo
           </button>
           {expanded && (
             <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 5 }}>
-              <span style={{ fontFamily: FONT_BODY, fontSize: 10.5, color: C.inkSoft }}>Used in:</span>
+              <span style={{ fontFamily: FONT_BODY, fontSize: 10.5, color: C.inkSoft }}>{translate("usedIn")}</span>
               {refs.map(ref => {
                 const [y, m, d] = (ref.date || "").split("-").map(Number);
                 const dt = ref.date ? new Date(y, m - 1, d) : null;
@@ -4279,7 +4279,7 @@ function ReceiptRow({ item, checked, onToggle, onSwapMeal, onPostponeMeal, canPo
                             fontFamily: FONT_BODY, fontSize: 10.5, fontWeight: 600, color: C.jade700, background: "transparent",
                             border: `1px solid ${C.jade700}`, borderRadius: 6, padding: "3px 7px", cursor: "pointer", flexShrink: 0,
                           }}
-                        >Later</button>
+                        >{translate("later")}</button>
                       )}
                       <button
                         onClick={(e) => { e.stopPropagation(); onSwapMeal && onSwapMeal(ref.uid, item.name); setExpanded(false); }}
@@ -4288,7 +4288,7 @@ function ReceiptRow({ item, checked, onToggle, onSwapMeal, onPostponeMeal, canPo
                           fontFamily: FONT_BODY, fontSize: 10.5, fontWeight: 600, color: C.paper, background: C.jade700,
                           border: "none", borderRadius: 6, padding: "3px 7px", cursor: "pointer", flexShrink: 0,
                         }}
-                      >Fix</button>
+                      >{translate("fix")}</button>
                     </div>
                   </div>
                 );
