@@ -5155,7 +5155,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
 
           <label style={labelStyle}>Dish type</label>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 4 }}>
-            <Chip active={!draft.side && !draft.isComponent && !draft.completeMeal} onClick={() => setDraft(prev => ({ ...prev, side: false, isComponent: false, completeMeal: false }))}>Main dish + side</Chip>
+            <Chip active={!draft.side && !draft.isComponent && !draft.completeMeal} onClick={() => setDraft(prev => ({ ...prev, side: false, isComponent: false, completeMeal: false }))}>Main dish</Chip>
             <Chip active={!draft.side && !draft.isComponent && !!draft.completeMeal} onClick={() => setDraft(prev => ({ ...prev, side: false, isComponent: false, completeMeal: true }))}>Complete meal</Chip>
             <Chip active={!!draft.side && !draft.isComponent} onClick={() => setDraft(prev => ({ ...prev, side: true, isComponent: false, completeMeal: false }))}>Side dish</Chip>
             <Chip active={!!draft.isComponent} onClick={() => setDraft(prev => ({ ...prev, isComponent: true, side: false, completeMeal: false }))}>Condiment / base</Chip>
