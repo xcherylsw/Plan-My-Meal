@@ -2541,7 +2541,14 @@ export default function MakanLedger() {
     // second "Salt" sitting next to the first one — unless the units can't
     // be combined, in which case a second row (rather than silently losing
     // the new amount) is the honest outcome, and we say so.
-    const idx = pantry.findIndex(p => wordMatch(String(n ?? "").toLowerCase(), String(p.name ?? "").toLowerCase()));
+    const normalizePantryName = value => String(value ?? "").normalize("NFKC").trim().toLocaleLowerCase().replace(/\\s+/g, " ");
+    // Stock entries must match the whole ingredient name and storage location.
+    // Fuzzy word matching is useful for search, but can merge unrelated items
+    // such as fermented soybean paste and chilli paste.
+    const idx = pantry.findIndex(p =>
+      normalizePantryName(p.name) === normalizePantryName(n) &&
+      (p.location || "pantry") === newPantryLocation
+    );
     if (idx === -1) {
       setPantry(prev => [...prev, {
         id: "p" + Date.now(), name: n, category: newPantryCategory, location: newPantryLocation,
