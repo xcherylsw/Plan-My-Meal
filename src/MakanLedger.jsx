@@ -4419,7 +4419,7 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
                     <label style={{fontSize:12,fontWeight:750,color:C.inkSoft}}>Quantity
                       <div style={{display:"flex",alignItems:"center",gap:6,marginTop:5}}>
-                        <input aria-label={`Quantity for ${item.name}`} type="number" min="0" value={item.quantity??""} placeholder=translate("alwaysOnHand") onChange={e=>updatePantryQuantity(item.id,e.target.value)} style={{width:100,maxWidth:"38vw",border:"1px solid #D6DED6",borderRadius:10,padding:"10px 8px",background:"#fff",fontSize:13}}/>
+                        <input aria-label={`Quantity for ${item.name}`} type="number" min="0" value={item.quantity??""} placeholder={translate("alwaysOnHand")} onChange={e=>updatePantryQuantity(item.id,e.target.value)} style={{width:100,maxWidth:"38vw",border:"1px solid #D6DED6",borderRadius:10,padding:"10px 8px",background:"#fff",fontSize:13}}/>
                         <span style={{fontSize:12,color:C.inkSoft}}>{item.unit}</span>
                       </div>
                     </label>
