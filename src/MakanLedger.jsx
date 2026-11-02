@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { LANGUAGES, useLanguage } from "./interfaceLanguage.js";
+import { LANGUAGES, useLanguage, translate } from "./interfaceLanguage.js";
 import {
   ChefHat, ShoppingCart, Package, RefreshCw, X, Plus, Trash2, Languages,
   Check, Clock, Sparkles, Tags, AlertTriangle, ChevronDown,
@@ -4070,14 +4070,14 @@ function ShoppingListScreen({ toBuyByCategory, haveIt, checkedItems, toggleCheck
       {!hasPlan ? (
         <div style={{ padding: "24px 0", textAlign: "center" }}>
           <ShoppingCart size={30} color={C.line} style={{ marginBottom: 10 }} />
-          <p style={{ fontFamily: FONT_DISPLAY, fontSize: 17, color: C.ink, marginBottom: 4 }}>No list yet</p>
-          <p style={{ fontSize: 12.5, color: C.inkSoft }}>Generate a meal plan and this list writes itself from it.</p>
+          <p style={{ fontFamily: FONT_DISPLAY, fontSize: 17, color: C.ink, marginBottom: 4 }}>{translate("noList")}</p>
+          <p style={{ fontSize: 12.5, color: C.inkSoft }}>{translate("listHint")}</p>
         </div>
       ) : (
         <>
           <div style={{ background: "#fff", border: `1px solid ${C.line}`, borderRadius: 22, padding: "20px 18px", boxShadow: "0 6px 24px rgba(31,55,44,.045)" }}>
             <div style={{ fontFamily: FONT_BODY, fontSize: 12, color: C.inkSoft, letterSpacing: 0, display: "flex", justifyContent: "space-between" }}>
-              <span style={{ fontFamily: FONT_BODY, fontWeight: 800, fontSize: 18, letterSpacing: 0, color: C.ink }}>Your shopping list</span>
+              <span style={{ fontFamily: FONT_BODY, fontWeight: 800, fontSize: 18, letterSpacing: 0, color: C.ink }}>{translate("shoppingList")}</span>
               <span>{new Date().toLocaleDateString("en-SG", { day: "2-digit", month: "short" })}</span>
             </div>
             {targetPax > 0 && (
@@ -4312,7 +4312,7 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
         <label style={{display:"block",fontSize:12,fontWeight:750,marginBottom:6,color:C.inkSoft}}>Ingredient</label>
         <input autoFocus value={newPantryName} onChange={e=>setNewPantryName(e.target.value)} placeholder="e.g. Chicken thigh" style={{...fieldStyle,width:"100%",boxSizing:"border-box",borderRadius:12,padding:"13px 14px",fontSize:16,marginBottom:14}} />
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,marginBottom:8}}>
-          <strong style={{fontSize:13}}>Use soon</strong>
+          <strong style={{fontSize:13}}>{translate("useSoon")}</strong>
           <button type="button" role="switch" aria-checked={newPantryUseSoon} onClick={()=>setNewPantryUseSoon(v=>!v)} style={{border:0,borderRadius:999,background:newPantryUseSoon?"#365C4B":"#E7E6E4",width:48,height:28,padding:3,display:"flex",justifyContent:newPantryUseSoon?"flex-end":"flex-start",alignItems:"center"}}><span style={{display:"block",background:"#fff",borderRadius:"50%",width:22,height:22,boxShadow:"0 1px 3px #0002"}} /></button>
         </div>
         <div style={{fontSize:12,color:C.inkSoft,marginBottom:16}}>Prioritise this ingredient in your next meal plan.</div>
@@ -4338,7 +4338,7 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
             {COOKING_PACKET_PRESETS.map(name=><button key={name} type="button" onClick={()=>{setNewPantryName(name);setNewPantryCategory("seasoning");setNewPantryLocation("pantry");setNewPantryQuantity("1");setNewPantryUnit("packet");}} style={{border:"1px solid #C9D9CB",background:newPantryName===name?"#DCECDF":"#fff",borderRadius:999,padding:"7px 10px",fontSize:12,color:C.ink}}>{name}</button>)}
           </div>
         </details>
-        <button type="button" disabled={!newPantryName.trim()} onClick={()=>{addPantryItem();setAddingIngredient(false);}} style={{width:"100%",border:0,borderRadius:13,padding:"14px 16px",fontSize:15,fontWeight:800,background:"#365C4B",color:"#fff",opacity:newPantryName.trim()?1:.5}}>Add ingredient</button>
+        <button type="button" disabled={!newPantryName.trim()} onClick={()=>{addPantryItem();setAddingIngredient(false);}} style={{width:"100%",border:0,borderRadius:13,padding:"14px 16px",fontSize:15,fontWeight:800,background:"#365C4B",color:"#fff",opacity:newPantryName.trim()?1:.5}}>{translate("addIngredient")}</button>
       </div>}
       <div role="group" aria-label="Storage location" style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:8,marginBottom:16}}>{LOCATIONS.map(loc=>{const count=grouped[loc.id]?.length||0;const active=selectedStorage===loc.id;return <button key={loc.id} type="button" onClick={()=>{setSelectedStorage(loc.id);setEditingPantryId(null);}} aria-pressed={active} style={{border:active?"2px solid #456D55":"1px solid #E5E3DD",borderRadius:16,background:active?"#EAF3EE":"#fff",padding:"13px 5px",display:"grid",gap:5,justifyItems:"center",color:C.ink}}><span style={{fontSize:22}}>{loc.id==="pantry"?"🫙":loc.id==="fridge"?"🥬":"❄️"}</span><strong style={{fontSize:13}}>{loc.id==="pantry"?"Pantry":loc.label}</strong><span style={{fontSize:15,fontWeight:800}}>{count}</span></button>})}</div>
       <input aria-label="Search your ingredients" placeholder="Search your ingredients…" value={pantrySearch} onChange={e=>setPantrySearch(e.target.value)} style={{...fieldStyle,background:"#fff",borderRadius:14,padding:"12px 14px",marginBottom:16}} />
@@ -4454,8 +4454,8 @@ function HouseholdScreen({
     <div style={{padding:"20px 16px 40px",background:"#F8F8F3",minHeight:"70vh"}}>
       <div style={{marginBottom:18}}>
         <div style={{fontSize:11,fontWeight:800,letterSpacing:1.3,color:"#527663",marginBottom:6}}>YOUR HOUSEHOLD</div>
-        <h2 style={{fontFamily:FONT_DISPLAY,fontSize:29,margin:"0 0 6px"}}>Make it yours.</h2>
-        <p style={{fontSize:13,color:C.inkSoft,margin:0}}>Set it once. We'll plan around your family.</p>
+        <h2 style={{fontFamily:FONT_DISPLAY,fontSize:29,margin:"0 0 6px"}}>{translate("makeYours")}</h2>
+        <p style={{fontSize:13,color:C.inkSoft,margin:0}}>{translate("setOnce")}</p>
       </div>
       <details style={{background:"#EAF3EC",border:"1px solid #D4E5D8",borderRadius:18,marginBottom:14,overflow:"hidden"}}>
         <summary style={{padding:16,cursor:"pointer",listStyle:"none",display:"flex",alignItems:"center",gap:12}}>
