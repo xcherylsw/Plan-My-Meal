@@ -710,6 +710,18 @@ function packetFlavour(name) {
   return ["laksa","tom yum","rendang","black pepper","curry","satay","teriyaki","sweet and sour","sambal","bak kut teh","mala","mapo tofu","butter chicken","green curry","red curry"].find(f => n.includes(f)) || "";
 }
 function stockIngredientMatch(recipeName, stockName) {
+  // Common household spellings for taucheo are equivalent, but do not
+  // collapse other fermented pastes (miso, doenjang, etc.) into this item.
+  const canonicalStockName = value => {
+    const name = String(value || "").toLowerCase().trim()
+      .replace(/\\bsoy\\s+bean\\b/g, "soybean")
+      .replace(/\\btaocheo\\b|\\btaucheo\\b|\\btau\\s*cheo\\b/g, "taucheo")
+      .replace(/\\s+/g, " ");
+    return /\\b(?:fermented soybean paste|taucheo)\\b/.test(name) &&
+      (/\\btaucheo\\b/.test(name) || name === "fermented soybean paste")
+      ? "fermented soybean paste taucheo" : name;
+  };
+  if (canonicalStockName(recipeName) === canonicalStockName(stockName)) return true;
   const recipe = String(recipeName || "").toLowerCase().trim();
   const stock = String(stockName || "").toLowerCase().trim();
   if (!recipe || !stock) return false;
