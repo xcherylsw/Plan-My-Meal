@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { LANGUAGES, useLanguage } from "./interfaceLanguage.js";
 import {
-  ChefHat, ShoppingCart, Package, RefreshCw, X, Plus, Trash2,
+  ChefHat, ShoppingCart, Package, RefreshCw, X, Plus, Trash2, Globe2,
   Check, Clock, Sparkles, Tags, AlertTriangle, ChevronDown,
   BookmarkPlus, Heart, Link2, Users, UploadCloud, DownloadCloud, Pencil, Calendar, BookOpen, Play,
 } from "lucide-react";
@@ -2732,8 +2732,15 @@ export default function MakanLedger() {
             then the section tabs. Tabs live at the top like a normal website,
             so nothing fights the phone's bottom edge or the keyboard. */}
         <div style={{ background: "#FFFFFF", color: C.ink, position: "sticky", top: 0, zIndex: 5, boxShadow: "0 2px 8px rgba(36,40,50,0.07)" }}>
-          <div style={{ minHeight: 54, display: "flex", alignItems: "center", padding: "0 18px", paddingTop: "env(safe-area-inset-top, 0px)" }}>
-            <h1 style={{ fontFamily: FONT_DISPLAY, fontWeight: 700, fontSize: 22, margin: 0, letterSpacing: 0.2 }}>
+          <div style={{ minHeight: 54, display: "flex", alignItems: "center", gap: 9, padding: "0 12px", paddingRight: 94, paddingTop: "env(safe-area-inset-top, 0px)" }}>
+            <div style={{position:"relative",display:"flex",alignItems:"center",flexShrink:0}}>
+              <Globe2 size={21} aria-hidden="true" color={C.ink} />
+              <select aria-label={t("language")} title={t("language")} value={language} onChange={e=>setLanguage(e.target.value)}
+                style={{position:"absolute",inset:0,width:"100%",height:"100%",opacity:0,cursor:"pointer",fontSize:16}}>
+                {LANGUAGES.map(item=><option key={item.code} value={item.code}>{item.label}</option>)}
+              </select>
+            </div>
+            <h1 style={{ fontFamily: FONT_DISPLAY, fontWeight: 700, fontSize: "clamp(16px, 4.8vw, 22px)", margin: 0, letterSpacing: 0.1, whiteSpace:"nowrap" }}>
               Today Cook What
             </h1>
           </div>
@@ -2791,13 +2798,6 @@ export default function MakanLedger() {
           {tab === "me" && <main style={{ padding: "24px 20px", display: "grid", gap: 14, background:"#FAF7F2", minHeight:"65vh" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#F1EFFB", borderRadius: 20, padding: 16 }}><h2 style={{ margin: 0, fontSize: 28, color: C.ink }}>{t("made")}</h2><FoodArt kind="meal" size={95}/></div>
             <p style={{ color: C.inkSoft, margin: "0 0 14px" }}>{t("intro")}</p>
-            <section style={{background:"#fff",border:"1px solid #E9E3DF",borderRadius:18,padding:"14px 16px"}}>
-              <label htmlFor="tcw-language" style={{display:"block",fontWeight:750,fontSize:14,marginBottom:8}}>{t("language")}</label>
-              <select id="tcw-language" value={language} onChange={e=>setLanguage(e.target.value)}
-                style={{width:"100%",padding:"11px 12px",borderRadius:10,border:"1px solid #D9DFD9",background:"#fff",fontSize:15,color:C.ink}}>
-                {LANGUAGES.map(item=><option key={item.code} value={item.code}>{item.label}</option>)}
-              </select>
-            </section>
             {[
               [t("household"), "household", t("householdDesc")],
               [t("cookbook"), "import", t("cookbookDesc")],
