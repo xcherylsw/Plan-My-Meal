@@ -2732,19 +2732,19 @@ export default function MakanLedger() {
             then the section tabs. Tabs live at the top like a normal website,
             so nothing fights the phone's bottom edge or the keyboard. */}
         <div style={{ background: "#FFFFFF", color: C.ink, position: "sticky", top: 0, zIndex: 5, boxShadow: "0 2px 8px rgba(36,40,50,0.07)" }}>
-          <div style={{ minHeight: 54, display: "flex", alignItems: "center", gap: 9, padding: "0 12px", paddingRight: 94, paddingTop: "env(safe-area-inset-top, 0px)" }}>
-            <div style={{position:"relative",display:"inline-flex",alignItems:"center",gap:4,flexShrink:0,padding:"7px 8px",border:"1px solid #DDE6DF",borderRadius:10,background:"#F3F8F4",color:"#315C47",minWidth:64}}>
-              <Languages size={17} strokeWidth={1.9} aria-hidden="true" />
-              <span aria-hidden="true" style={{fontSize:12,fontWeight:800,letterSpacing:0.2}}>{{en:"EN",zh:"中文",my:"မြန်မာ",tl:"TL"}[language] || "EN"}</span>
-              <ChevronDown size={12} aria-hidden="true" />
+          <div style={{minHeight:54,display:"flex",alignItems:"center",justifyContent:"space-between",gap:6,padding:"0 12px",paddingRight:76,paddingTop:"env(safe-area-inset-top, 0px)"}}>
+            <h1 style={{fontFamily:FONT_DISPLAY,fontWeight:700,fontSize:"clamp(17px, 5vw, 22px)",margin:0,letterSpacing:0.1,whiteSpace:"nowrap",minWidth:0}}>
+              Today Cook What
+            </h1>
+            <div style={{position:"relative",display:"inline-flex",alignItems:"center",gap:3,flexShrink:0,padding:"6px 7px",border:"1px solid #DDE6DF",borderRadius:9,background:"#F3F8F4",color:"#315C47"}}>
+              <Languages size={15} strokeWidth={1.9} aria-hidden="true"/>
+              <span aria-hidden="true" style={{fontSize:11,fontWeight:800,letterSpacing:0.1}}>{{en:"EN",zh:"中文",my:"မြန်မာ",tl:"TL"}[language]||"EN"}</span>
+              <ChevronDown size={11} aria-hidden="true"/>
               <select aria-label={t("language")} title={t("language")} value={language} onChange={e=>setLanguage(e.target.value)}
                 style={{position:"absolute",inset:0,width:"100%",height:"100%",opacity:0,cursor:"pointer",fontSize:16}}>
                 {LANGUAGES.map(item=><option key={item.code} value={item.code}>{item.label}</option>)}
               </select>
             </div>
-            <h1 style={{ fontFamily: FONT_DISPLAY, fontWeight: 700, fontSize: "clamp(16px, 4.8vw, 22px)", margin: 0, letterSpacing: 0.1, whiteSpace:"nowrap" }}>
-              Today Cook What
-            </h1>
           </div>
           <nav aria-label="Sections" className="pmm-tabs">
             <TabButton icon={ChefHat} label={t("home")} active={tab === "home"} onClick={() => { setTab("home"); setMoreOpen(false); }} />
