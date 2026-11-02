@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { LANGUAGES, useLanguage } from "./interfaceLanguage.js";
 import {
-  ChefHat, ShoppingCart, Package, RefreshCw, X, Plus, Trash2, Globe2,
+  ChefHat, ShoppingCart, Package, RefreshCw, X, Plus, Trash2, Languages,
   Check, Clock, Sparkles, Tags, AlertTriangle, ChevronDown,
   BookmarkPlus, Heart, Link2, Users, UploadCloud, DownloadCloud, Pencil, Calendar, BookOpen, Play,
 } from "lucide-react";
@@ -2733,8 +2733,10 @@ export default function MakanLedger() {
             so nothing fights the phone's bottom edge or the keyboard. */}
         <div style={{ background: "#FFFFFF", color: C.ink, position: "sticky", top: 0, zIndex: 5, boxShadow: "0 2px 8px rgba(36,40,50,0.07)" }}>
           <div style={{ minHeight: 54, display: "flex", alignItems: "center", gap: 9, padding: "0 12px", paddingRight: 94, paddingTop: "env(safe-area-inset-top, 0px)" }}>
-            <div style={{position:"relative",display:"flex",alignItems:"center",flexShrink:0}}>
-              <Globe2 size={21} aria-hidden="true" color={C.ink} />
+            <div style={{position:"relative",display:"inline-flex",alignItems:"center",gap:4,flexShrink:0,padding:"7px 8px",border:"1px solid #DDE6DF",borderRadius:10,background:"#F3F8F4",color:"#315C47",minWidth:64}}>
+              <Languages size={17} strokeWidth={1.9} aria-hidden="true" />
+              <span aria-hidden="true" style={{fontSize:12,fontWeight:800,letterSpacing:0.2}}>{{en:"EN",zh:"中文",my:"မြန်မာ",tl:"TL"}[language] || "EN"}</span>
+              <ChevronDown size={12} aria-hidden="true" />
               <select aria-label={t("language")} title={t("language")} value={language} onChange={e=>setLanguage(e.target.value)}
                 style={{position:"absolute",inset:0,width:"100%",height:"100%",opacity:0,cursor:"pointer",fontSize:16}}>
                 {LANGUAGES.map(item=><option key={item.code} value={item.code}>{item.label}</option>)}
