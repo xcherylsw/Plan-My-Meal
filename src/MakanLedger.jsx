@@ -4123,7 +4123,7 @@ function ShoppingListScreen({ toBuyByCategory, haveIt, checkedItems, toggleCheck
             {CATEGORY_ORDER.filter(cat => toBuyByCategory[cat]?.length).map(cat => (
               <div key={cat} style={{ marginBottom: 12 }}>
                 <div style={{ fontFamily: FONT_BODY, fontSize: 14, fontWeight: 800, color: C.jade700, textTransform: "none", letterSpacing: 0, marginBottom: 10 }}>
-                  {CATEGORY_LABEL[cat]}
+                  {translate(cat)}
                 </div>
                 {toBuyByCategory[cat].map(item => (
                   <ReceiptRow key={item.key} item={item} checked={!!checkedItems[item.key]} onToggle={() => toggleChecked(item)} onSwapMeal={onSwapMeal} onPostponeMeal={onPostponeMeal} canPostponeMeal={canPostponeMeal} />
@@ -4252,7 +4252,7 @@ function ReceiptRow({ item, checked, onToggle, onSwapMeal, onPostponeMeal, canPo
               background: "transparent", border: "none", borderRadius: 8, padding: "5px 0",
             }}
           >
-            Options <span style={{ opacity: 0.7 }}>{expanded ? "▾" : "▸"}</span>
+            {translate("options")} <span style={{ opacity: 0.7 }}>{expanded ? "▾" : "▸"}</span>
           </button>
           {expanded && (
             <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 5 }}>
