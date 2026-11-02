@@ -2991,6 +2991,7 @@ function TabButton({ icon: Icon, label, active, onClick, badge }) {
    GENERATE SCREEN
 ------------------------------------------------------------------*/
 function GenerateScreen(props) {
+  const { t } = useLanguage();
   const {
     scope, setScope,
     mealSlots, toggleMealSlot,
@@ -3051,8 +3052,8 @@ function GenerateScreen(props) {
       {props.variant !== "custom" && <div style={{display:"flex",flexDirection:"column",gap:16,marginBottom:22}}>
         
         {[
-          {key:"plan",bg:"#FCE9E5",accent:"#EAA28F",eyebrow:"YOUR WEEK, SORTED",heading:"Dinner, handled.",description:"Seven dinners planned around your favourite recipes and what’s in your kitchen.",action:hasWeekPlan?"↻ Refresh my 7 dinners →":"🍳 Plan my 7 dinners →",click:onAutoPlan,art:"meal"},
-          {key:"discover",bg:"#E6F0E7",accent:"#A9CDB1",eyebrow:"FIND YOUR FAVOURITES",heading:"Discover something delicious.",description:"Browse recipes, tap the heart, and build your own cooking rotation.",action:"Explore recipes →",click:props.onDiscover,art:"book"},
+          {key:"plan",bg:"#FCE9E5",accent:"#EAA28F",eyebrow:t("weekEyebrow"),heading:t("dinnerHeadline"),description:t("dinnerBody"),action:hasWeekPlan?`↻ ${t("refreshDinners")} →`:`🍳 ${t("planSeven")} →`,click:onAutoPlan,art:"meal"},
+          {key:"discover",bg:"#E6F0E7",accent:"#A9CDB1",eyebrow:t("discoverEyebrow"),heading:t("discoverHeadline"),description:t("discoverBody"),action:`${t("explore")} →`,click:props.onDiscover,art:"book"},
         ].sort((a,b)=>(household.favouriteRecipeIds || []).length===0?(a.key==="discover"?-1:1):0).map(card=>(
           <section key={card.key} style={{background:card.bg,borderRadius:24,padding:20,display:"grid",gap:14}}>
             <div style={{fontSize:10,fontWeight:800,letterSpacing:1.6,color:card.key==="plan"?"#9E6055":"#50755E"}}>{card.eyebrow}</div>
