@@ -2832,7 +2832,7 @@ export default function MakanLedger() {
               canPostponeMeal={canPostponeMeal}
             />}
           /></>}
-          {["pantry","prep"].includes(tab) && <nav aria-label="Kitchen options" style={{display:"flex",gap:8,padding:"16px 18px 0",maxWidth:760,margin:"0 auto"}}><button onClick={()=>setTab("pantry")} aria-pressed={tab==="pantry"} style={{flex:1,border:"1px solid #E5E3EE",borderRadius:12,padding:12,fontWeight:750,background:tab==="pantry"?"#FCE5DE":"#fff",color:C.ink}}>Ingredients</button><button onClick={()=>setTab("prep")} aria-pressed={tab==="prep"} style={{flex:1,border:"1px solid #E5E3EE",borderRadius:12,padding:12,fontWeight:750,background:tab==="prep"?"#FCE5DE":"#fff",color:C.ink}}>Prep{pendingPrepCount ? ` (${pendingPrepCount})` : ""}</button></nav>}
+          {["pantry","prep"].includes(tab) && <nav aria-label="Kitchen options" style={{display:"flex",gap:8,padding:"16px 18px 0",maxWidth:760,margin:"0 auto"}}><button onClick={()=>setTab("pantry")} aria-pressed={tab==="pantry"} style={{flex:1,border:"1px solid #E5E3EE",borderRadius:12,padding:12,fontWeight:750,background:tab==="pantry"?"#FCE5DE":"#fff",color:C.ink}}>{t("ingredients")}</button><button onClick={()=>setTab("prep")} aria-pressed={tab==="prep"} style={{flex:1,border:"1px solid #E5E3EE",borderRadius:12,padding:12,fontWeight:750,background:tab==="prep"?"#FCE5DE":"#fff",color:C.ink}}>Prep{pendingPrepCount ? ` (${pendingPrepCount})` : ""}</button></nav>}
           {tab === "prep" && <main style={{ padding: "28px 20px 100px", display: "grid", gap: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 15, borderRadius: 20, background: "#E9F3F8" }}><div><div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1.5, color: C.inkSoft }}>PREP, MADE SIMPLE</div><strong>Little jobs. Big relief.</strong></div><FoodArt kind="prep" size={95}/></div>
             <h2 style={{ fontFamily: FONT_DISPLAY, fontSize: 30, lineHeight: 1.2, margin: 0 }}>A little now. Less later.</h2>
@@ -2851,7 +2851,7 @@ export default function MakanLedger() {
             </section>}
             <p style={{ fontSize: 12, color: C.inkSoft, lineHeight: 1.6 }}>Keep chilled foods cold and freeze portions you won't use within a safe storage period. Prep only ingredients you can store safely.</p>
           </main>}
-          {tab === "list" && <div style={{ background: "#FDECE8", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 20px" }}><div><strong>Shop smart, cook happy.</strong><div style={{ fontSize: 12, color: C.inkSoft }}>Only what your kitchen needs.</div></div><FoodArt kind="shop" size={92}/></div>}
+          {tab === "list" && <div style={{ background: "#FDECE8", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 20px" }}><div><strong>{t("shopHero")}</strong><div style={{ fontSize: 12, color: C.inkSoft }}>{t("shopSub")}</div></div><FoodArt kind="shop" size={92}/></div>}
           {tab === "list" && (
             <ShoppingListScreen
               toBuyByCategory={toBuyByCategory}
@@ -3069,7 +3069,7 @@ function GenerateScreen(props) {
           </section>
         ))}
       </div>}
-      {props.variant === "custom" && <h2 style={{fontFamily:FONT_DISPLAY,fontSize:28,margin:"0 0 12px"}}>Custom meal planning</h2>}
+      {props.variant === "custom" && <h2 style={{fontFamily:FONT_DISPLAY,fontSize:28,margin:"0 0 12px"}}>{t("customHeading")}</h2>}
       {false && <section style={{marginBottom:18}} aria-label="More planning options">
         <div style={{fontSize:13,fontWeight:800,marginBottom:10,color:C.ink}}>Need a different plan?</div>
         <div style={{display:"grid",gridTemplateColumns:"1fr",gap:10}}>
@@ -4083,7 +4083,7 @@ function ShoppingListScreen({ toBuyByCategory, haveIt, checkedItems, toggleCheck
             </div>
             {targetPax > 0 && (
               <div style={{ fontFamily: FONT_BODY, fontSize: 12, color: C.inkSoft, marginTop: 8, lineHeight: 1.45 }}>
-                For your planned meals · {targetPax} people. Check quantities before shopping.
+                {translate("shoppingFor")} · {targetPax} {translate("people")}. {translate("checkQuantities")}
               </div>
             )}
             <div style={{ borderTop: `1px solid ${C.line}`, margin: "16px 0" }} />
@@ -4304,7 +4304,7 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
         <div style={{fontFamily:FONT_DISPLAY,fontSize:34,lineHeight:1.08,maxWidth:230,marginBottom:12}}>Good food starts here.</div>
         <div style={{fontSize:13,color:"#F1F4EA",maxWidth:265,lineHeight:1.6}}>{pantry.length} ingredients ready for your next meal · {pantry.filter(p=>p.useSoon).length} to use soon</div>
       </div>}
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,gap:12}}><div><h2 style={{fontFamily:FONT_DISPLAY,fontSize:28,margin:"0 0 3px"}}>My kitchen</h2><span style={{fontSize:13,color:C.inkSoft}}>{pantry.length} ingredients on hand</span></div><button onClick={()=>{ setAddingIngredient(v=>!v); setMoreIngredientOptions(false); }} aria-expanded={addingIngredient} style={{background:"#E9A28F",border:0,borderRadius:14,padding:"12px 14px",fontWeight:800,color:C.ink}}>{addingIngredient?"Cancel":"＋ Add"}</button></div>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,gap:12}}><div><h2 style={{fontFamily:FONT_DISPLAY,fontSize:28,margin:"0 0 3px"}}>{translate("kitchenTitle")}</h2><span style={{fontSize:13,color:C.inkSoft}}>{pantry.length} {translate("ingredientsOnHand")}</span></div><button onClick={()=>{ setAddingIngredient(v=>!v); setMoreIngredientOptions(false); }} aria-expanded={addingIngredient} style={{background:"#E9A28F",border:0,borderRadius:14,padding:"12px 14px",fontWeight:800,color:C.ink}}>{addingIngredient?"Cancel":"＋ Add"}</button></div>
       {addingIngredient && <div style={{background:"#fff",border:"1px solid #E9E3DF",borderRadius:20,padding:16,marginBottom:20,boxShadow:"0 8px 24px rgba(30,50,35,.05)"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
           <strong style={{fontSize:17,color:C.ink}}>Add to my kitchen</strong>
@@ -4342,7 +4342,7 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
         <button type="button" disabled={!newPantryName.trim()} onClick={()=>{addPantryItem();setAddingIngredient(false);}} style={{width:"100%",border:0,borderRadius:13,padding:"14px 16px",fontSize:15,fontWeight:800,background:"#365C4B",color:"#fff",opacity:newPantryName.trim()?1:.5}}>{translate("addIngredient")}</button>
       </div>}
       <div role="group" aria-label="Storage location" style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:8,marginBottom:16}}>{LOCATIONS.map(loc=>{const count=grouped[loc.id]?.length||0;const active=selectedStorage===loc.id;return <button key={loc.id} type="button" onClick={()=>{setSelectedStorage(loc.id);setEditingPantryId(null);}} aria-pressed={active} style={{border:active?"2px solid #456D55":"1px solid #E5E3DD",borderRadius:16,background:active?"#EAF3EE":"#fff",padding:"13px 5px",display:"grid",gap:5,justifyItems:"center",color:C.ink}}><span style={{fontSize:22}}>{loc.id==="pantry"?"🫙":loc.id==="fridge"?"🥬":"❄️"}</span><strong style={{fontSize:13}}>{loc.id==="pantry"?"Pantry":loc.label}</strong><span style={{fontSize:15,fontWeight:800}}>{count}</span></button>})}</div>
-      <input aria-label="Search your ingredients" placeholder="Search your ingredients…" value={pantrySearch} onChange={e=>setPantrySearch(e.target.value)} style={{...fieldStyle,background:"#fff",borderRadius:14,padding:"12px 14px",marginBottom:16}} />
+      <input aria-label={translate("searchIngredients")} placeholder={translate("searchIngredients")} value={pantrySearch} onChange={e=>setPantrySearch(e.target.value)} style={{...fieldStyle,background:"#fff",borderRadius:14,padding:"12px 14px",marginBottom:16}} />
       <SectionLabel>{LOCATIONS.find(loc=>loc.id===selectedStorage)?.label} ({visibleGrouped[selectedStorage]?.length||0})</SectionLabel>
 
       {LOCATIONS.filter(loc => loc.id === selectedStorage && visibleGrouped[loc.id]?.length).map(loc => (
@@ -4375,7 +4375,7 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
                     {editingPantryId === item.id ? "✓" : "›"}
                   </button>
                 </div>
-                <div style={{ fontSize: 11.5, color: C.inkSoft,paddingLeft:17 }}>{item.quantity != null ? `${item.quantity} ${item.unit || ""}` : "Always on hand"}{item.useSoon ? " · ✦ Use soon" : ""}{(item.preparedForms || []).length ? ` · Prepared: ${(item.preparedForms || []).join(", ")}` : ""}</div>
+                <div style={{ fontSize: 11.5, color: C.inkSoft,paddingLeft:17 }}>{item.quantity != null ? `${item.quantity} ${item.unit || ""}` : translate("alwaysOnHand")}{item.useSoon ? " · ✦ Use soon" : ""}{(item.preparedForms || []).length ? ` · Prepared: ${(item.preparedForms || []).join(", ")}` : ""}</div>
                 {editingPantryId === item.id && <div style={{display:"flex",flexDirection:"column",gap:15,background:"#FAFBF9",border:"1px solid #E4E9E2",borderRadius:16,padding:15,marginTop:12}}>
                   <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:10}}>
                     <label style={{fontSize:12,fontWeight:750,color:C.inkSoft}}>Category
@@ -4406,7 +4406,7 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
                     <label style={{fontSize:12,fontWeight:750,color:C.inkSoft}}>Quantity
                       <div style={{display:"flex",alignItems:"center",gap:6,marginTop:5}}>
-                        <input aria-label={`Quantity for ${item.name}`} type="number" min="0" value={item.quantity??""} placeholder="Always on hand" onChange={e=>updatePantryQuantity(item.id,e.target.value)} style={{width:100,maxWidth:"38vw",border:"1px solid #D6DED6",borderRadius:10,padding:"10px 8px",background:"#fff",fontSize:13}}/>
+                        <input aria-label={`Quantity for ${item.name}`} type="number" min="0" value={item.quantity??""} placeholder=translate("alwaysOnHand") onChange={e=>updatePantryQuantity(item.id,e.target.value)} style={{width:100,maxWidth:"38vw",border:"1px solid #D6DED6",borderRadius:10,padding:"10px 8px",background:"#fff",fontSize:13}}/>
                         <span style={{fontSize:12,color:C.inkSoft}}>{item.unit}</span>
                       </div>
                     </label>
