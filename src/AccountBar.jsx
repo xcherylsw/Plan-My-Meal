@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useLanguage } from "./interfaceLanguage.js";
 import { signIn, signOut, subscribe, getSnapshot, pullIfStale, joinHousehold, leaveHousehold, listInvites, addInvite, removeInvite } from "./cloud.js";
 
 // Small floating account control, pinned inside the app's centred column so
@@ -6,6 +7,7 @@ import { signIn, signOut, subscribe, getSnapshot, pullIfStale, joinHousehold, le
 const INK = "#303241", BROWN = "#303241", OAT = "#F7F7FB", MUSTARD = "#EAA28F", LINE = "#E5E3EE", CLAY = "#A44B36";
 
 export default function AccountBar() {
+  const { t } = useLanguage();
   const [s, setS] = useState(getSnapshot());
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -33,13 +35,7 @@ export default function AccountBar() {
 
   const backedUp = !!(s.user && s.household && s.sync === "saved");
   const dot = !s.user || !s.household ? "#D89B75" : { saving: MUSTARD, saved: "#4E9B72", offline: "#9A9184", error: "#D36C56", idle: "#D89B75" }[s.sync] || "#D89B75";
-  const label = !s.user ? "Not backed up — sign in with Google" : !s.household ? "Connecting your cloud backup…" : {
-    saving: "Saving to Google cloud…",
-    saved: "Saved to cloud · Safe across devices",
-    offline: "Offline · Changes saved on this device",
-    error: "Cloud backup needs attention",
-    idle: "Checking cloud backup…"
-  }[s.sync];
+  const label = !s.user ? t("signin") : !s.household ? t("connecting") : t(({saving:"saving",saved:"backup",offline:"offline",error:"error",idle:"checking"})[s.sync] || "checking");
   const initial = (s.user?.name || s.user?.email || "?").trim().charAt(0).toUpperCase();
 
   return (
@@ -58,11 +54,11 @@ export default function AccountBar() {
                 fontFamily: "'IBM Plex Sans', system-ui, sans-serif", fontWeight: 700, fontSize: 12.5,
                 boxShadow: "0 2px 0 #A6D1BD", opacity: busy ? 0.7 : 1, cursor: "pointer",
               }}
-            >{busy ? "Signing in…" : "Sign in to sync"}</button>
+            >{busy ? t("signing") : t("signin")}</button>
           ) : (
             <button
               onClick={() => setOpen(o => !o)}
-              aria-label="Account"
+              aria-label={t("account")}
               style={{
                 position: "relative", width: 36, height: 36, borderRadius: 999, border: `2px solid ${OAT}`,
                 background: MUSTARD, color: BROWN, fontWeight: 700, fontSize: 15, padding: 0, cursor: "pointer",
@@ -87,7 +83,7 @@ export default function AccountBar() {
                 <span style={{ width: 8, height: 8, borderRadius: 999, background: dot, flexShrink: 0 }} /> {label}
               </div>
               <div style={{fontSize:11.5,color:"#666A73",lineHeight:1.5,marginTop:8,padding:"9px 10px",background:backedUp?"#EEF7F0":"#FFF5EC",borderRadius:9}}>
-                {backedUp ? "Your recipes, Kitchen and meal plans are backed up. Sign in with this Google account on another phone to restore them." : "Your data is still on this device. Wait for Saved to cloud before clearing browser data or changing phones."}
+                {backedUp ? t("restore") : t("warning")}
               </div>
               {s.household && s.household.members.length > 0 && (
                 <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${LINE}` }}>
@@ -154,11 +150,11 @@ export default function AccountBar() {
               )}
               {note && <div style={{ fontSize: 11.5, color: CLAY, marginTop: 8, lineHeight: 1.4 }}>{note}</div>}
               <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-                <button onClick={() => { pullIfStale(true); setOpen(false); }} style={btn(false)}>Refresh</button>
+                <button onClick={() => { pullIfStale(true); setOpen(false); }} style={btn(false)}>{t("refresh")}</button>
                 <button
                   onClick={async () => { setOpen(false); await signOut(); }}
                   style={btn(true)}
-                >Sign out</button>
+                >{t("signout")}</button>
               </div>
             </div>
           )}
