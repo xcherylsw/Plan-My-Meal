@@ -1,4 +1,5 @@
 import { defineConfig } from "vite";
+import { writeFileSync } from "node:fs";
 import react from "@vitejs/plugin-react";
 import { fileURLToPath } from "node:url";
 
@@ -8,8 +9,10 @@ import { fileURLToPath } from "node:url";
 // The app is the home page (index.html). The public pages — about, guides,
 // privacy, contact — are plain HTML generated into public/ by
 // scripts/build-site.mjs, so search engines and AdSense can read them.
+const buildId = process.env.GITHUB_SHA || `build-${Date.now()}`;
 export default defineConfig({
-  plugins: [react()],
+  define: { __APP_BUILD_ID__: JSON.stringify(buildId) },
+  plugins: [react(), { name: "publish-version", closeBundle() { writeFileSync("dist/version.json", JSON.stringify({ version: buildId })); } }],
   resolve: {
     alias: {
       "@capacitor/splash-screen": fileURLToPath(new URL("./src/stubs/splash.js", import.meta.url)),
