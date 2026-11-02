@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { LANGUAGES, useLanguage, translate } from "./interfaceLanguage.js";
+import { LANGUAGES, useLanguage, translate, formatInterfaceDate, translateMealType } from "./interfaceLanguage.js";
 import {
   ChefHat, ShoppingCart, Package, RefreshCw, X, Plus, Trash2, Languages,
   Check, Clock, Sparkles, Tags, AlertTriangle, ChevronDown,
@@ -506,7 +506,7 @@ function formatDayLabel(dateStr) {
   if (!dateStr) return "";
   const [y, m, d] = dateStr.split("-").map(Number);
   const dt = new Date(y, m - 1, d);
-  const weekday = dt.toLocaleDateString("en-SG", { weekday: "short" });
+  const weekday = formatInterfaceDate(dt, { weekday: "short" });
   const dm = dt.toLocaleDateString("en-SG", { day: "2-digit", month: "short" });
   const today = todayDateStr();
   if (dateStr === today) return `Today — ${weekday}, ${dm}`;
@@ -4111,7 +4111,7 @@ function ShoppingListScreen({ toBuyByCategory, haveIt, checkedItems, toggleCheck
           <div style={{ background: "#fff", border: `1px solid ${C.line}`, borderRadius: 22, padding: "20px 18px", boxShadow: "0 6px 24px rgba(31,55,44,.045)" }}>
             <div style={{ fontFamily: FONT_BODY, fontSize: 12, color: C.inkSoft, letterSpacing: 0, display: "flex", justifyContent: "space-between" }}>
               <span style={{ fontFamily: FONT_BODY, fontWeight: 800, fontSize: 18, letterSpacing: 0, color: C.ink }}>{translate("shoppingList")}</span>
-              <span>{new Date().toLocaleDateString("en-SG", { day: "2-digit", month: "short" })}</span>
+              <span>{formatInterfaceDate(new Date(), { day: "2-digit", month: "short" })}</span>
             </div>
             {targetPax > 0 && (
               <div style={{ fontFamily: FONT_BODY, fontSize: 12, color: C.inkSoft, marginTop: 8, lineHeight: 1.45 }}>
@@ -4268,7 +4268,7 @@ function ReceiptRow({ item, checked, onToggle, onSwapMeal, onPostponeMeal, canPo
                       fontFamily: FONT_MONO, fontSize: 11, color: C.ink, minWidth: 0, flex: 1,
                       overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                     }}>
-                      {weekday ? `${weekday} ${ref.mealType} — ${ref.name}` : `${ref.mealType} — ${ref.name}`}
+                      {weekday ? `${weekday} ${translateMealType(ref.mealType)} — ${ref.name}` : `${translateMealType(ref.mealType)} — ${ref.name}`}
                     </span>
                     <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
                       {canPostpone && (
