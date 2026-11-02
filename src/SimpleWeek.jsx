@@ -1,17 +1,19 @@
 import React, { useState } from "react";
 import FoodArt from "./FoodArt.jsx";
+import { useLanguage } from "./interfaceLanguage.js";
 import { CalendarDays, ShoppingBasket, ClipboardCheck, ChevronRight, ArrowLeft, ArrowRight, Check, X, RefreshCw, Trash2, BookOpen } from "lucide-react";
 
 const ui = {
   card: { background: "#fff", border: "1px solid #E5E3EE", borderRadius: 18, padding: 18 },
   button: { border: "1px solid #E5E3EE", borderRadius: 12, background: "#fff", padding: "10px 13px", color: "#303241", fontWeight: 600, cursor: "pointer" },
 };
-const dateLabel = (date) => {
+const dateLabel = (date,language="en") => {
   if (!date) return "Planned meal";
   const [y,m,d] = date.split("-").map(Number);
-  return new Date(y,m-1,d).toLocaleDateString("en-SG", { weekday: "long", day: "numeric", month: "short" });
+  return new Date(y,m-1,d).toLocaleDateString(({en:"en-SG",zh:"zh-SG",my:"my-MM",tl:"fil-PH"})[language] || "en-SG", { weekday: "long", day: "numeric", month: "short" });
 };
 export default function SimpleWeek({ plan, skippedDays, onSkip, onSwap, onRemove, onMove, onAdd, pickableMeals, onGenerate, shopping, prepList, prepChecked, onPrepChecked, onOpenKitchen, onMarkCooked, pax }) {
+  const {t,language} = useLanguage();
   const view = "meals";
   const [recipe, setRecipe] = useState(null);
   const [showAllMeals, setShowAllMeals] = useState(false);
@@ -30,18 +32,18 @@ export default function SimpleWeek({ plan, skippedDays, onSkip, onSwap, onRemove
   const actionStyle = { ...ui.button, fontSize: 12, padding: "8px 10px" };
   return <main style={{ maxWidth: 760, margin: "0 auto", padding: "26px 18px 90px", color: "#303241", fontFamily: "system-ui, sans-serif" }}>
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, background: "#F1EFFB", borderRadius: 22, padding: 16 }}>
-      <div><div style={{ color: "#67677E", fontSize: 12, fontWeight: 700, letterSpacing: 1.5 }}>SEVEN DAYS AT A GLANCE</div>
-      <h2 style={{ fontSize: 30, letterSpacing: -1, margin: "7px 0 8px" }}>Your week, sorted.</h2>
-      <p style={{ color: "#67677E", margin: 0, lineHeight: 1.5 }}>Tap a dish to cook, swap or move it.</p></div><FoodArt kind="meal" size={110}/>
+      <div><div style={{ color: "#67677E", fontSize: 12, fontWeight: 700, letterSpacing: 1.5 }}>{t("weekGlance")}</div>
+      <h2 style={{ fontSize: 30, letterSpacing: -1, margin: "7px 0 8px" }}>{t("weekSorted")}</h2>
+      <p style={{ color: "#67677E", margin: 0, lineHeight: 1.5 }}>{t("weekSub")}</p></div><FoodArt kind="meal" size={110}/>
     </div>
     {view === "meals" && <>
       <div style={{ display: "flex", gap: 8, margin: "17px 0", padding: 5, background: "#F1EFFB", borderRadius: 15 }} role="group" aria-label="Meals shown">
-        {[[false,"Dinner plan"],[true,"All meals"]].map(([all,label]) => <button key={label} aria-pressed={showAllMeals===all} onClick={()=>setShowAllMeals(all)} style={{ flex:1, padding:"12px 8px", border:0, borderRadius:12, background:showAllMeals===all?"#fff":"transparent", boxShadow:showAllMeals===all?"0 2px 8px #30324112":"none", color:"#303241", fontWeight:showAllMeals===all?800:600 }}>{label}</button>)}
+        {[[false,t("dinnerTab")],[true,t("allMeals")]].map(([all,label]) => <button key={label} aria-pressed={showAllMeals===all} onClick={()=>setShowAllMeals(all)} style={{ flex:1, padding:"12px 8px", border:0, borderRadius:12, background:showAllMeals===all?"#fff":"transparent", boxShadow:showAllMeals===all?"0 2px 8px #30324112":"none", color:"#303241", fontWeight:showAllMeals===all?800:600 }}>{label}</button>)}
       </div>
-      {!showAllMeals && <p style={{fontSize:13,color:"#67677E",margin:"0 0 13px"}}>Showing dinners only. Switch to All meals to see breakfast and lunch from your saved plan.</p>}
+      {!showAllMeals && <p style={{fontSize:13,color:"#67677E",margin:"0 0 13px"}}>{t("dinnerOnly")}</p>}
       {!hasCurrentPlan && <section style={{ ...ui.card, textAlign: "center", padding: 28 }}><CalendarDays size={30} color="#D98976" />
-        <h3>Nothing planned yet</h3><p style={{ color: "#67677E" }}>Get seven dinners in one tap. You can swap any dish afterwards.</p>
-        <button style={{ ...ui.button, background: "#EAA28F", color: "#303241" }} onClick={onGenerate}>Plan my week</button></section>}
+        <h3>{t("nothingPlanned")}</h3><p style={{ color: "#67677E" }}>Get seven dinners in one tap. You can swap any dish afterwards.</p>
+        <button style={{ ...ui.button, background: "#EAA28F", color: "#303241" }} onClick={onGenerate}>{t("planWeek")}</button></section>}
       <div style={{ display: "grid", gap: 13 }}>
         {dates.map(date => {
           const meals = plan.filter(m => m.date === date && (showAllMeals || m.mealType === "dinner"));
@@ -49,10 +51,10 @@ export default function SimpleWeek({ plan, skippedDays, onSkip, onSwap, onRemove
           const skipped = skippedDays.includes(date);
           return <section key={date} style={{ ...ui.card, opacity: skipped ? .65 : 1 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 12 }}>
-              <strong style={{ fontSize: 16 }}>{dateLabel(date)}</strong>
-              <button style={actionStyle} onClick={() => onSkip(date)}>{skipped ? "Restore day" : "Skip day"}</button>
+              <strong style={{ fontSize: 16 }}>{dateLabel(date,language)}</strong>
+              <button style={actionStyle} onClick={() => onSkip(date)}>{skipped ? t("restoreDay") : t("skipDay")}</button>
             </div>
-            {meals.length === 0 && <div style={{background:"#F7F7FB",padding:14,borderRadius:13,display:"grid",gap:8}}><span style={{color:"#67677E",fontSize:13}}>No {showAllMeals?"meals":"dinner"} planned for this day.</span><button style={ui.button} onClick={() => { setAdding(date); setQuery(""); }}>+ Add dinner</button></div>}
+            {meals.length === 0 && <div style={{background:"#F7F7FB",padding:14,borderRadius:13,display:"grid",gap:8}}><span style={{color:"#67677E",fontSize:13}}>No {showAllMeals?"meals":"dinner"} planned for this day.</span><button style={ui.button} onClick={() => { setAdding(date); setQuery(""); }}>+ {t("addDinner")}</button></div>}
             {["breakfast","lunch","dinner"].filter(slot=>meals.some(m=>m.mealType===slot)).map(slot => {
               const slotMeals=meals.filter(m=>m.mealType===slot);
               return <div key={slot} style={{marginTop:14}}>
@@ -68,9 +70,9 @@ export default function SimpleWeek({ plan, skippedDays, onSkip, onSwap, onRemove
                         </span><ChevronRight size={19}/>
                       </button>
                       <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
-                        <button style={actionStyle} onClick={()=>{setSwapUid(meal.uid);setQuery("");}}><RefreshCw size={13}/> Swap</button>
-                        <button style={actionStyle} onClick={()=>setMoveUid(meal.uid)}>Move</button>
-                        <button style={actionStyle} onClick={()=>onMarkCooked(meal.uid)}>{meal.cooked?"Cooked ✓":"Mark cooked"}</button>
+                        <button style={actionStyle} onClick={()=>{setSwapUid(meal.uid);setQuery("");}}><RefreshCw size={13}/> {t("swap")}</button>
+                        <button style={actionStyle} onClick={()=>setMoveUid(meal.uid)}>{t("move")}</button>
+                        <button style={actionStyle} onClick={()=>onMarkCooked(meal.uid)}>{meal.cooked?t("cooked"):t("markCooked")}</button>
                         <button aria-label={"Remove "+meal.name} style={actionStyle} onClick={()=>onRemove(meal.uid)}><Trash2 size={13}/></button>
                       </div>
                     </div>
@@ -98,9 +100,9 @@ export default function SimpleWeek({ plan, skippedDays, onSkip, onSwap, onRemove
     </section>}
     {(swapUid || adding || moveUid) && <div role="dialog" aria-modal="true" aria-label="Edit meal" style={{ position: "fixed", inset: 0, zIndex: 50, background: "#303241CC", display: "grid", placeItems: "center", padding: 16 }}>
       <div style={{ ...ui.card, width: "100%", maxWidth: 520, maxHeight: "85vh", overflowY: "auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><h3 style={{ margin: "0 0 12px" }}>{moveUid ? "Move to another day" : swapUid ? "Swap this dish" : "Add dinner"}</h3><button style={actionStyle} onClick={() => { setSwapUid(null); setAdding(null); setMoveUid(null); }}>Close</button></div>
-        {moveUid ? <div style={{ display: "grid", gap: 8 }}>{dates.map(date => <button key={date} style={ui.button} onClick={() => { onMove(moveUid,date); setMoveUid(null); }}>{dateLabel(date)}</button>)}</div> : <>
-          <input aria-label="Search recipes" placeholder="Find a recipe…" value={query} onChange={e => setQuery(e.target.value)} style={{ width: "100%", padding: 13, border: "1px solid #E5E3EE", borderRadius: 10, marginBottom: 12 }} />
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><h3 style={{ margin: "0 0 12px" }}>{moveUid ? "Move to another day" : swapUid ? "Swap this dish" : "Add dinner"}</h3><button style={actionStyle} onClick={() => { setSwapUid(null); setAdding(null); setMoveUid(null); }}>{t("close")}</button></div>
+        {moveUid ? <div style={{ display: "grid", gap: 8 }}>{dates.map(date => <button key={date} style={ui.button} onClick={() => { onMove(moveUid,date); setMoveUid(null); }}>{dateLabel(date,language)}</button>)}</div> : <>
+          <input aria-label="Search recipes" placeholder={t("searchRecipes")} value={query} onChange={e => setQuery(e.target.value)} style={{ width: "100%", padding: 13, border: "1px solid #E5E3EE", borderRadius: 10, marginBottom: 12 }} />
           <div style={{ display: "grid", gap: 8 }}>{recipeOptions.map(m => <button key={m.id} style={{ ...ui.button, textAlign: "left" }} onClick={() => { if (swapUid) onSwap(swapUid,m.id); else onAdd(adding,"dinner",m.id); setSwapUid(null); setAdding(null); }}>{m.name} <span style={{ float: "right", color: "#67677E" }}>{m.time}m</span></button>)}</div>
         </>}
       </div></div>}
