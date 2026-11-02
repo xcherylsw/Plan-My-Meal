@@ -18,6 +18,7 @@ class StartupErrorBoundary extends React.Component {
 import { createRoot } from "react-dom/client";
 import MakanLedger from "./MakanLedger.jsx";
 import AccountBar from "./AccountBar.jsx";
+import { translate, useLanguage } from "./interfaceLanguage.js";
 import { installStorage, initCloud, subscribe, getSnapshot, acknowledgeRemote } from "./cloud.js";
 
 // window.storage must exist before the app first renders.
@@ -51,6 +52,41 @@ function useQuietRestart(pendingRemote) {
   }, [pendingRemote]);
 }
 
+function UpdateNotice() {
+  const { language } = useLanguage();
+  const [available, setAvailable] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+  useEffect(() => {
+    let live = true;
+    const check = async () => {
+      if (document.visibilityState === "hidden") return;
+      try {
+        const response = await fetch("/version.json", { cache: "no-store" });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (live && data.version && data.version !== __APP_BUILD_ID__) setAvailable(true);
+      } catch { /* Offline: retry when the connection returns. */ }
+    };
+    const interval = setInterval(check, 5 * 60 * 1000);
+    const onVisible = () => { if (document.visibilityState === "visible") check(); };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("online", check);
+    check();
+    return () => {
+      live = false;
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("online", check);
+    };
+  }, []);
+  if (!available || dismissed) return null;
+  return <div role="status" style={{position:"fixed",bottom:16,left:"50%",transform:"translateX(-50%)",zIndex:9999,width:"min(440px,calc(100% - 28px))",boxSizing:"border-box",padding:"12px 14px",borderRadius:14,background:"#fff",color:"#303241",boxShadow:"0 8px 32px #0003",display:"flex",alignItems:"center",gap:10,fontFamily:"system-ui,sans-serif",fontSize:13}}>
+    <span style={{flex:1}}>{translate("updateReady",language)}</span>
+    <button type="button" onClick={()=>window.location.reload()} style={{border:0,borderRadius:9,background:"#365C4B",color:"#fff",padding:"9px 11px",fontWeight:700,cursor:"pointer"}}>{translate("updateNow",language)}</button>
+    <button type="button" aria-label={translate("updateLater",language)} onClick={()=>setDismissed(true)} style={{border:0,background:"transparent",color:"#555",fontSize:20,cursor:"pointer"}}>×</button>
+  </div>;
+}
+
 function Root() {
   const [s, setS] = useState(getSnapshot());
   useEffect(() => subscribe(setS), []);
@@ -62,6 +98,7 @@ function Root() {
           loaded (or someone signs out), the app restarts and re-reads storage. */}
       <MakanLedger key={s.epoch} />
       <AccountBar />
+      <UpdateNotice />
     </>
   );
 }
