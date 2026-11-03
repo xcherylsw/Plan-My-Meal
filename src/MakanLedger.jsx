@@ -17,9 +17,9 @@ import FoodArt from "./FoodArt.jsx";
 
 
 const RECIPE_LABELS = {
- zh:{chicken:"鸡肉",egg:"鸡蛋",fish:"鱼肉",seafood:"海鲜",pork:"猪肉",beef:"牛肉",tofu:"豆腐",vegetable:"蔬菜",vegetables:"蔬菜",chinese:"中式",japanese:"日式",korean:"韩式",thai:"泰式",malay:"马来式",indian:"印度式",western:"西式"},
- my:{chicken:"ကြက်သား",egg:"ကြက်ဥ",fish:"ငါး",seafood:"ပင်လယ်စာ",pork:"ဝက်သား",beef:"အမဲသား",tofu:"တို့ဖူး",vegetable:"ဟင်းသီးဟင်းရွက်",vegetables:"ဟင်းသီးဟင်းရွက်",chinese:"တရုတ်",japanese:"ဂျပန်",korean:"ကိုရီးယား"},
- tl:{chicken:"manok",egg:"itlog",fish:"isda",seafood:"pagkaing-dagat",pork:"baboy",beef:"baka",tofu:"tokwa",vegetable:"gulay",vegetables:"gulay",chinese:"Tsino",japanese:"Hapones",korean:"Koreano"}
+ zh:{chicken:"鸡肉",egg:"鸡蛋",fish:"鱼肉",seafood:"海鲜",pork:"猪肉",beef:"牛肉",tofu:"豆腐",vegetable:"蔬菜",vegetables:"蔬菜",chinese:"中式",peranakan:"娘惹",japanese:"日式",korean:"韩式",thai:"泰式",malay:"马来式",indian:"印度式",western:"西式"},
+ my:{chicken:"ကြက်သား",egg:"ကြက်ဥ",fish:"ငါး",seafood:"ပင်လယ်စာ",pork:"ဝက်သား",beef:"အမဲသား",tofu:"တို့ဖူး",vegetable:"ဟင်းသီးဟင်းရွက်",vegetables:"ဟင်းသီးဟင်းရွက်",chinese:"တရုတ်",peranakan:"ပီရာနာကန်",japanese:"ဂျပန်",korean:"ကိုရီးယား"},
+ tl:{chicken:"manok",egg:"itlog",fish:"isda",seafood:"pagkaing-dagat",pork:"baboy",beef:"baka",tofu:"tokwa",vegetable:"gulay",vegetables:"gulay",chinese:"Tsino",peranakan:"Peranakan",japanese:"Hapones",korean:"Koreano"}
 };
 function displayRecipeLabel(value) {
  if(value == null) return value;
