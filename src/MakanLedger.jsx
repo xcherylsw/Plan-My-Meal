@@ -2882,7 +2882,7 @@ export default function MakanLedger() {
                 <span>{prepChecked[item.key] ? "☑" : "☐"}</span><span>{item.label}</span>
               </button>)}
             </section>}
-            <p style={{ fontSize: 12, color: C.inkSoft, lineHeight: 1.6 }}>Keep chilled foods cold and freeze portions you won't use within a safe storage period. Prep only ingredients you can store safely.</p>
+            <p style={{ fontSize: 12, color: C.inkSoft, lineHeight: 1.6 }}>{t("prepSafety")}</p>
           </main>}
           {tab === "list" && <div style={{ background: "#FDECE8", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 20px" }}><div><strong>{t("shopHero")}</strong><div style={{ fontSize: 12, color: C.inkSoft }}>{t("shopSub")}</div></div><FoodArt kind="shop" size={92}/></div>}
           {tab === "list" && (
@@ -4190,7 +4190,7 @@ function ShoppingListScreen({ toBuyByCategory, haveIt, checkedItems, toggleCheck
             <Package size={14} /> {translate("markWeekCooked")}
           </button>
           <p style={{ fontSize: 10.5, color: C.inkSoft, marginTop: 6, fontStyle: "italic" }}>
-            Deducts what this plan used from kitchen quantities you've set — so bulk-bought stock rolls over instead of resetting.
+            {translate("markWeekExplainer")}
           </p>
           {usedMsg && <p style={{ fontSize: 11.5, color: C.jade700, fontWeight: 600, marginTop: 6 }}>{usedMsg}</p>}
 
