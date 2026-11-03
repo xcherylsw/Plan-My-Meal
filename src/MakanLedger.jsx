@@ -2181,7 +2181,7 @@ export default function MakanLedger() {
       if (meal.cooked) return;
       if (meal.date && skippedDays.includes(meal.date)) return;
       const scale = (meal.baseServings && paxFor(meal)) ? paxFor(meal) / meal.baseServings : 1;
-      meal.ingredients.forEach(i => {
+      meal.ingredients.forEach((i, ingredientIndex) => {
         if (!i.componentId) return;
         if (!demand[i.componentId]) demand[i.componentId] = { amount: 0, neededFor: new Set() };
         if (i.amount != null) demand[i.componentId].amount += i.amount * scale;
@@ -2227,7 +2227,7 @@ export default function MakanLedger() {
       if (meal.cooked) return;
       if (meal.date && skippedDays.includes(meal.date)) return;
       const scale = (meal.baseServings && paxFor(meal)) ? paxFor(meal) / meal.baseServings : 1;
-      meal.ingredients.forEach(i => {
+      meal.ingredients.forEach((i, ingredientIndex) => {
         // Made-from-scratch ingredients (sambal, curry roux…) aren't bought
         // directly — what THEY need gets folded in below instead, scaled by
         // however many batches are actually needed.
@@ -2514,7 +2514,7 @@ export default function MakanLedger() {
             wordMatch(String(i.name ?? "").toLowerCase(), String(p.name ?? "").toLowerCase())
           );
           if (idx === -1) return;
-          updated[idx].quantity = Math.max(0, updated[idx].quantity - i.amount * scale);
+          updated[idx].quantity = Math.max(0, updated[idx].quantity - (meal.actualQuantities?.[ingredientIndex] ?? i.amount * scale));
         });
       });
       return updated;
@@ -2525,6 +2525,10 @@ export default function MakanLedger() {
   // Per-dish version: deducts just this one meal's ingredients from kitchen
   // stock and flags it cooked, so the bulk "mark week as cooked" won't
   // double-deduct it later.
+  function adjustPlannedMealQuantities(uid, actualQuantities) {
+    setPlan(prev => prev.map(m => m.uid === uid && !m.cooked ? {...m, actualQuantities} : m));
+  }
+
   function markMealCooked(uid) {
     const meal = plan.find(m => m.uid === uid);
     if (!meal || meal.cooked) return;
@@ -2533,14 +2537,14 @@ export default function MakanLedger() {
     setPantry(prev => {
       const updated = prev.map(p => ({ ...p }));
       const scale = (meal.baseServings && paxFor(meal)) ? paxFor(meal) / meal.baseServings : 1;
-      meal.ingredients.forEach(i => {
+      meal.ingredients.forEach((i, ingredientIndex) => {
         if (i.amount == null) return;
         const idx = updated.findIndex(p =>
           p.quantity != null && (p.unit || "").toLowerCase() === (i.unit || "").toLowerCase() &&
           wordMatch(String(i.name ?? "").toLowerCase(), String(p.name ?? "").toLowerCase())
         );
         if (idx === -1) return;
-        updated[idx].quantity = Math.max(0, updated[idx].quantity - i.amount * scale);
+        updated[idx].quantity = Math.max(0, updated[idx].quantity - (meal.actualQuantities?.[ingredientIndex] ?? i.amount * scale));
       });
       return updated;
     });
@@ -2918,7 +2922,7 @@ export default function MakanLedger() {
             onGenerate={planMyWeek} pax={targetPax}
             prepList={[...prepList.aggregateItems, ...prepList.perDish]}
             prepChecked={prepChecked} onPrepChecked={togglePrepChecked}
-            onOpenKitchen={() => setTab("pantry")} onMarkCooked={markMealCooked}
+            onOpenKitchen={() => setTab("pantry")} onMarkCooked={markMealCooked} onAdjustQuantities={adjustPlannedMealQuantities}
             shopping={<ShoppingListScreen
               toBuyByCategory={toBuyByCategory} haveIt={haveIt}
               checkedItems={checkedItems} toggleChecked={toggleChecked}
