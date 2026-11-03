@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLanguage } from "./interfaceLanguage.js";
-import { signIn, signOut, subscribe, getSnapshot, pullIfStale, joinHousehold, leaveHousehold, listInvites, addInvite, removeInvite } from "./cloud.js";
+import { signIn, signOut, subscribe, getSnapshot, pullIfStale, joinHousehold, leaveHousehold, listInvites, addInvite, removeInvite, requestHouseholdAccess, getHouseholdRequestStatus, watchHouseholdRequests, reviewHouseholdRequest } from "./cloud.js";
 
 // Small floating account control, pinned inside the app's centred column so
 // it sits over the header's right-hand side on phone and laptop alike.
@@ -18,6 +18,8 @@ export default function AccountBar() {
   const [copied, setCopied] = useState(false);
   const [invites, setInvites] = useState([]);
   const [inviteEmail, setInviteEmail] = useState("");
+  const [requests, setRequests] = useState([]);
+  const [requestStatus, setRequestStatus] = useState(null);
   useEffect(() => subscribe(setS), []);
   useEffect(() => {
     if (!open) return;
@@ -30,6 +32,15 @@ export default function AccountBar() {
   useEffect(() => {
     if (open && isOwner) listInvites().then(setInvites).catch(() => {});
   }, [open, isOwner, s.household && s.household.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!isOwner) { setRequests([]); return; }
+    return watchHouseholdRequests(setRequests);
+  }, [isOwner, s.household?.id]);
+  useEffect(() => {
+    if (joining && code.trim().length >= 8) getHouseholdRequestStatus(code).then(setRequestStatus);
+    else setRequestStatus(null);
+  }, [joining, code, open]);
 
   if (!s.configured) return null;
 
@@ -69,6 +80,7 @@ export default function AccountBar() {
                 ? <img src={s.user.photo} alt="" referrerPolicy="no-referrer" style={{ width: "100%", height: "100%", borderRadius: 999, display: "block" }} />
                 : initial}
               <span style={{ position: "absolute", right: -2, bottom: -2, width: 11, height: 11, borderRadius: 999, background: dot, border: `2px solid ${OAT}` }} />
+              {requests.length > 0 && <span aria-label={`${requests.length} pending household requests`} style={{position:"absolute",top:-7,right:-9,minWidth:17,height:17,padding:"0 3px",borderRadius:12,background:"#C6573E",color:"white",fontSize:10,fontWeight:800,lineHeight:"17px",border:"2px solid white"}}>{requests.length}</span>}
             </button>
           )}
 
@@ -122,6 +134,17 @@ export default function AccountBar() {
                   </div>
                 </div>
               )}
+              {isOwner && requests.length > 0 && <div style={{marginTop:12,padding:"10px",background:"#FFF5EC",borderRadius:9,border:"1px solid #F0D8C9"}}>
+                <div style={{fontSize:12,fontWeight:800,color:INK,marginBottom:6}}>{t("requestPendingTitle")} ({requests.length})</div>
+                {requests.map(req=><div key={req.id} style={{padding:"8px 0",borderTop:"1px solid #E8D7CD"}}>
+                  <div style={{fontWeight:700,fontSize:12,overflowWrap:"anywhere"}}>{req.name || req.email}</div>
+                  <div style={{fontSize:11,color:"#666A73",overflowWrap:"anywhere"}}>{req.email}</div>
+                  <div style={{display:"flex",gap:8,marginTop:7}}>
+                    <button style={btn(false)} onClick={async()=>{const r=await reviewHouseholdRequest(req.id,"approved");setNote(r.ok?t("requestApprovedNote"):r.message);}}>{t("requestApprove")}</button>
+                    <button style={btn(true)} onClick={async()=>{const r=await reviewHouseholdRequest(req.id,"declined");setNote(r.ok?t("requestDeclinedNote"):r.message);}}>{t("requestDecline")}</button>
+                  </div>
+                </div>)}
+              </div>}
               {!joining ? (
                 <div style={{ display: "flex", gap: 14, marginTop: 10 }}>
                   <button onClick={() => { setJoining(true); setNote(""); }} style={link}>{t("accountJoinHousehold")}</button>
@@ -145,6 +168,10 @@ export default function AccountBar() {
                       if (r.ok) { setJoining(false); setCode(""); setNote(""); setOpen(false); } else setNote(r.message || "");
                     }} style={{ ...btn(false), flex: "none", padding: "7px 12px" }}>{t("accountJoin")}</button>
                   </div>
+                  <div style={{display:"flex",gap:8,marginTop:8,alignItems:"center"}}>
+                    <button onClick={async()=>{setBusy(true);const r=await requestHouseholdAccess(code);setBusy(false);setRequestStatus(r.status||null);setNote(r.ok?(r.status==="approved"?t("requestAlreadyApproved"):t("requestSent")):r.message);}} disabled={busy || code.trim().length<8} style={{...btn(true),opacity:busy?0.6:1}}>{t("requestAccess")}</button>
+                  </div>
+                  {requestStatus && <div style={{fontSize:11,color:"#49745C",marginTop:5}}>{requestStatus==="approved"?t("requestAlreadyApproved"):requestStatus==="pending"?t("requestAwaiting"):t("requestDeclinedNote")}</div>}
                   <button onClick={() => { setJoining(false); setNote(""); }} style={{ ...link, marginTop: 6 }}>{t("accountCancel")}</button>
                 </div>
               )}
