@@ -5452,7 +5452,7 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onToggl
           {cuisines.length > 1 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
               <Chip active={!cuisine} onClick={() => setCuisine(null)}>{translate("filterAll")}</Chip>
-              {cuisines.map(c => <Chip key={c} active={cuisine === c} onClick={() => setCuisine(c === cuisine ? null : c)}>{c}</Chip>)}
+              {cuisines.map(c => <Chip key={c} active={cuisine === c} onClick={() => setCuisine(c === cuisine ? null : c)}>{displayRecipeLabel(c)}</Chip>)}
             </div>
           )}
           {shown.length === 0 && <p style={{ fontSize: 12.5, color: C.inkSoft }}>Nothing matches that.</p>}
