@@ -15,6 +15,18 @@ import { initAds, showInterstitialAd, AdSlot, SiteFooter } from "./ads.js";
 import SimpleWeek from "./SimpleWeek.jsx";
 import FoodArt from "./FoodArt.jsx";
 
+
+const RECIPE_LABELS = {
+ zh:{chicken:"鸡肉",egg:"鸡蛋",fish:"鱼肉",seafood:"海鲜",pork:"猪肉",beef:"牛肉",tofu:"豆腐",vegetable:"蔬菜",vegetables:"蔬菜",chinese:"中式",japanese:"日式",korean:"韩式",thai:"泰式",malay:"马来式",indian:"印度式",western:"西式"},
+ my:{chicken:"ကြက်သား",egg:"ကြက်ဥ",fish:"ငါး",seafood:"ပင်လယ်စာ",pork:"ဝက်သား",beef:"အမဲသား",tofu:"တို့ဖူး",vegetable:"ဟင်းသီးဟင်းရွက်",vegetables:"ဟင်းသီးဟင်းရွက်",chinese:"တရုတ်",japanese:"ဂျပန်",korean:"ကိုရီးယား"},
+ tl:{chicken:"manok",egg:"itlog",fish:"isda",seafood:"pagkaing-dagat",pork:"baboy",beef:"baka",tofu:"tokwa",vegetable:"gulay",vegetables:"gulay",chinese:"Tsino",japanese:"Hapones",korean:"Koreano"}
+};
+function displayRecipeLabel(value) {
+ if(value == null) return value;
+ const language = typeof window !== "undefined" ? window.localStorage.getItem("tcw-interface-language") || "en" : "en";
+ return RECIPE_LABELS[language]?.[String(value).trim().toLowerCase()] || value;
+}
+
 /* ---------------------------------------------------------------
    TOKENS — "kitchen ledger" identity: deep jade + receipt paper,
    mustard for action, clay for "on sale". Fraunces for character,
@@ -5144,14 +5156,14 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
           </datalist>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10, marginTop: -4 }}>
             {CUISINES.map(c => (
-              <Chip key={c} active={draft.cuisine === c} onClick={() => setDraft(prev => ({ ...prev, cuisine: c }))}>{c}</Chip>
+              <Chip key={c} active={draft.cuisine === c} onClick={() => setDraft(prev => ({ ...prev, cuisine: c }))}>{displayRecipeLabel(c)}</Chip>
             ))}
           </div>
 
           <label style={labelStyle}>Protein</label>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
             {PROTEINS.map(p => (
-              <Chip key={p} active={draft.protein === p} onClick={() => setDraft(prev => ({ ...prev, protein: p }))}>{p}</Chip>
+              <Chip key={p} active={draft.protein === p} onClick={() => setDraft(prev => ({ ...prev, protein: p }))}>{displayRecipeLabel(p)}</Chip>
             ))}
           </div>
 
@@ -5296,8 +5308,8 @@ function SavedRecipeCard({ recipe, onDelete, onEdit, onPublish, defaultPax }) {
           <div style={{ minWidth: 0 }}>
             <div style={{ fontFamily: FONT_DISPLAY, fontWeight: 700, fontSize: 20, color: C.ink, lineHeight:1.25 }}>{recipe.name}</div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3, flexWrap: "wrap" }}>
-              <Tag text={recipe.cuisine} />
-              <Tag text={recipe.protein} />
+              <Tag text={displayRecipeLabel(recipe.cuisine)} />
+              <Tag text={displayRecipeLabel(recipe.protein)} />
               {recipe.isComponent && <Tag text="Condiment/base" />}
               {recipe.side && !recipe.isComponent && <Tag text="Side dish" />}
               {recipe.sourceNote && (
