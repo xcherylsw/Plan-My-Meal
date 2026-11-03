@@ -5223,10 +5223,10 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
         </div>
       )}
 
-      {!draft && !libraryEdit && <p style={{background:"#F1EFFB",borderRadius:12,padding:"12px 14px",fontSize:12.5,color:C.inkSoft}}>🔒 Private collection · Only you can see these recipes. They are never published automatically.</p>}
-      {!draft && !libraryEdit && <SectionLabel>My private recipes ({myRecipes.length})</SectionLabel>}
+      {!draft && !libraryEdit && <p style={{background:"#F1EFFB",borderRadius:12,padding:"12px 14px",fontSize:12.5,color:C.inkSoft}}>🔒 {translate("privateNotice")}</p>}
+      {!draft && !libraryEdit && <SectionLabel>{translate("privateRecipes")} ({myRecipes.length})</SectionLabel>}
       {!draft && (myRecipes.length === 0 ? (
-        <p style={{ fontSize: 12.5, color: C.inkSoft }}>Nothing saved yet — recipes you import will show up here, and get mixed into future generated plans.</p>
+        <p style={{ fontSize: 12.5, color: C.inkSoft }}>{translate("noSavedRecipes")}</p>
       ) : (
         <>
           {myRecipes.length > 5 && (
@@ -5234,13 +5234,13 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
               <input
                 value={recipeQuery}
                 onChange={e => setRecipeQuery(e.target.value)}
-                placeholder="Search your recipes by name…"
+                placeholder={translate("recipeSearch")}
                 style={{ ...fieldStyle, marginBottom: 8 }}
               />
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: savedCuisines.length || savedProteins.length ? 8 : 0 }}>
                 {["all", "main", "side", "component"].map(t => (
                   <Chip key={t} active={recipeFilterType === t} onClick={() => setRecipeFilterType(t)}>
-                    {t === "all" ? "All" : t === "main" ? "Main" : t === "side" ? "Side" : "Condiment"}
+                    {translate(t === "all" ? "filterAll" : t === "main" ? "filterMain" : t === "side" ? "filterSide" : "filterCondiment")}
                   </Chip>
                 ))}
               </div>
@@ -5254,7 +5254,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
               )}
               {savedProteins.length > 1 && (
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  <Chip active={!recipeFilterProtein} onClick={() => setRecipeFilterProtein(null)}>All proteins</Chip>
+                  <Chip active={!recipeFilterProtein} onClick={() => setRecipeFilterProtein(null)}>{translate("allProteins")}</Chip>
                   {savedProteins.map(p => (
                     <Chip key={p} active={recipeFilterProtein === p} onClick={() => setRecipeFilterProtein(p === recipeFilterProtein ? null : p)}>{p}</Chip>
                   ))}
@@ -5263,7 +5263,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
             </div>
           )}
           {filteredRecipes.length === 0 ? (
-            <p style={{ fontSize: 12.5, color: C.inkSoft, fontStyle: "italic" }}>Nothing matches those filters.</p>
+            <p style={{ fontSize: 12.5, color: C.inkSoft, fontStyle: "italic" }}>{translate("noRecipeMatch")}</p>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {filteredRecipes.map(r => (
@@ -5312,7 +5312,7 @@ function SavedRecipeCard({ recipe, onDelete, onEdit, onPublish, defaultPax }) {
         <div style={{flexShrink:0,position:"relative"}}><button aria-label="Recipe options" aria-expanded={actionsOpen} onClick={()=>setActionsOpen(v=>!v)} style={{border:"1px solid #E9E3DF",background:"#FAF7F2",borderRadius:12,padding:"8px 12px",fontWeight:800,color:C.ink}}>•••</button>{actionsOpen && <div style={{display:"grid",gap:6,marginTop:6}}><button onClick={()=>{setActionsOpen(false);onEdit();}} style={{padding:8,borderRadius:10,background:"#F1EFFB",color:C.ink}}>Edit</button>{onPublish && <button onClick={()=>{setActionsOpen(false);onPublish();}} style={{padding:8,borderRadius:10,background:"#E4F2E8",color:"#285B42"}}>Publish to Discover</button>}<button onClick={()=>{setActionsOpen(false);onDelete();}} style={{padding:8,borderRadius:10,background:"#FBE9E3",color:C.clayText}}>Delete</button></div>}</div>
       </div>
 
-      <button onClick={()=>setDetailsOpen(v=>!v)} aria-expanded={detailsOpen} style={{width:"100%",marginTop:14,display:"flex",justifyContent:"space-between",alignItems:"center",background:"#FAF7F2",border:"1px solid #E9E3DF",borderRadius:13,padding:"12px 14px",fontSize:14,fontWeight:750,color:C.ink}}><span>{detailsOpen?"Hide recipe":"View ingredients & cooking steps"}</span><ChevronDown size={17} style={{transform:detailsOpen?"rotate(180deg)":"none",transition:"transform .2s"}} /></button>
+      <button onClick={()=>setDetailsOpen(v=>!v)} aria-expanded={detailsOpen} style={{width:"100%",marginTop:14,display:"flex",justifyContent:"space-between",alignItems:"center",background:"#FAF7F2",border:"1px solid #E9E3DF",borderRadius:13,padding:"12px 14px",fontSize:14,fontWeight:750,color:C.ink}}><span>{detailsOpen?translate("hideRecipe"):translate("viewRecipeSteps")}</span><ChevronDown size={17} style={{transform:detailsOpen?"rotate(180deg)":"none",transition:"transform .2s"}} /></button>
       {detailsOpen && <div style={{paddingTop:12}}>{recipe.baseServings ? (
         <div style={{ marginTop: 10 }}>
           <Stepper label="Servings" value={pax} min={1} max={20} onChange={setPax} />
