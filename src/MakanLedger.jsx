@@ -5423,9 +5423,9 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onToggl
 
   return (
     <div style={{ padding: "24px 18px 36px",background:"#FAF7F2",minHeight:"70vh" }}>
-      <div style={{background:"linear-gradient(125deg,#354E60,#6A8A94)",color:"#fff",borderRadius:24,padding:"25px 22px",marginBottom:20,position:"relative",overflow:"hidden"}}><div style={{position:"absolute",right:-12,top:-12,fontSize:106,opacity:.17,pointerEvents:"none"}}>🍲</div><div style={{fontSize:11,fontWeight:800,letterSpacing:2,color:"#DDEFF3",marginBottom:9}}>{isAdmin ? "CURATE THE COLLECTION" : "A WORLD OF GOOD FOOD"}</div><h2 style={{fontFamily:FONT_DISPLAY,fontSize:33,lineHeight:1.1,margin:"0 0 11px",maxWidth:250}}>{isAdmin ? "Your recipe studio." : "Find your next favourite."}</h2><div style={{fontSize:13,color:"#EDF6F7"}}>{items.length ? `${items.length} recipes to explore` : "A shared cookbook, growing together"}</div></div>
+      <div style={{background:"linear-gradient(125deg,#354E60,#6A8A94)",color:"#fff",borderRadius:24,padding:"25px 22px",marginBottom:20,position:"relative",overflow:"hidden"}}><div style={{position:"absolute",right:-12,top:-12,fontSize:106,opacity:.17,pointerEvents:"none"}}>🍲</div><div style={{fontSize:11,fontWeight:800,letterSpacing:2,color:"#DDEFF3",marginBottom:9}}>{isAdmin ? "CURATE THE COLLECTION" : translate("libraryEyebrow")}</div><h2 style={{fontFamily:FONT_DISPLAY,fontSize:33,lineHeight:1.1,margin:"0 0 11px",maxWidth:250}}>{isAdmin ? "Your recipe studio." : translate("libraryHeadline")}</h2><div style={{fontSize:13,color:"#EDF6F7"}}>{items.length ? `${items.length} ${translate("libraryCount")}` : translate("libraryGrowing")}</div></div>
 
-      {!isAdmin && <p style={{fontSize:12,color:C.inkSoft,margin:"-7px 0 16px"}}>Explore recipes already available in your meal planner. Community additions appear here too.</p>}
+      {!isAdmin && <p style={{fontSize:12,color:C.inkSoft,margin:"-7px 0 16px"}}>{translate("libraryIntro")}</p>}
       {isAdmin && photoMessage && <p role="status" style={{padding:"11px 13px",background:"#fff",borderRadius:10,color:"#365C4B",fontSize:12}}>{photoMessage}</p>}
       {isAdmin && (
         <button onClick={onNew} style={{ width: "100%", background: "#E9A28F", border: "none", borderRadius: 16, padding: "15px 0", color: C.jade900, fontFamily: FONT_BODY, fontWeight: 700, fontSize: 13, marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
@@ -5447,11 +5447,11 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onToggl
       ) : (
         <>
           {items.length > 0 && (
-            <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search the library…" style={{ ...fieldStyle, marginBottom: 8 }} />
+            <input value={q} onChange={e => setQ(e.target.value)} placeholder={translate("librarySearch")} style={{ ...fieldStyle, marginBottom: 8 }} />
           )}
           {cuisines.length > 1 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-              <Chip active={!cuisine} onClick={() => setCuisine(null)}>All</Chip>
+              <Chip active={!cuisine} onClick={() => setCuisine(null)}>{translate("filterAll")}</Chip>
               {cuisines.map(c => <Chip key={c} active={cuisine === c} onClick={() => setCuisine(c === cuisine ? null : c)}>{c}</Chip>)}
             </div>
           )}
@@ -5463,7 +5463,7 @@ function LibraryScreen({ library, isAdmin, configured, myRecipes, onAdd, onToggl
                 <button onClick={()=>setOpen(open===r.id?null:r.id)} aria-label={`View ${r.name} recipe`} style={{display:"block",width:"100%",textAlign:"left",padding:0,background:"transparent",border:0,color:C.ink}}>
                   <div style={{aspectRatio:"1.18",background:"linear-gradient(135deg,#F0DDC5,#D8E4D2)",display:"grid",placeItems:"center",position:"relative",overflow:"hidden"}}>
                     {r.photo ? <img src={r.photo} alt={r.name} loading="lazy" style={{width:"100%",height:"100%",objectFit:"cover",position:"absolute",inset:0}}/> : <span aria-hidden="true" style={{fontSize:56,filter:"drop-shadow(0 5px 6px rgba(0,0,0,.08))"}}>{r.protein==="fish"||r.protein==="seafood"?"🐟":r.protein==="chicken"?"🍗":r.side?"🥬":"🍲"}</span>}
-                    <span style={{position:"absolute",bottom:9,left:9,background:"rgba(255,255,255,.92)",borderRadius:999,padding:"4px 8px",fontSize:10,fontWeight:800,color:"#4D6558"}}>{r.cuisine||"Recipe"}</span>
+                    <span style={{position:"absolute",bottom:9,left:9,background:"rgba(255,255,255,.92)",borderRadius:999,padding:"4px 8px",fontSize:10,fontWeight:800,color:"#4D6558"}}>{displayRecipeLabel(r.cuisine)||translate("libraryRecipe")}</span>
                   </div>
                   <div style={{padding:"13px 12px 8px",minHeight:114,display:"flex",flexDirection:"column",justifyContent:"space-between",gap:12}}>
                     <div style={{fontSize:16,fontWeight:800,lineHeight:1.32,fontFamily:FONT_BODY}}>{r.name}</div>
