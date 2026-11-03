@@ -2865,19 +2865,19 @@ export default function MakanLedger() {
               canPostponeMeal={canPostponeMeal}
             />}
           /></>}
-          {["pantry","prep"].includes(tab) && <nav aria-label="Kitchen options" style={{display:"flex",gap:8,padding:"16px 18px 0",maxWidth:760,margin:"0 auto"}}><button onClick={()=>setTab("pantry")} aria-pressed={tab==="pantry"} style={{flex:1,border:"1px solid #E5E3EE",borderRadius:12,padding:12,fontWeight:750,background:tab==="pantry"?"#FCE5DE":"#fff",color:C.ink}}>{t("ingredients")}</button><button onClick={()=>setTab("prep")} aria-pressed={tab==="prep"} style={{flex:1,border:"1px solid #E5E3EE",borderRadius:12,padding:12,fontWeight:750,background:tab==="prep"?"#FCE5DE":"#fff",color:C.ink}}>Prep{pendingPrepCount ? ` (${pendingPrepCount})` : ""}</button></nav>}
+          {["pantry","prep"].includes(tab) && <nav aria-label="Kitchen options" style={{display:"flex",gap:8,padding:"16px 18px 0",maxWidth:760,margin:"0 auto"}}><button onClick={()=>setTab("pantry")} aria-pressed={tab==="pantry"} style={{flex:1,border:"1px solid #E5E3EE",borderRadius:12,padding:12,fontWeight:750,background:tab==="pantry"?"#FCE5DE":"#fff",color:C.ink}}>{t("ingredients")}</button><button onClick={()=>setTab("prep")} aria-pressed={tab==="prep"} style={{flex:1,border:"1px solid #E5E3EE",borderRadius:12,padding:12,fontWeight:750,background:tab==="prep"?"#FCE5DE":"#fff",color:C.ink}}>{t("prepTab")}{pendingPrepCount ? ` (${pendingPrepCount})` : ""}</button></nav>}
           {tab === "prep" && <main style={{ padding: "28px 20px 100px", display: "grid", gap: 14 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 15, borderRadius: 20, background: "#E9F3F8" }}><div><div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1.5, color: C.inkSoft }}>PREP, MADE SIMPLE</div><strong>Little jobs. Big relief.</strong></div><FoodArt kind="prep" size={95}/></div>
-            <h2 style={{ fontFamily: FONT_DISPLAY, fontSize: 30, lineHeight: 1.2, margin: 0 }}>A little now. Less later.</h2>
-            <p style={{ color: C.inkSoft, lineHeight: 1.6, margin: "0 0 8px" }}>Your checklist follows your current meals and kitchen stock. Tick tasks as you finish them.</p>
-            {plan.length === 0 && <button onClick={planMyWeek} style={{ border: 0, borderRadius: 14, background: C.mustard, color: C.ink, padding: 17, fontWeight: 700 }}>Plan my week first</button>}
-            {[...prepList.aggregateItems, ...prepList.perDish].length === 0 && plan.length > 0 && <p>No preparation needed for this plan.</p>}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 15, borderRadius: 20, background: "#E9F3F8" }}><div><div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1.5, color: C.inkSoft }}>{t("prepEyebrow")}</div><strong>{t("prepBanner")}</strong></div><FoodArt kind="prep" size={95}/></div>
+            <h2 style={{ fontFamily: FONT_DISPLAY, fontSize: 30, lineHeight: 1.2, margin: 0 }}>{t("prepHeadline")}</h2>
+            <p style={{ color: C.inkSoft, lineHeight: 1.6, margin: "0 0 8px" }}>{t("prepIntro")}</p>
+            {plan.length === 0 && <button onClick={planMyWeek} style={{ border: 0, borderRadius: 14, background: C.mustard, color: C.ink, padding: 17, fontWeight: 700 }}>{t("planWeekFirst")}</button>}
+            {[...prepList.aggregateItems, ...prepList.perDish].length === 0 && plan.length > 0 && <p>{t("noPrep")}</p>}
             {[...prepList.aggregateItems, ...prepList.perDish].map(item => <label key={item.key} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: 16, background: "#fff", border: `1px solid ${C.line}`, borderRadius: 14 }}>
               <input type="checkbox" checked={!!prepChecked[item.key]} disabled={item.ready === false} onChange={() => togglePrepChecked(item.key, item.ready, item.label)} style={{ marginTop: 4, width: 19, height: 19, accentColor: C.ink }} />
-              <span><strong style={{ display: "block" }}>{item.label}</strong>{item.hint && <span style={{ display: "block", color: C.inkSoft, fontSize: 12, marginTop: 5 }}>{item.hint}</span>}{item.ready === false && <span style={{ display: "block", color: C.clayText, fontSize: 12, marginTop: 5 }}>Buy ingredients first</span>}</span>
+              <span><strong style={{ display: "block" }}>{item.label}</strong>{item.hint && <span style={{ display: "block", color: C.inkSoft, fontSize: 12, marginTop: 5 }}>{item.hint}</span>}{item.ready === false && <span style={{ display: "block", color: C.clayText, fontSize: 12, marginTop: 5 }}>{t("buyFirst")}</span>}</span>
             </label>)}
             {prepList.makeItems.length > 0 && <section style={{ padding: 17, borderRadius: 15, background: "#fff", border: `1px solid ${C.line}` }}>
-              <h3 style={{ marginTop: 0 }}>Batch components</h3>
+              <h3 style={{ marginTop: 0 }}>{t("batchComponents")}</h3>
               {prepList.makeItems.map(item => <button key={item.key} onClick={() => completeComponentBatch(item)} disabled={!item.ready} style={{ width: "100%", display: "flex", gap: 10, textAlign: "left", padding: 12, marginTop: 8, background: C.paper, border: `1px solid ${C.line}`, borderRadius: 10, color: C.ink }}>
                 <span>{prepChecked[item.key] ? "☑" : "☐"}</span><span>{item.label}</span>
               </button>)}
@@ -4162,7 +4162,7 @@ function ShoppingListScreen({ toBuyByCategory, haveIt, checkedItems, toggleCheck
                 value={manualInput}
                 onChange={e => setManualInput(e.target.value)}
                 onKeyDown={e => { if (e.key === "Enter") { addExtraItem(manualInput); setManualInput(""); } }}
-                placeholder="Add another item…"
+                placeholder={translate("addAnother")}
                 style={{ flex: 1, border: `1px solid ${C.line}`, borderRadius: 8, padding: "8px 10px", fontFamily: FONT_MONO, fontSize: 12.5, background: "#fff", color: C.ink }}
               />
               <button
@@ -4173,7 +4173,7 @@ function ShoppingListScreen({ toBuyByCategory, haveIt, checkedItems, toggleCheck
 
             <div style={{ borderTop: `1.5px dashed ${C.line}`, margin: "12px 0 8px" }} />
             <div style={{ fontFamily: FONT_MONO, fontSize: 11.5, color: C.inkSoft, display: "flex", justifyContent: "space-between" }}>
-              <span>ITEMS TO BUY</span>
+              <span>{translate("itemsToBuy")}</span>
               <span>{checkedCount}/{totalCount + extraItems.length}</span>
             </div>
           </div>
@@ -4187,7 +4187,7 @@ function ShoppingListScreen({ toBuyByCategory, haveIt, checkedItems, toggleCheck
               display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
             }}
           >
-            <Package size={14} /> Mark this week's plan as cooked
+            <Package size={14} /> {translate("markWeekCooked")}
           </button>
           <p style={{ fontSize: 10.5, color: C.inkSoft, marginTop: 6, fontStyle: "italic" }}>
             Deducts what this plan used from kitchen quantities you've set — so bulk-bought stock rolls over instead of resetting.
