@@ -1,15 +1,30 @@
 {
-  "name": "Plan My Meals",
-  "short_name": "Plan My Meals",
+  "name": "Today Cook What",
+  "short_name": "Today Cook What",
   "description": "Meal planning, minus the mental load.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#4A2A1F",
-  "theme_color": "#4A2A1F",
+  "background_color": "#F8F5ED",
+  "theme_color": "#315E4C",
   "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }
