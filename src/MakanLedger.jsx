@@ -4194,27 +4194,7 @@ function ShoppingListScreen({ toBuyByCategory, haveIt, checkedItems, toggleCheck
           </p>
           {usedMsg && <p style={{ fontSize: 11.5, color: C.jade700, fontWeight: 600, marginTop: 6 }}>{usedMsg}</p>}
 
-          {haveIt.length > 0 && (
-            <details className="expandable" style={{ marginTop: 16 }}>
-              <summary style={{
-                fontFamily: FONT_MONO, fontSize: 11.5, fontWeight: 600, color: C.sageText,
-                display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6,
-                background: "#EAEFE3", borderRadius: 10, padding: "8px 10px",
-              }}>
-                <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <Package size={13} /> {translate("alreadyKitchen")} ({haveIt.length})
-                </span>
-                <ChevronDown className="chevron" size={15} color={C.sageText} style={{ flexShrink: 0, transition: "transform .15s" }} />
-              </summary>
-              <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap", gap: 6 }}>
-                {haveIt.map(i => (
-                  <span key={i.key} style={{ fontSize: 11, fontFamily: FONT_MONO, color: C.inkSoft, background: C.paperDim, borderRadius: 6, padding: "3px 8px" }}>
-                    {i.name}
-                  </span>
-                ))}
-              </div>
-            </details>
-          )}
+
         </>
       )}
     </div>
