@@ -4317,28 +4317,28 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
         <div style={{fontFamily:FONT_DISPLAY,fontSize:34,lineHeight:1.08,maxWidth:230,marginBottom:12}}>Good food starts here.</div>
         <div style={{fontSize:13,color:"#F1F4EA",maxWidth:265,lineHeight:1.6}}>{pantry.length} ingredients ready for your next meal · {pantry.filter(p=>p.useSoon).length} to use soon</div>
       </div>}
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,gap:12}}><div><h2 style={{fontFamily:FONT_DISPLAY,fontSize:28,margin:"0 0 3px"}}>{translate("kitchenTitle")}</h2><span style={{fontSize:13,color:C.inkSoft}}>{pantry.length} {translate("ingredientsOnHand")}</span></div><button onClick={()=>{ setAddingIngredient(v=>!v); setMoreIngredientOptions(false); }} aria-expanded={addingIngredient} style={{background:"#E9A28F",border:0,borderRadius:14,padding:"12px 14px",fontWeight:800,color:C.ink}}>{addingIngredient?"Cancel":"＋ Add"}</button></div>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,gap:12}}><div><h2 style={{fontFamily:FONT_DISPLAY,fontSize:28,margin:"0 0 3px"}}>{translate("kitchenTitle")}</h2><span style={{fontSize:13,color:C.inkSoft}}>{pantry.length} {translate("ingredientsOnHand")}</span></div><button onClick={()=>{ setAddingIngredient(v=>!v); setMoreIngredientOptions(false); }} aria-expanded={addingIngredient} style={{background:"#E9A28F",border:0,borderRadius:14,padding:"12px 14px",fontWeight:800,color:C.ink}}>{addingIngredient?translate("cancel"):translate("add")}</button></div>
       {addingIngredient && <div style={{background:"#fff",border:"1px solid #E9E3DF",borderRadius:20,padding:16,marginBottom:20,boxShadow:"0 8px 24px rgba(30,50,35,.05)"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-          <strong style={{fontSize:17,color:C.ink}}>Add to my kitchen</strong>
+          <strong style={{fontSize:17,color:C.ink}}>{translate("addKitchen")}</strong>
           <button type="button" aria-label="Close add ingredient" onClick={()=>setAddingIngredient(false)} style={{border:0,background:"transparent",fontSize:22,color:C.inkSoft,padding:"4px 8px"}}>×</button>
         </div>
-        <label style={{display:"block",fontSize:12,fontWeight:750,marginBottom:6,color:C.inkSoft}}>Ingredient</label>
+        <label style={{display:"block",fontSize:12,fontWeight:750,marginBottom:6,color:C.inkSoft}}>{translate("ingredientLabel")}</label>
         <input autoFocus value={newPantryName} onChange={e=>setNewPantryName(e.target.value)} placeholder="e.g. Chicken thigh" style={{...fieldStyle,width:"100%",boxSizing:"border-box",borderRadius:12,padding:"13px 14px",fontSize:16,marginBottom:14}} />
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,marginBottom:8}}>
           <strong style={{fontSize:13}}>{translate("useSoon")}</strong>
           <button type="button" role="switch" aria-checked={newPantryUseSoon} onClick={()=>setNewPantryUseSoon(v=>!v)} style={{border:0,borderRadius:999,background:newPantryUseSoon?"#365C4B":"#E7E6E4",width:48,height:28,padding:3,display:"flex",justifyContent:newPantryUseSoon?"flex-end":"flex-start",alignItems:"center"}}><span style={{display:"block",background:"#fff",borderRadius:"50%",width:22,height:22,boxShadow:"0 1px 3px #0002"}} /></button>
         </div>
         <div style={{fontSize:12,color:C.inkSoft,marginBottom:16}}>Prioritise this ingredient in your next meal plan.</div>
-        <div style={{fontSize:12,fontWeight:750,color:C.inkSoft,marginBottom:8}}>Stored in</div>
+        <div style={{fontSize:12,fontWeight:750,color:C.inkSoft,marginBottom:8}}>{translate("storedIn")}</div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:7,marginBottom:16}}>
-          {LOCATIONS.map(loc=><button key={loc.id} type="button" aria-pressed={newPantryLocation===loc.id} onClick={()=>setNewPantryLocation(loc.id)} style={{padding:"11px 3px",borderRadius:12,border:newPantryLocation===loc.id?"2px solid #365C4B":"1px solid #DDDCD8",background:newPantryLocation===loc.id?"#EAF3EE":"#fff",color:C.ink,fontSize:12,fontWeight:750}}>{loc.id==="pantry"?"Pantry":loc.label}</button>)}
+          {LOCATIONS.map(loc=><button key={loc.id} type="button" aria-pressed={newPantryLocation===loc.id} onClick={()=>setNewPantryLocation(loc.id)} style={{padding:"11px 3px",borderRadius:12,border:newPantryLocation===loc.id?"2px solid #365C4B":"1px solid #DDDCD8",background:newPantryLocation===loc.id?"#EAF3EE":"#fff",color:C.ink,fontSize:12,fontWeight:750}}>{translate(loc.id==="pantry"?"pantry":loc.id)}</button>)}
         </div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
           <label style={{fontSize:12,fontWeight:750,color:C.inkSoft}}>Category
             <select value={newPantryCategory} onChange={e=>setNewPantryCategory(e.target.value)} style={{...fieldStyle,width:"100%",boxSizing:"border-box",marginTop:6,borderRadius:11,padding:"11px 8px",background:"#fff",fontSize:14}}>{CATEGORY_ORDER.map(cat=><option key={cat} value={cat}>{CATEGORY_LABEL[cat]}</option>)}</select>
           </label>
-          <label style={{fontSize:12,fontWeight:750,color:C.inkSoft}}>Quantity <span style={{fontWeight:400}}>(optional)</span>
+          <label style={{fontSize:12,fontWeight:750,color:C.inkSoft}}>{translate("quantityLabel")} <span style={{fontWeight:400}}>({translate("optional")})</span>
             <div style={{display:"flex",gap:5,marginTop:6}}>
               <input type="number" min="0" value={newPantryQuantity} onChange={e=>setNewPantryQuantity(e.target.value)} placeholder="Qty" style={{...fieldStyle,width:"52%",minWidth:0,boxSizing:"border-box",borderRadius:11,padding:"11px 8px",fontSize:14}} />
               <input value={newPantryUnit} onChange={e=>setNewPantryUnit(e.target.value)} placeholder="Unit" aria-label="Unit" style={{...fieldStyle,width:"48%",minWidth:0,boxSizing:"border-box",borderRadius:11,padding:"11px 6px",fontSize:14}} />
@@ -4354,9 +4354,9 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
         </details>
         <button type="button" disabled={!newPantryName.trim()} onClick={()=>{addPantryItem();setAddingIngredient(false);}} style={{width:"100%",border:0,borderRadius:13,padding:"14px 16px",fontSize:15,fontWeight:800,background:"#365C4B",color:"#fff",opacity:newPantryName.trim()?1:.5}}>{translate("addIngredient")}</button>
       </div>}
-      <div role="group" aria-label="Storage location" style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:8,marginBottom:16}}>{LOCATIONS.map(loc=>{const count=grouped[loc.id]?.length||0;const active=selectedStorage===loc.id;return <button key={loc.id} type="button" onClick={()=>{setSelectedStorage(loc.id);setEditingPantryId(null);}} aria-pressed={active} style={{border:active?"2px solid #456D55":"1px solid #E5E3DD",borderRadius:16,background:active?"#EAF3EE":"#fff",padding:"13px 5px",display:"grid",gap:5,justifyItems:"center",color:C.ink}}><span style={{fontSize:22}}>{loc.id==="pantry"?"🫙":loc.id==="fridge"?"🥬":"❄️"}</span><strong style={{fontSize:13}}>{loc.id==="pantry"?"Pantry":loc.label}</strong><span style={{fontSize:15,fontWeight:800}}>{count}</span></button>})}</div>
+      <div role="group" aria-label="Storage location" style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:8,marginBottom:16}}>{LOCATIONS.map(loc=>{const count=grouped[loc.id]?.length||0;const active=selectedStorage===loc.id;return <button key={loc.id} type="button" onClick={()=>{setSelectedStorage(loc.id);setEditingPantryId(null);}} aria-pressed={active} style={{border:active?"2px solid #456D55":"1px solid #E5E3DD",borderRadius:16,background:active?"#EAF3EE":"#fff",padding:"13px 5px",display:"grid",gap:5,justifyItems:"center",color:C.ink}}><span style={{fontSize:22}}>{loc.id==="pantry"?"🫙":loc.id==="fridge"?"🥬":"❄️"}</span><strong style={{fontSize:13}}>{translate(loc.id==="pantry"?"pantry":loc.id)}</strong><span style={{fontSize:15,fontWeight:800}}>{count}</span></button>})}</div>
       <input aria-label={translate("searchIngredients")} placeholder={translate("searchIngredients")} value={pantrySearch} onChange={e=>setPantrySearch(e.target.value)} style={{...fieldStyle,background:"#fff",borderRadius:14,padding:"12px 14px",marginBottom:16}} />
-      <SectionLabel>{LOCATIONS.find(loc=>loc.id===selectedStorage)?.label} ({visibleGrouped[selectedStorage]?.length||0})</SectionLabel>
+      <SectionLabel>{translate(selectedStorage==="pantry"?"pantry":selectedStorage)} ({visibleGrouped[selectedStorage]?.length||0})</SectionLabel>
 
       {LOCATIONS.filter(loc => loc.id === selectedStorage && visibleGrouped[loc.id]?.length).map(loc => (
         <details className="expandable" key={loc.id} open style={{ marginBottom: 14, background:"#fff",borderRadius:20,padding:"7px 15px",border:"1px solid #ECE5DD",boxShadow:"0 5px 18px rgba(65,47,34,.035)" }}>
@@ -4365,7 +4365,7 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
             background: "#fff", borderRadius: 14, padding: "14px 2px", marginBottom: 0,
           }}>
             <span style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: FONT_MONO, fontSize: 11, fontWeight: 700, color: C.jade700, textTransform: "uppercase", letterSpacing: 0.6 }}>
-              {loc.label}
+              {translate(loc.id==="pantry"?"pantry":loc.id)}
               <span style={{
                 fontFamily: FONT_MONO, fontSize: 10, fontWeight: 700, color: C.jade700,
                 background: "#EAF3EE", borderRadius: 999, padding: "1px 7px", textTransform: "none", letterSpacing: 0,
@@ -4388,7 +4388,7 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
                     {editingPantryId === item.id ? "✓" : "›"}
                   </button>
                 </div>
-                <div style={{ fontSize: 11.5, color: C.inkSoft,paddingLeft:17 }}>{item.quantity != null ? `${item.quantity} ${item.unit || ""}` : translate("alwaysOnHand")}{item.useSoon ? " · ✦ Use soon" : ""}{(item.preparedForms || []).length ? ` · Prepared: ${(item.preparedForms || []).join(", ")}` : ""}</div>
+                <div style={{ fontSize: 11.5, color: C.inkSoft,paddingLeft:17 }}>{item.quantity != null ? `${item.quantity} ${item.unit || ""}` : translate("alwaysOnHand")}{item.useSoon ? ` · ✦ ${translate("useSoon")}` : ""}{(item.preparedForms || []).length ? ` · ${translate("preparedLabel")}: ${(item.preparedForms || []).map(form=>translate(form)).join(", ")}` : ""}</div>
                 {editingPantryId === item.id && <div style={{display:"flex",flexDirection:"column",gap:15,background:"#FAFBF9",border:"1px solid #E4E9E2",borderRadius:16,padding:15,marginTop:12}}>
                   <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:10}}>
                     <label style={{fontSize:12,fontWeight:750,color:C.inkSoft}}>Category
@@ -4398,15 +4398,15 @@ function PantryScreen({ pantry, removePantryItem, updatePantryQuantity, toggleUs
                     </label>
                     <label style={{fontSize:12,fontWeight:750,color:C.inkSoft}}>Stored in
                       <select aria-label={`Storage for ${item.name}`} value={item.location||"pantry"} onChange={e=>{updatePantryLocation(item.id,e.target.value);setSelectedStorage(e.target.value);}} style={{display:"block",width:"100%",marginTop:6,border:"1px solid #D6DED6",borderRadius:10,padding:"11px 7px",background:"#fff",fontSize:13,color:C.ink}}>
-                        {LOCATIONS.map(loc=><option key={loc.id} value={loc.id}>{loc.label}</option>)}
+                        {LOCATIONS.map(loc=><option key={loc.id} value={loc.id}>{translate(loc.id==="pantry"?"pantry":loc.id)}</option>)}
                       </select>
                     </label>
                   </div>
                   <div>
-                    <div style={{fontSize:12,fontWeight:750,color:C.inkSoft,marginBottom:7}}>Already prepared</div>
+                    <div style={{fontSize:12,fontWeight:750,color:C.inkSoft,marginBottom:7}}>{translate("alreadyPrepared")}</div>
                     <details style={{border:"1px solid #D6DED6",borderRadius:11,background:"#fff",padding:"11px 12px"}}>
                       <summary style={{cursor:"pointer",fontSize:13,fontWeight:700,color:C.ink}}>
-                        {(item.preparedForms||[]).length?(item.preparedForms||[]).join(", "):"Not prepared yet"} <span style={{color:"#527B61",fontWeight:600}}> · Edit</span>
+                        {(item.preparedForms||[]).length?(item.preparedForms||[]).join(", ") :translate("notPrepared")} <span style={{color:"#527B61",fontWeight:600}}> · {translate("edit")}</span>
                       </summary>
                       <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:7,marginTop:12}}>
                         {PREP_FORMS.map(form=><label key={form} style={{display:"flex",alignItems:"center",gap:8,fontSize:12.5,padding:"8px 4px",cursor:"pointer"}}>
