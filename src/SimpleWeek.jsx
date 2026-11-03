@@ -12,7 +12,7 @@ const dateLabel = (date,language="en") => {
   const [y,m,d] = date.split("-").map(Number);
   return new Date(y,m-1,d).toLocaleDateString(({en:"en-SG",zh:"zh-SG",my:"my-MM",tl:"fil-PH"})[language] || "en-SG", { weekday: "long", day: "numeric", month: "short" });
 };
-export default function SimpleWeek({ plan, skippedDays, onSkip, onSwap, onRemove, onMove, onAdd, pickableMeals, onGenerate, shopping, prepList, prepChecked, onPrepChecked, onOpenKitchen, onMarkCooked, onAdjustQuantities, pax }) {
+export default function SimpleWeek({ plan, skippedDays, onSkip, onSwap, onRemove, onMove, onAdd, pickableMeals, onGenerate, shopping, prepList, prepChecked, onPrepChecked, onOpenKitchen, onMarkCooked, onAdjustQuantities, onReconcileCooked, pax }) {
   const {t,language} = useLanguage();
   const view = "meals";
   const [recipe, setRecipe] = useState(null);
@@ -84,6 +84,7 @@ export default function SimpleWeek({ plan, skippedDays, onSkip, onSwap, onRemove
                         <button style={actionStyle} onClick={()=>{setSwapUid(meal.uid);setQuery("");}}><RefreshCw size={13}/> {t("swap")}</button>
                         <button style={actionStyle} onClick={()=>setMoveUid(meal.uid)}>{t("move")}</button>
                         <button style={actionStyle} onClick={()=>onMarkCooked(meal.uid)}>{meal.cooked?t("cooked"):t("markCooked")}</button>
+                        {meal.cooked && !meal.stockDeduction && <button type="button" style={{...actionStyle,background:"#FFF5EB",color:"#8B483B"}} onClick={()=>onReconcileCooked(meal.uid)}>Fix kitchen stock</button>}
                         <button aria-label={"Remove "+meal.name} style={actionStyle} onClick={()=>onRemove(meal.uid)}><Trash2 size={13}/></button>
                       </div>
                     </div>
