@@ -4491,15 +4491,15 @@ function HouseholdScreen({
   return (
     <div style={{padding:"20px 16px 40px",background:"#F8F8F3",minHeight:"70vh"}}>
       <div style={{marginBottom:18}}>
-        <div style={{fontSize:11,fontWeight:800,letterSpacing:1.3,color:"#527663",marginBottom:6}}>YOUR HOUSEHOLD</div>
+        <div style={{fontSize:11,fontWeight:800,letterSpacing:1.3,color:"#527663",marginBottom:6}}>{translate("householdTitle")}</div>
         <h2 style={{fontFamily:FONT_DISPLAY,fontSize:29,margin:"0 0 6px"}}>{translate("makeYours")}</h2>
         <p style={{fontSize:13,color:C.inkSoft,margin:0}}>{translate("setOnce")}</p>
       </div>
       <details style={{background:"#EAF3EC",border:"1px solid #D4E5D8",borderRadius:18,marginBottom:14,overflow:"hidden"}}>
         <summary style={{padding:16,cursor:"pointer",listStyle:"none",display:"flex",alignItems:"center",gap:12}}>
           <span style={{fontSize:27}}>🏡</span>
-          <span style={{flex:1,minWidth:0}}><strong style={{fontSize:17}}>{totalPax} people at your table</strong>
-            <span style={{display:"block",fontSize:12,color:"#54705E",marginTop:4}}>{household.adults} adults · {household.kids} kids · {household.elderly} elderly · {household.dishesPerMealMin}–{household.dishesPerMealMax} dishes</span>
+          <span style={{flex:1,minWidth:0}}><strong style={{fontSize:17}}>{totalPax} {translate("peopleTable")}</strong>
+            <span style={{display:"block",fontSize:12,color:"#54705E",marginTop:4}}>{household.adults} {translate("adultsLabel")} · {household.kids} {translate("kidsLabel")} · {household.elderly} {translate("elderlyLabel")} · {household.dishesPerMealMin}–{household.dishesPerMealMax} {translate("dishesLabel")}</span>
           </span>
           <ChevronDown size={19} color="#527663"/>
         </summary>
@@ -4526,11 +4526,11 @@ function HouseholdScreen({
       </details>
       <div style={{background:"#fff",border:"1px solid #E4E7E1",borderRadius:17,padding:"16px",marginBottom:12}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
-          <div><strong style={{fontSize:15}}>Dinner in 30 minutes</strong><div style={{fontSize:12,color:C.inkSoft,marginTop:4}}>Quick meals on your busy days</div></div>
+          <div><strong style={{fontSize:15}}>{translate("dinner30")}</strong><div style={{fontSize:12,color:C.inkSoft,marginTop:4}}>{translate("quickMeals")}</div></div>
           <Clock size={20} color="#527663"/>
         </div>
         <button type="button" onClick={()=>setShowDinnerDays(v=>!v)} style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",marginTop:14,padding:"11px 0 0",background:"none",border:0,borderTop:"1px solid #EDF0EB",fontWeight:750,color:"#356854",cursor:"pointer"}}>
-          <span>{(household.quickDinnerDays ?? [0,1,2,3,4,5,6]).length===7?"Every day":(household.quickDinnerDays ?? []).length===0?"No days":(household.quickDinnerDays ?? []).map(d=>["Mon","Tue","Wed","Thu","Fri","Sat","Sun"][d]).join(", ")}</span>
+          <span>{(household.quickDinnerDays ?? [0,1,2,3,4,5,6]).length===7?translate("everyDay"):(household.quickDinnerDays ?? []).length===0?translate("noDays"):(household.quickDinnerDays ?? []).map(d=>new Intl.DateTimeFormat(({en:"en-SG",zh:"zh-CN",my:"my-MM",tl:"fil-PH"}[getLanguage()]||"en-SG"),{weekday:"short"}).format(new Date(2024,0,1+d))).join(", ")}</span>
           <ChevronDown size={17} style={{transform:showDinnerDays?"rotate(180deg)":"none"}}/>
         </button>
         {showDinnerDays && <div style={{display:"grid",gridTemplateColumns:"repeat(7,minmax(0,1fr))",gap:5,marginTop:14}}>
@@ -4542,8 +4542,8 @@ function HouseholdScreen({
       </div>
 
       <SettingsSection
-        title="Dietary needs"
-        countLabel={household.diets.length ? `${household.diets.length} set` : null}
+        title={translate("dietaryNeeds")}
+        countLabel={household.diets.length ? `${household.diets.length} ${translate("setLabel")}` : null}
         defaultOpen={false}
       >
 
@@ -4558,7 +4558,7 @@ function HouseholdScreen({
         </div>
       </SettingsSection>
 
-      <SettingsSection title="Main dish preference" countLabel={household.mainDishPreference === "flexible" ? "Flexible" : household.mainDishPreference === "vegetarian" ? "Vegetarian" : "Meat or fish"} defaultOpen={false}>
+      <SettingsSection title={translate("mainDishPreference")} countLabel={household.mainDishPreference === "flexible" ? translate("flexibleLabel") : household.mainDishPreference === "vegetarian" ? translate("vegetarianLabel") : translate("meatFish")} defaultOpen={false}>
 
         <div style={{display:"grid",gap:0}}>
           {[["meat-fish","Meat or fish","Tofu and vegetables are sides"],["flexible","Flexible","Tofu and eggs can be mains"],["vegetarian","Plant-based","Prefer vegetarian main dishes"]].map(([value,label,desc],i)=>{
@@ -4571,8 +4571,8 @@ function HouseholdScreen({
         </div>
       </SettingsSection>
       <SettingsSection
-        title="Ingredients to avoid"
-        countLabel={household.dislikedIngredients.length ? `${household.dislikedIngredients.length} excluded` : null}
+        title={translate("avoidIngredients")}
+        countLabel={household.dislikedIngredients.length ? `${household.dislikedIngredients.length} ${translate("excludedLabel")}` : null}
         defaultOpen={false}
       >
 
@@ -4594,7 +4594,7 @@ function HouseholdScreen({
           <button type="button" disabled={!dislikeInput.trim()} onClick={()=>{addDislike(dislikeInput,substituteInput);setDislikeInput("");setSubstituteInput("");setAddingAvoid(false);}} style={{border:0,background:"#365C4B",color:"#fff",borderRadius:10,padding:12,fontWeight:750,opacity:dislikeInput.trim()?1:.5}}>Save ingredient</button>
         </div>}
       </SettingsSection>
-      <SettingsSection title="Taste preferences" countLabel={(household.preferredCuisines.length+household.preferredProteins.length)?`${household.preferredCuisines.length+household.preferredProteins.length} selected`:null} defaultOpen={false}>
+      <SettingsSection title={translate("tastePreferences")} countLabel={(household.preferredCuisines.length+household.preferredProteins.length)?`${household.preferredCuisines.length+household.preferredProteins.length} selected`:null} defaultOpen={false}>
         <p style={{fontSize:12,color:C.inkSoft,margin:"0 0 14px",lineHeight:1.5}}>Optional. Leave blank to enjoy more variety.</p>
         {[
           {key:"preferredCuisines",label:"Favourite cuisines",items:CUISINES,empty:"All cuisines"},
@@ -4625,7 +4625,7 @@ function HouseholdScreen({
 
 
 
-      <SettingsSection title="Help" defaultOpen={false} last>
+      <SettingsSection title={translate("helpLabel")} defaultOpen={false} last>
         <p style={{ fontSize: 11.5, color: C.inkSoft, marginTop: 0, marginBottom: 10, lineHeight: 1.4 }}>
           New here, or want a refresher on how the app fits together?
         </p>
