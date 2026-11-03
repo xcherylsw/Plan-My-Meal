@@ -451,11 +451,6 @@ function pantryHasPrepReady(pantry, ingredient, info) {
   if (/\bwash(?:ed)?\b/.test(hint) && /\bcut\b/.test(hint)) forms.push("washed & cut");
   return forms.some(form => pantryHasPreparedForm(pantry, ingredient.name, form));
 }
-const PREP_DISPLAY_WORDS = {
-  zh: { onion:"洋葱",potato:"土豆",tomato:"番茄",scallion:"葱",carrot:"胡萝卜",spinach:"菠菜",garlic:"蒜",ginger:"姜",chicken:"鸡肉",fish:"鱼",pork:"猪肉",beef:"牛肉",cucumber:"黄瓜",mushroom:"蘑菇" },
-  my: { onion:"ကြက်သွန်နီ",potato:"အာလူး",tomato:"ခရမ်းချဉ်သီး",scallion:"ကြက်သွန်မြိတ်",carrot:"မုန်လာဥနီ",spinach:"ဟင်းနုနွယ်",garlic:"ကြက်သွန်ဖြူ",ginger:"ဂျင်း",chicken:"ကြက်သား",fish:"ငါး",pork:"ဝက်သား",beef:"အမဲသား",cucumber:"သခွားသီး",mushroom:"မှို" },
-  tl: { onion:"sibuyas",potato:"patatas",tomato:"kamatis",scallion:"dahon ng sibuyas",carrot:"karot",spinach:"espinaka",garlic:"bawang",ginger:"luya",chicken:"manok",fish:"isda",pork:"baboy",beef:"baka",cucumber:"pipino",mushroom:"kabute" }
-};
 const PREP_DISPLAY_HINTS = {
   "slice or dice":{zh:"切片或切丁",my:"ပါးပါးလှီး သို့မဟုတ် အတုံးသေးလှီး",tl:"hiwain o gawing maliliit na cube"},
   "peel and dice (wedges for roasting)":{zh:"去皮切丁（烤制时切块）",my:"အခွံခွာပြီး အတုံးသေးလှီး (ကင်ရန် အစိတ်လှီး)",tl:"balatan at hiwaing maliliit (wedges kung iihawin)"},
@@ -471,7 +466,7 @@ function localisePrepText(value, language) {
   if (hints?.[language]) return hints[language];
   const match = /^(Wash & cut|Chop|Portion & freeze|Marinate) (.+)$/i.exec(text);
   if (!match) return text;
-  const item = PREP_DISPLAY_WORDS[language]?.[match[2].toLowerCase()] || match[2];
+  const item = match[2]; // Preserve the ingredient name exactly as entered in the source recipe.
   const verb = match[1].toLowerCase();
   const templates = {
     zh: {"wash & cut":`清洗并切${item}`,chop:`切${item}`,"portion & freeze":`分装冷冻${item}`,marinate:`腌制${item}`},
