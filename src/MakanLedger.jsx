@@ -451,6 +451,35 @@ function pantryHasPrepReady(pantry, ingredient, info) {
   if (/\bwash(?:ed)?\b/.test(hint) && /\bcut\b/.test(hint)) forms.push("washed & cut");
   return forms.some(form => pantryHasPreparedForm(pantry, ingredient.name, form));
 }
+const PREP_DISPLAY_WORDS = {
+  zh: { onion:"洋葱",potato:"土豆",tomato:"番茄",scallion:"葱",carrot:"胡萝卜",spinach:"菠菜",garlic:"蒜",ginger:"姜",chicken:"鸡肉",fish:"鱼",pork:"猪肉",beef:"牛肉",cucumber:"黄瓜",mushroom:"蘑菇" },
+  my: { onion:"ကြက်သွန်နီ",potato:"အာလူး",tomato:"ခရမ်းချဉ်သီး",scallion:"ကြက်သွန်မြိတ်",carrot:"မုန်လာဥနီ",spinach:"ဟင်းနုနွယ်",garlic:"ကြက်သွန်ဖြူ",ginger:"ဂျင်း",chicken:"ကြက်သား",fish:"ငါး",pork:"ဝက်သား",beef:"အမဲသား",cucumber:"သခွားသီး",mushroom:"မှို" },
+  tl: { onion:"sibuyas",potato:"patatas",tomato:"kamatis",scallion:"dahon ng sibuyas",carrot:"karot",spinach:"espinaka",garlic:"bawang",ginger:"luya",chicken:"manok",fish:"isda",pork:"baboy",beef:"baka",cucumber:"pipino",mushroom:"kabute" }
+};
+const PREP_DISPLAY_HINTS = {
+  "slice or dice":{zh:"切片或切丁",my:"ပါးပါးလှီး သို့မဟုတ် အတုံးသေးလှီး",tl:"hiwain o gawing maliliit na cube"},
+  "peel and dice (wedges for roasting)":{zh:"去皮切丁（烤制时切块）",my:"အခွံခွာပြီး အတုံးသေးလှီး (ကင်ရန် အစိတ်လှီး)",tl:"balatan at hiwaing maliliit (wedges kung iihawin)"},
+  "wash and cut into wedges":{zh:"洗净并切块",my:"ဆေးပြီး အစိတ်လှီး",tl:"hugasan at hiwain nang pahaba"},
+  "cut into short lengths":{zh:"切成小段",my:"အပိုင်းတိုများ လှီး",tl:"hiwain sa maiikling piraso"},
+  "peel, then slice or julienne":{zh:"去皮后切片或切丝",my:"အခွံခွာပြီး ပါးပါး သို့မဟုတ် အမျှင်လိုက်လှီး",tl:"balatan, saka hiwain o gawing julienne"},
+  "trim the roots and wash well":{zh:"去根并彻底洗净",my:"အမြစ်ဖြတ်ပြီး သေချာဆေး",tl:"putulin ang ugat at hugasang mabuti"}
+};
+function localisePrepText(value, language) {
+  if (!language || language === "en") return value;
+  const text = String(value || "");
+  const hints = PREP_DISPLAY_HINTS[text.toLowerCase()];
+  if (hints?.[language]) return hints[language];
+  const match = /^(Wash & cut|Chop|Portion & freeze|Marinate) (.+)$/i.exec(text);
+  if (!match) return text;
+  const item = PREP_DISPLAY_WORDS[language]?.[match[2].toLowerCase()] || match[2];
+  const verb = match[1].toLowerCase();
+  const templates = {
+    zh: {"wash & cut":`清洗并切${item}`,chop:`切${item}`,"portion & freeze":`分装冷冻${item}`,marinate:`腌制${item}`},
+    my: {"wash & cut":`${item} ကို ဆေးပြီး လှီးပါ`,chop:`${item} ကို လှီးပါ`,"portion & freeze":`${item} ကို ခွဲထုပ်ပြီး အေးခဲထားပါ`,marinate:`${item} ကို နှပ်ထားပါ`},
+    tl: {"wash & cut":`Hugasan at hiwain ang ${item}`,chop:`Hiwain ang ${item}`,"portion & freeze":`Hatiin at i-freeze ang ${item}`,marinate:`I-marinate ang ${item}`}
+  };
+  return templates[language]?.[verb] || text;
+}
 function classifyPrepIngredient(ingredient) {
   const n = String(ingredient.name ?? "").toLowerCase();
   if (ingredient.category === "seasoning" && PREP_AROMATIC_NAMES.some(a => n.includes(a))) {
@@ -2874,7 +2903,7 @@ export default function MakanLedger() {
             {[...prepList.aggregateItems, ...prepList.perDish].length === 0 && plan.length > 0 && <p>{t("noPrep")}</p>}
             {[...prepList.aggregateItems, ...prepList.perDish].map(item => <label key={item.key} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: 16, background: "#fff", border: `1px solid ${C.line}`, borderRadius: 14 }}>
               <input type="checkbox" checked={!!prepChecked[item.key]} disabled={item.ready === false} onChange={() => togglePrepChecked(item.key, item.ready, item.label)} style={{ marginTop: 4, width: 19, height: 19, accentColor: C.ink }} />
-              <span><strong style={{ display: "block" }}>{item.label}</strong>{item.hint && <span style={{ display: "block", color: C.inkSoft, fontSize: 12, marginTop: 5 }}>{item.hint}</span>}{item.ready === false && <span style={{ display: "block", color: C.clayText, fontSize: 12, marginTop: 5 }}>{t("buyFirst")}</span>}</span>
+              <span><strong style={{ display: "block" }}>{localisePrepText(item.label, language)}</strong>{item.hint && <span style={{ display: "block", color: C.inkSoft, fontSize: 12, marginTop: 5 }}>{localisePrepText(item.hint, language)}</span>}{item.ready === false && <span style={{ display: "block", color: C.clayText, fontSize: 12, marginTop: 5 }}>{t("buyFirst")}</span>}</span>
             </label>)}
             {prepList.makeItems.length > 0 && <section style={{ padding: 17, borderRadius: 15, background: "#fff", border: `1px solid ${C.line}` }}>
               <h3 style={{ marginTop: 0 }}>{t("batchComponents")}</h3>
