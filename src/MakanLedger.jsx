@@ -4551,7 +4551,7 @@ function HouseholdScreen({
           {DIET_OPTIONS.map((opt,i)=>{
             const active=household.diets.includes(opt.id);
             return <button key={opt.id} type="button" aria-pressed={active} onClick={()=>toggleDiet(opt.id)} style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,width:"100%",textAlign:"left",padding:"13px 2px",border:0,borderBottom:i<DIET_OPTIONS.length-1?"1px solid #EDF0EA":"none",background:"transparent",color:C.ink}}>
-              <span style={{minWidth:0}}><strong style={{fontSize:14}}>{opt.label}</strong><span style={{display:"block",fontSize:11.5,color:C.inkSoft,marginTop:3,lineHeight:1.4}}>{opt.blurb}</span></span>
+              <span style={{minWidth:0}}><strong style={{fontSize:14}}>{translate(({halal:"dietHalal",vegetarian:"dietVeg",soft:"dietSoft"})[opt.id])}</strong><span style={{display:"block",fontSize:11.5,color:C.inkSoft,marginTop:3,lineHeight:1.4}}>{translate(({halal:"dietHalalDesc",vegetarian:"dietVegDesc",soft:"dietSoftDesc"})[opt.id])}</span></span>
               <span aria-hidden="true" style={{flexShrink:0,width:39,height:23,borderRadius:20,background:active?"#4E7B60":"#E4E8E3",padding:3,display:"flex",justifyContent:active?"flex-end":"flex-start",alignItems:"center",boxSizing:"border-box"}}><span style={{width:17,height:17,borderRadius:"50%",background:"#fff",boxShadow:"0 1px 3px #0002"}}/></span>
             </button>;
           })}
@@ -4564,7 +4564,7 @@ function HouseholdScreen({
           {[["meat-fish","Meat or fish","Tofu and vegetables are sides"],["flexible","Flexible","Tofu and eggs can be mains"],["vegetarian","Plant-based","Prefer vegetarian main dishes"]].map(([value,label,desc],i)=>{
             const active=(household.mainDishPreference||"meat-fish")===value;
             return <button key={value} type="button" aria-pressed={active} onClick={()=>setMainDishPreference(value)} style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,width:"100%",padding:"13px 2px",textAlign:"left",background:"transparent",border:0,borderBottom:i<2?"1px solid #EDF0EA":"none",color:C.ink}}>
-              <span><strong style={{fontSize:14}}>{label}</strong><span style={{display:"block",fontSize:11.5,color:C.inkSoft,marginTop:3}}>{desc}</span></span>
+              <span><strong style={{fontSize:14}}>{translate(({ "Meat or fish":"meatFish","Flexible":"flexibleLabel","Plant-based":"plantBased"})[label])}</strong><span style={{display:"block",fontSize:11.5,color:C.inkSoft,marginTop:3}}>{translate(({ "Tofu and vegetables are sides":"meatFishDesc","Tofu and eggs can be mains":"flexibleDesc","Prefer vegetarian main dishes":"plantBasedDesc"})[desc])}</span></span>
               <span aria-hidden="true" style={{width:21,height:21,borderRadius:"50%",border:active?"6px solid #4E7B60":"2px solid #C8D0C9",background:"#fff",boxSizing:"border-box",flexShrink:0}}/>
             </button>;
           })}
@@ -4578,27 +4578,27 @@ function HouseholdScreen({
 
         <div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:12}}>
           {household.dislikedIngredients.map(d=><span key={d.id} style={{display:"inline-flex",alignItems:"center",gap:7,borderRadius:999,background:"#F4F2EE",padding:"8px 9px 8px 12px",fontSize:12.5,color:C.ink}}>
-            <button type="button" onClick={()=>setEditingAvoidId(editingAvoidId===d.id?null:d.id)} style={{border:0,background:"transparent",padding:0,color:"inherit",font:"inherit",cursor:"pointer"}}>{d.name}{d.substitute?" → "+d.substitute:" (auto)"}</button>
+            <button type="button" onClick={()=>setEditingAvoidId(editingAvoidId===d.id?null:d.id)} style={{border:0,background:"transparent",padding:0,color:"inherit",font:"inherit",cursor:"pointer"}}>{d.name}{d.substitute?" → "+d.substitute:" ("+translate("autoLabel")+")"}</button>
             <button type="button" aria-label={"Remove "+d.name} onClick={()=>removeDislike(d.id)} style={{border:0,background:"transparent",color:C.inkSoft,padding:0,display:"flex"}}><X size={14}/></button>
           </span>)}
           {editingAvoidId && household.dislikedIngredients.some(d=>d.id===editingAvoidId) && <div style={{flexBasis:"100%",background:"#F5F8F4",padding:12,borderRadius:12}}>
-            <div style={{fontSize:12,fontWeight:750,marginBottom:7}}>Replacement for {household.dislikedIngredients.find(d=>d.id===editingAvoidId)?.name}</div>
-            <input aria-label="Preferred replacement" value={household.dislikedIngredients.find(d=>d.id===editingAvoidId)?.substitute||""} onChange={e=>updateDislikeSubstitute(editingAvoidId,e.target.value)} placeholder="Leave blank for automatic swaps" style={{width:"100%",boxSizing:"border-box",border:"1px solid #DDE4DB",borderRadius:10,padding:11,fontSize:14}}/>
-            <button type="button" onClick={()=>setEditingAvoidId(null)} style={{marginTop:8,border:0,background:"#365C4B",color:"#fff",borderRadius:9,padding:"8px 15px"}}>Done</button>
+            <div style={{fontSize:12,fontWeight:750,marginBottom:7}}>{translate("replacementFor")} {household.dislikedIngredients.find(d=>d.id===editingAvoidId)?.name}</div>
+            <input aria-label="Preferred replacement" value={household.dislikedIngredients.find(d=>d.id===editingAvoidId)?.substitute||""} onChange={e=>updateDislikeSubstitute(editingAvoidId,e.target.value)} placeholder={translate("replacementPlaceholder")} style={{width:"100%",boxSizing:"border-box",border:"1px solid #DDE4DB",borderRadius:10,padding:11,fontSize:14}}/>
+            <button type="button" onClick={()=>setEditingAvoidId(null)} style={{marginTop:8,border:0,background:"#365C4B",color:"#fff",borderRadius:9,padding:"8px 15px"}}>{translate("doneLabel")}</button>
           </div>}
-          <button type="button" onClick={()=>setAddingAvoid(v=>!v)} style={{border:"1px dashed #A7B9AA",background:"#F0F6F0",borderRadius:999,padding:"8px 12px",fontSize:12.5,fontWeight:750,color:"#365C4B"}}>{addingAvoid?"Cancel":"+ Add ingredient"}</button>
+          <button type="button" onClick={()=>setAddingAvoid(v=>!v)} style={{border:"1px dashed #A7B9AA",background:"#F0F6F0",borderRadius:999,padding:"8px 12px",fontSize:12.5,fontWeight:750,color:"#365C4B"}}>{addingAvoid?translate("cancelLabel"):"+ "+translate("addIngredient")}</button>
         </div>
         {addingAvoid && <div style={{display:"grid",gap:9,background:"#F7F9F6",borderRadius:13,padding:12,marginBottom:10}}>
-          <input aria-label="Ingredient to avoid" value={dislikeInput} onChange={e=>setDislikeInput(e.target.value)} placeholder="Ingredient to avoid" style={{width:"100%",boxSizing:"border-box",border:"1px solid #DDE4DB",borderRadius:10,padding:"12px",fontSize:14}}/>
-          <input aria-label="Replacement ingredient" value={substituteInput} onChange={e=>setSubstituteInput(e.target.value)} placeholder="Replace with (optional)" style={{width:"100%",boxSizing:"border-box",border:"1px solid #DDE4DB",borderRadius:10,padding:"12px",fontSize:14}}/>
-          <button type="button" disabled={!dislikeInput.trim()} onClick={()=>{addDislike(dislikeInput,substituteInput);setDislikeInput("");setSubstituteInput("");setAddingAvoid(false);}} style={{border:0,background:"#365C4B",color:"#fff",borderRadius:10,padding:12,fontWeight:750,opacity:dislikeInput.trim()?1:.5}}>Save ingredient</button>
+          <input aria-label="Ingredient to avoid" value={dislikeInput} onChange={e=>setDislikeInput(e.target.value)} placeholder={translate("avoidPlaceholder")} style={{width:"100%",boxSizing:"border-box",border:"1px solid #DDE4DB",borderRadius:10,padding:"12px",fontSize:14}}/>
+          <input aria-label="Replacement ingredient" value={substituteInput} onChange={e=>setSubstituteInput(e.target.value)} placeholder={translate("replaceOptional")} style={{width:"100%",boxSizing:"border-box",border:"1px solid #DDE4DB",borderRadius:10,padding:"12px",fontSize:14}}/>
+          <button type="button" disabled={!dislikeInput.trim()} onClick={()=>{addDislike(dislikeInput,substituteInput);setDislikeInput("");setSubstituteInput("");setAddingAvoid(false);}} style={{border:0,background:"#365C4B",color:"#fff",borderRadius:10,padding:12,fontWeight:750,opacity:dislikeInput.trim()?1:.5}}>{translate("saveIngredient")}</button>
         </div>}
       </SettingsSection>
-      <SettingsSection title={translate("tastePreferences")} countLabel={(household.preferredCuisines.length+household.preferredProteins.length)?`${household.preferredCuisines.length+household.preferredProteins.length} selected`:null} defaultOpen={false}>
-        <p style={{fontSize:12,color:C.inkSoft,margin:"0 0 14px",lineHeight:1.5}}>Optional. Leave blank to enjoy more variety.</p>
+      <SettingsSection title={translate("tastePreferences")} countLabel={(household.preferredCuisines.length+household.preferredProteins.length)?`${household.preferredCuisines.length+household.preferredProteins.length} ${translate("selectedLabel")}`:null} defaultOpen={false}>
+        <p style={{fontSize:12,color:C.inkSoft,margin:"0 0 14px",lineHeight:1.5}}>{translate("tasteOptional")}</p>
         {[
-          {key:"preferredCuisines",label:"Favourite cuisines",items:CUISINES,empty:"All cuisines"},
-          {key:"preferredProteins",label:"Preferred main ingredients",items:PROTEINS.filter(item=>!household.diets.includes("halal") || item!=="pork").filter(item=>!household.diets.includes("vegetarian") || ["tofu","egg"].includes(item)),empty:"All ingredients"}
+          {key:"preferredCuisines",label:translate("favouriteCuisines"),items:CUISINES,empty:translate("allCuisines")},
+          {key:"preferredProteins",label:translate("preferredMainIngredients"),items:PROTEINS.filter(item=>!household.diets.includes("halal") || item!=="pork").filter(item=>!household.diets.includes("vegetarian") || ["tofu","egg"].includes(item)),empty:translate("allIngredients")}
         ].map((group,idx)=>{
           const selected=household[group.key]||[];
           const expanded=editingTaste===group.key;
@@ -4608,7 +4608,7 @@ function HouseholdScreen({
                 <div style={{fontSize:13.5,fontWeight:800,color:C.ink}}>{group.label}</div>
                 <div style={{fontSize:12,color:C.inkSoft,marginTop:5,lineHeight:1.45}}>{selected.length?selected.join(" · "):group.empty}</div>
               </div>
-              <button type="button" aria-expanded={expanded} onClick={()=>setEditingTaste(expanded?null:group.key)} style={{flexShrink:0,border:"1px solid #C8D9CD",background:expanded?"#E8F2EA":"#fff",color:"#365C4B",borderRadius:10,padding:"9px 12px",fontSize:12,fontWeight:800}}>{expanded?"Done":"Edit"}</button>
+              <button type="button" aria-expanded={expanded} onClick={()=>setEditingTaste(expanded?null:group.key)} style={{flexShrink:0,border:"1px solid #C8D9CD",background:expanded?"#E8F2EA":"#fff",color:"#365C4B",borderRadius:10,padding:"9px 12px",fontSize:12,fontWeight:800}}>{expanded?translate("doneLabel"):translate("editLabel")}</button>
             </div>
             {expanded&&<div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:8,marginTop:13}}>
               {group.items.map(item=>{
