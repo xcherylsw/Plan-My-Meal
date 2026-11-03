@@ -31,9 +31,9 @@ export default function SimpleWeek({ plan, skippedDays, onSkip, onSwap, onRemove
   const activeMeals = plan.filter(m => !m.date || !skippedDays.includes(m.date));
   const recipeOptions = (pickableMeals || []).filter(m => {
     const name = String(m.name ?? "").toLowerCase();
-    const category = String(m.category ?? m.type ?? "").toLowerCase();
+    const category = String(m.dishCategory ?? m.category ?? m.type ?? "").toLowerCase();
     const protein = String(m.protein ?? "").toLowerCase();
-    const vegetable = /vegetable|vegetarian|veg|greens|side/.test(category) || /vegetable|vegetarian|veg/.test(protein) || /kailan|kai lan|bok choy|pak choy|spinach|broccoli|cabbage|choy sum|long bean|green bean|kang kong|kangkong|brinjal|eggplant|asparagus|cauliflower|lettuce|菜|蔬/.test(name);
+    const vegetable = category === "vegetable" || (!m.dishCategory && (/vegetable|vegetarian|veg|greens|side/.test(category) || /vegetable|vegetarian|veg/.test(protein))) || /kailan|kai lan|bok choy|pak choy|spinach|broccoli|cabbage|choy sum|long bean|green bean|kang kong|kangkong|brinjal|eggplant|asparagus|cauliflower|lettuce|菜|蔬/.test(name);
     return (!vegetablesOnly || vegetable) && (!query || name.includes(query.toLowerCase()));
   }).slice(0,80);
   const openRecipe = (meal) => { setRecipe(meal); setStep(null); };
