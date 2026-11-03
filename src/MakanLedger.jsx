@@ -4530,7 +4530,7 @@ function HouseholdScreen({
           <Clock size={20} color="#527663"/>
         </div>
         <button type="button" onClick={()=>setShowDinnerDays(v=>!v)} style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",marginTop:14,padding:"11px 0 0",background:"none",border:0,borderTop:"1px solid #EDF0EB",fontWeight:750,color:"#356854",cursor:"pointer"}}>
-          <span>{(household.quickDinnerDays ?? [0,1,2,3,4,5,6]).length===7?translate("everyDay"):(household.quickDinnerDays ?? []).length===0?translate("noDays"):(household.quickDinnerDays ?? []).map(d=>new Intl.DateTimeFormat(({en:"en-SG",zh:"zh-CN",my:"my-MM",tl:"fil-PH"}[getLanguage()]||"en-SG"),{weekday:"short"}).format(new Date(2024,0,1+d))).join(", ")}</span>
+          <span>{(household.quickDinnerDays ?? [0,1,2,3,4,5,6]).length===7?translate("everyDay"):(household.quickDinnerDays ?? []).length===0?translate("noDays"):(household.quickDinnerDays ?? []).map(d=>formatInterfaceDate(new Date(2024,0,1+d), {weekday:"short"})).join(", ")}</span>
           <ChevronDown size={17} style={{transform:showDinnerDays?"rotate(180deg)":"none"}}/>
         </button>
         {showDinnerDays && <div style={{display:"grid",gridTemplateColumns:"repeat(7,minmax(0,1fr))",gap:5,marginTop:14}}>
