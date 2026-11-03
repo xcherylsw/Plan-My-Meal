@@ -714,12 +714,13 @@ function stockIngredientMatch(recipeName, stockName) {
   // collapse other fermented pastes (miso, doenjang, etc.) into this item.
   const canonicalStockName = value => {
     const name = String(value || "").toLowerCase().trim()
-      .replace(/\\bsoy\\s+bean\\b/g, "soybean")
-      .replace(/\\btaocheo\\b|\\btaucheo\\b|\\btau\\s*cheo\\b/g, "taucheo")
-      .replace(/\\s+/g, " ");
-    return /\\b(?:fermented soybean paste|taucheo)\\b/.test(name) &&
-      (/\\btaucheo\\b/.test(name) || name === "fermented soybean paste")
-      ? "fermented soybean paste taucheo" : name;
+      .replace(/\bsoy\s+bean\b/g, "soybean")
+      .replace(/\btaocheo\b|\btaucheo\b|\btau\s*cheo\b/g, "taucheo")
+      .replace(/\s+/g, " ");
+    if (name === "fermented soybean paste" ||
+        name === "fermented soybean paste taucheo" ||
+        name === "taucheo") return "fermented soybean paste taucheo";
+    return name;
   };
   if (canonicalStockName(recipeName) === canonicalStockName(stockName)) return true;
   const recipe = String(recipeName || "").toLowerCase().trim();
