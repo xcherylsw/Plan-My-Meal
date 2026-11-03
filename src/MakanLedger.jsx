@@ -2507,7 +2507,7 @@ export default function MakanLedger() {
       plan.forEach(meal => {
         if (meal.cooked) return; // already deducted individually via its own Cooked button
         const scale = (meal.baseServings && paxFor(meal)) ? paxFor(meal) / meal.baseServings : 1;
-        meal.ingredients.forEach(i => {
+        meal.ingredients.forEach((i, ingredientIndex) => {
           if (i.amount == null) return;
           const idx = updated.findIndex(p =>
             p.quantity != null && (p.unit || "").toLowerCase() === (i.unit || "").toLowerCase() &&
