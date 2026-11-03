@@ -328,6 +328,44 @@ async function startForUser() {
   await enterHousehold(id, meta.linkedHid === id ? "normal" : "link");
 }
 
+// Two-way household access. A request never grants access by itself.
+export async function requestHouseholdAccess(input) {
+  const code = normaliseCode(input);
+  if (!uid || !code) return { ok:false, message:"Enter a valid household code." };
+  if (code === hid) return { ok:false, message:"You are already in this household." };
+  try {
+    const target = await getDoc(doc(db,"households",code));
+    if (!target.exists()) return { ok:false, message:"Household not found. Check the code." };
+    const ref = doc(db,"households",code,"requests",uid);
+    const existing = await getDoc(ref);
+    if (existing.exists()) {
+      const status = existing.data().status;
+      return { ok:status === "pending" || status === "approved", status, message: status === "pending" ? "Request already pending." : status === "approved" ? "Approved! You can now join using this code." : "This request was declined. Ask the owner to invite your email directly." };
+    }
+    await setDoc(ref,{uid,email:(snapshot.user?.email || "").toLowerCase(),name:userName.slice(0,100),status:"pending",createdAt:Date.now()});
+    return {ok:true,status:"pending"};
+  } catch(e) { return {ok:false,message:"Couldn't send request. Please try again."}; }
+}
+export async function getHouseholdRequestStatus(input) {
+  const code=normaliseCode(input);
+  if (!uid || !code) return null;
+  try { const d=await getDoc(doc(db,"households",code,"requests",uid)); return d.exists()?d.data().status:null; }
+  catch(e) { return null; }
+}
+export function watchHouseholdRequests(callback) {
+  if (!db || !uid || !hid || snapshot.household?.owner !== uid) { callback([]); return () => {}; }
+  return onSnapshot(collection(db,"households",hid,"requests"),
+    snap=>callback(snap.docs.filter(d=>d.data().status==="pending").map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.createdAt-b.createdAt)),
+    ()=>callback([]));
+}
+export async function reviewHouseholdRequest(requesterUid, decision) {
+  if (!uid || snapshot.household?.owner !== uid || !["approved","declined"].includes(decision)) return {ok:false,message:"Not authorised."};
+  try {
+    await updateDoc(doc(db,"households",hid,"requests",requesterUid),{status:decision,reviewedAt:Date.now()});
+    return {ok:true};
+  } catch(e) { return {ok:false,message:"Couldn't update this request."}; }
+}
+
 export async function joinHousehold(input) {
   const code = normaliseCode(input);
   if (!hid || !code) return { ok: false, message: "That doesn't look like a household code. It looks like ABCD-2345." };
