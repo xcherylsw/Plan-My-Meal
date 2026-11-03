@@ -2501,55 +2501,75 @@ export default function MakanLedger() {
     });
   }
 
-  function markPlanUsed() {
-    setPantry(prev => {
-      const updated = prev.map(p => ({ ...p }));
-      plan.forEach(meal => {
-        if (meal.cooked) return; // already deducted individually via its own Cooked button
-        const scale = (meal.baseServings && paxFor(meal)) ? paxFor(meal) / meal.baseServings : 1;
-        meal.ingredients.forEach((i, ingredientIndex) => {
-          if (i.amount == null) return;
-          const idx = updated.findIndex(p =>
-            p.quantity != null && (p.unit || "").toLowerCase() === (i.unit || "").toLowerCase() &&
-            wordMatch(String(i.name ?? "").toLowerCase(), String(p.name ?? "").toLowerCase())
-          );
-          if (idx === -1) return;
-          updated[idx].quantity = Math.max(0, updated[idx].quantity - (meal.actualQuantities?.[ingredientIndex] ?? i.amount * scale));
-        });
-      });
-      return updated;
+  // Conservative stock matching: singular/plural and count-unit aliases only.
+  // Never treat unlike weight/volume units as interchangeable.
+  function stockIngredientMatch(ingredient, stock) {
+    const normalName = value => String(value || "").toLowerCase().trim()
+      .replace(/\\b(eggs)\\b/g,"egg").replace(/\\b(tomatoes)\\b/g,"tomato")
+      .replace(/\\b(potatoes)\\b/g,"potato").replace(/\\b(leaves)\\b/g,"leaf")
+      .replace(/\\b([a-z]{4,})s\\b/g,"$1").replace(/[^a-z0-9\\s]/g,"").trim();
+    const countUnit = value => {
+      const u=String(value || "").toLowerCase().trim();
+      return !u || /^(pc|pcs|piece|pieces|each|unit|units)$/.test(u) ? "count" : u;
+    };
+    const a=normalName(ingredient.name), b=normalName(stock.name);
+    return !!a && !!b && (a===b || wordMatch(a,b)) && countUnit(ingredient.unit)===countUnit(stock.unit);
+  }
+  function deductMealIngredients(updated, meal) {
+    const scale=(meal.baseServings && paxFor(meal)) ? paxFor(meal)/meal.baseServings : 1;
+    const deducted=[],unmatched=[];
+    (meal.ingredients || []).forEach((i,n)=>{
+      if(i.amount == null) return;
+      const amount=Number(meal.actualQuantities?.[n] ?? i.amount*scale);
+      if(!Number.isFinite(amount)||amount<=0)return;
+      const idx=updated.findIndex(p=>p.quantity!=null && stockIngredientMatch(i,p));
+      if(idx<0){unmatched.push(i.name);return;}
+      const before=Number(updated[idx].quantity);
+      const used=Math.min(Math.max(0,before),amount);
+      updated[idx].quantity=Math.max(0,before-amount);
+      deducted.push({name:updated[idx].name,amount:used,unit:updated[idx].unit || ""});
     });
-    setPlan(prev => prev.map(m => ({ ...m, cooked: true })));
+    return {deducted,unmatched};
+  }
+  function markPlanUsed() {
+    const remaining=plan.filter(meal=>!meal.cooked);
+    const updated=pantry.map(p=>({...p}));
+    const results=remaining.map(meal=>({uid:meal.uid,...deductMealIngredients(updated,meal)}));
+    setPantry(updated);
+    setPlan(prev=>prev.map(m=>m.cooked?m:{...m,cooked:true,stockDeduction:results.find(r=>r.uid===m.uid)}));
+    const missing=results.flatMap(r=>r.unmatched);
+    if(missing.length) showToast("Cooked recorded, but some ingredients were not found in Kitchen: "+[...new Set(missing)].join(", "));
   }
 
-  // Per-dish version: deducts just this one meal's ingredients from kitchen
-  // stock and flags it cooked, so the bulk "mark week as cooked" won't
-  // double-deduct it later.
   function adjustPlannedMealQuantities(uid, actualQuantities) {
-    setPlan(prev => prev.map(m => m.uid === uid && !m.cooked ? {...m, actualQuantities} : m));
+    setPlan(prev=>prev.map(m=>m.uid===uid&&!m.cooked?{...m,actualQuantities}:m));
   }
 
   function markMealCooked(uid) {
-    const meal = plan.find(m => m.uid === uid);
-    if (!meal || meal.cooked) return;
-    const prevPantry = pantry;
-    const prevPlan = plan;
-    setPantry(prev => {
-      const updated = prev.map(p => ({ ...p }));
-      const scale = (meal.baseServings && paxFor(meal)) ? paxFor(meal) / meal.baseServings : 1;
-      meal.ingredients.forEach((i, ingredientIndex) => {
-        if (i.amount == null) return;
-        const idx = updated.findIndex(p =>
-          p.quantity != null && (p.unit || "").toLowerCase() === (i.unit || "").toLowerCase() &&
-          wordMatch(String(i.name ?? "").toLowerCase(), String(p.name ?? "").toLowerCase())
-        );
-        if (idx === -1) return;
-        updated[idx].quantity = Math.max(0, updated[idx].quantity - (meal.actualQuantities?.[ingredientIndex] ?? i.amount * scale));
-      });
-      return updated;
-    });
-    setPlan(prev => prev.map(m => m.uid === uid ? { ...m, cooked: true } : m));
-    showToast(`Marked ${meal.name} as cooked — kitchen stock updated`, () => { setPantry(prevPantry); setPlan(prevPlan); });
+    const meal=plan.find(m=>m.uid===uid);
+    if(!meal || meal.cooked)return;
+    const prevPantry=pantry, prevPlan=plan;
+    const updated=pantry.map(p=>({...p}));
+    const result=deductMealIngredients(updated,meal);
+    setPantry(updated);
+    setPlan(prev=>prev.map(m=>m.uid===uid?{...m,cooked:true,stockDeduction:result}:m));
+    const message=result.unmatched.length
+      ? "Cooked recorded, but Kitchen could not match: "+result.unmatched.join(", ")+". Check stock manually."
+      : "Marked "+meal.name+" as cooked — "+(result.deducted.length?"kitchen stock updated":"no tracked quantities to deduct");
+    showToast(message,()=>{setPantry(prevPantry);setPlan(prevPlan);});
+  }
+
+  // Older cooked records did not store a stock deduction receipt. Avoid
+  // automatically replaying them: a partial prior deduction may have happened.
+  function reconcileCookedMeal(uid) {
+    const meal=plan.find(m=>m.uid===uid);
+    if(!meal?.cooked || meal.stockDeduction)return;
+    if(!window.confirm("This dish was marked cooked before stock tracking was fixed. Apply its ingredient deduction now? Only continue if Kitchen stock was NOT already reduced for this dish."))return;
+    const updated=pantry.map(p=>({...p}));
+    const result=deductMealIngredients(updated,meal);
+    setPantry(updated);
+    setPlan(prev=>prev.map(m=>m.uid===uid?{...m,stockDeduction:result}:m));
+    showToast(result.unmatched.length?"Some ingredients still could not be matched: "+result.unmatched.join(", "):"Kitchen stock reconciled for "+meal.name);
   }
 
   const toBuyByCategory = useMemo(() => {
@@ -2922,7 +2942,7 @@ export default function MakanLedger() {
             onGenerate={planMyWeek} pax={targetPax}
             prepList={[...prepList.aggregateItems, ...prepList.perDish]}
             prepChecked={prepChecked} onPrepChecked={togglePrepChecked}
-            onOpenKitchen={() => setTab("pantry")} onMarkCooked={markMealCooked} onAdjustQuantities={adjustPlannedMealQuantities}
+            onOpenKitchen={() => setTab("pantry")} onMarkCooked={markMealCooked} onAdjustQuantities={adjustPlannedMealQuantities} onReconcileCooked={reconcileCookedMeal}
             shopping={<ShoppingListScreen
               toBuyByCategory={toBuyByCategory} haveIt={haveIt}
               checkedItems={checkedItems} toggleChecked={toggleChecked}
