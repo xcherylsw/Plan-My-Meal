@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import FoodArt from "./FoodArt.jsx";
 import { useLanguage } from "./interfaceLanguage.js";
-import { CalendarDays, ShoppingBasket, ClipboardCheck, ChevronRight, ArrowLeft, ArrowRight, Check, X, RefreshCw, Trash2, BookOpen } from "lucide-react";
+import { Plus, CalendarDays, ShoppingBasket, ClipboardCheck, ChevronRight, ArrowLeft, ArrowRight, Check, X, RefreshCw, Trash2, BookOpen } from "lucide-react";
 
 const ui = {
   card: { background: "#fff", border: "1px solid #E5E3EE", borderRadius: 18, padding: 18 },
@@ -22,12 +22,20 @@ export default function SimpleWeek({ plan, skippedDays, onSkip, onSwap, onRemove
   const [adding, setAdding] = useState(null);
   const [moveUid, setMoveUid] = useState(null);
   const [query, setQuery] = useState("");
+  const [vegetablesOnly, setVegetablesOnly] = useState(false);
+  const openAddDish = (date) => { setAdding(date); setSwapUid(null); setQuery(""); setVegetablesOnly(false); };
   const now = new Date();
   const dateKey = d => [d.getFullYear(), String(d.getMonth()+1).padStart(2,"0"), String(d.getDate()).padStart(2,"0")].join("-");
   const dates = Array.from({length:7},(_,i)=>dateKey(new Date(now.getFullYear(),now.getMonth(),now.getDate()+i)));
   const hasCurrentPlan = plan.some(m => dates.includes(m.date) && m.mealType === "dinner");
   const activeMeals = plan.filter(m => !m.date || !skippedDays.includes(m.date));
-  const recipeOptions = (pickableMeals || []).filter(m => !query || String(m.name ?? "").toLowerCase().includes(String(query ?? "").toLowerCase())).slice(0,80);
+  const recipeOptions = (pickableMeals || []).filter(m => {
+    const name = String(m.name ?? "").toLowerCase();
+    const category = String(m.category ?? m.type ?? "").toLowerCase();
+    const protein = String(m.protein ?? "").toLowerCase();
+    const vegetable = /vegetable|vegetarian|veg|greens|side/.test(category) || /vegetable|vegetarian|veg/.test(protein) || /kailan|kai lan|bok choy|pak choy|spinach|broccoli|cabbage|choy sum|long bean|green bean|kang kong|kangkong|brinjal|eggplant|asparagus|cauliflower|lettuce|菜|蔬/.test(name);
+    return (!vegetablesOnly || vegetable) && (!query || name.includes(query.toLowerCase()));
+  }).slice(0,80);
   const openRecipe = (meal) => { setRecipe(meal); setStep(null); };
   const actionStyle = { ...ui.button, fontSize: 12, padding: "8px 10px" };
   return <main style={{ maxWidth: 1024, margin: "0 auto", padding: "26px 18px 90px", color: "#303241", fontFamily: "system-ui, sans-serif" }}>
@@ -54,7 +62,7 @@ export default function SimpleWeek({ plan, skippedDays, onSkip, onSwap, onRemove
               <strong style={{ fontSize: 16 }}>{dateLabel(date,language)}</strong>
               <button style={actionStyle} onClick={() => onSkip(date)}>{skipped ? t("restoreDay") : t("skipDay")}</button>
             </div>
-            {meals.length === 0 && <div style={{background:"#F7F7FB",padding:14,borderRadius:13,display:"grid",gap:8}}><span style={{color:"#67677E",fontSize:13}}>No {showAllMeals?"meals":"dinner"} planned for this day.</span><button style={ui.button} onClick={() => { setAdding(date); setQuery(""); }}>+ {t("addDinner")}</button></div>}
+            {meals.length === 0 && <div style={{background:"#F7F7FB",padding:14,borderRadius:13,display:"grid",gap:8}}><span style={{color:"#67677E",fontSize:13}}>No {showAllMeals?"meals":"dinner"} planned for this day.</span><button style={ui.button} onClick={() => openAddDish(date)}>+ {t("addDinner")}</button></div>}
             {["breakfast","lunch","dinner"].filter(slot=>meals.some(m=>m.mealType===slot)).map(slot => {
               const slotMeals=meals.filter(m=>m.mealType===slot);
               return <div key={slot} style={{marginTop:14}}>
@@ -78,6 +86,7 @@ export default function SimpleWeek({ plan, skippedDays, onSkip, onSwap, onRemove
                     </div>
                   </div>
                 </div>)}
+                {slot === "dinner" && !skipped && <button type="button" onClick={() => openAddDish(date)} style={{...ui.button, width:"100%", marginTop:14, border:"1.5px dashed #D98976", background:"#FFF6F1", color:"#8B483B", display:"flex", justifyContent:"center", alignItems:"center", gap:8, fontWeight:750}}><Plus size={17}/> Add another dish · vegetables, sides & more</button>}
               </div>;
             })}
             {!showAllMeals && other.length > 0 && <button onClick={()=>setShowAllMeals(true)} style={{background:"#F1EFFB",color:"#303241",border:0,borderRadius:10,padding:"10px 12px",fontSize:12,marginTop:12,textAlign:"left",width:"100%"}}>☀️ Breakfast / lunch also saved ({other.length}) · Show all meals →</button>}
@@ -100,9 +109,12 @@ export default function SimpleWeek({ plan, skippedDays, onSkip, onSwap, onRemove
     </section>}
     {(swapUid || adding || moveUid) && <div role="dialog" aria-modal="true" aria-label="Edit meal" style={{ position: "fixed", inset: 0, zIndex: 50, background: "#303241CC", display: "grid", placeItems: "center", padding: 16 }}>
       <div style={{ ...ui.card, width: "100%", maxWidth: 520, maxHeight: "85vh", overflowY: "auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><h3 style={{ margin: "0 0 12px" }}>{moveUid ? "Move to another day" : swapUid ? "Swap this dish" : "Add dinner"}</h3><button style={actionStyle} onClick={() => { setSwapUid(null); setAdding(null); setMoveUid(null); }}>{t("close")}</button></div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><h3 style={{ margin: "0 0 12px" }}>{moveUid ? "Move to another day" : swapUid ? "Swap this dish" : "Add dish to dinner"}</h3><button style={actionStyle} onClick={() => { setSwapUid(null); setAdding(null); setMoveUid(null); }}>{t("close")}</button></div>
         {moveUid ? <div style={{ display: "grid", gap: 8 }}>{dates.map(date => <button key={date} style={ui.button} onClick={() => { onMove(moveUid,date); setMoveUid(null); }}>{dateLabel(date,language)}</button>)}</div> : <>
+          {adding && <div style={{display:"flex",gap:8,marginBottom:12}}><button type="button" aria-pressed={!vegetablesOnly} onClick={()=>setVegetablesOnly(false)} style={{...ui.button,background:!vegetablesOnly?"#FCE5DE":"#fff"}}>All dishes</button><button type="button" aria-pressed={vegetablesOnly} onClick={()=>setVegetablesOnly(true)} style={{...ui.button,background:vegetablesOnly?"#FCE5DE":"#fff"}}>🥬 Vegetables</button></div>}
           <input aria-label="Search recipes" placeholder={t("searchRecipes")} value={query} onChange={e => setQuery(e.target.value)} style={{ width: "100%", padding: 13, border: "1px solid #E5E3EE", borderRadius: 10, marginBottom: 12 }} />
+          {adding && <p style={{fontSize:12,color:"#67677E",margin:"0 0 10px"}}>Adds to this dinner without replacing the existing dishes.</p>}
+          {!recipeOptions.length && <p style={{fontSize:13,color:"#67677E"}}>No matching dishes. Try a different search.</p>}
           <div style={{ display: "grid", gap: 8 }}>{recipeOptions.map(m => <button key={m.id} style={{ ...ui.button, textAlign: "left" }} onClick={() => { if (swapUid) onSwap(swapUid,m.id); else onAdd(adding,"dinner",m.id); setSwapUid(null); setAdding(null); }}>{m.name} <span style={{ float: "right", color: "#67677E" }}>{m.time}m</span></button>)}</div>
         </>}
       </div></div>}
