@@ -12,10 +12,12 @@ const dateLabel = (date,language="en") => {
   const [y,m,d] = date.split("-").map(Number);
   return new Date(y,m-1,d).toLocaleDateString(({en:"en-SG",zh:"zh-SG",my:"my-MM",tl:"fil-PH"})[language] || "en-SG", { weekday: "long", day: "numeric", month: "short" });
 };
-export default function SimpleWeek({ plan, skippedDays, onSkip, onSwap, onRemove, onMove, onAdd, pickableMeals, onGenerate, shopping, prepList, prepChecked, onPrepChecked, onOpenKitchen, onMarkCooked, pax }) {
+export default function SimpleWeek({ plan, skippedDays, onSkip, onSwap, onRemove, onMove, onAdd, pickableMeals, onGenerate, shopping, prepList, prepChecked, onPrepChecked, onOpenKitchen, onMarkCooked, onAdjustQuantities, pax }) {
   const {t,language} = useLanguage();
   const view = "meals";
   const [recipe, setRecipe] = useState(null);
+  const [adjusting, setAdjusting] = useState(false);
+  const [quantityEdits, setQuantityEdits] = useState({});
   const [showAllMeals, setShowAllMeals] = useState(false);
   const [step, setStep] = useState(null);
   const [swapUid, setSwapUid] = useState(null);
@@ -36,8 +38,9 @@ export default function SimpleWeek({ plan, skippedDays, onSkip, onSwap, onRemove
     const vegetable = category === "vegetable" || (!m.dishCategory && (/vegetable|vegetarian|veg|greens|side/.test(category) || /vegetable|vegetarian|veg/.test(protein))) || /kailan|kai lan|bok choy|pak choy|spinach|broccoli|cabbage|choy sum|long bean|green bean|kang kong|kangkong|brinjal|eggplant|asparagus|cauliflower|lettuce|菜|蔬/.test(name);
     return (!vegetablesOnly || vegetable) && (!query || name.includes(query.toLowerCase()));
   }).slice(0,80);
-  const openRecipe = (meal) => { setRecipe(meal); setStep(null); };
+  const openRecipe = (meal) => { setRecipe(meal); setStep(null); setAdjusting(false); setQuantityEdits({}); };
   const actionStyle = { ...ui.button, fontSize: 12, padding: "8px 10px" };
+  const plannedAmount = (meal,i,n) => meal.actualQuantities?.[n] ?? (i.amount == null ? null : Math.round(i.amount * ((meal.pax || pax || meal.baseServings || 1)/(meal.baseServings || 1))*100)/100);
   return <main style={{ maxWidth: 1024, margin: "0 auto", padding: "26px 18px 90px", color: "#303241", fontFamily: "system-ui, sans-serif" }}>
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, background: "#F1EFFB", borderRadius: 22, padding: 16 }}>
       <div><div style={{ color: "#67677E", fontSize: 12, fontWeight: 700, letterSpacing: 1.5 }}>{t("weekGlance")}</div>
@@ -122,7 +125,27 @@ export default function SimpleWeek({ plan, skippedDays, onSkip, onSwap, onRemove
       <article style={{ ...ui.card, width: "100%", maxWidth: 550, maxHeight: "90vh", overflowY: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", gap: 12 }}><div><span style={{ color: "#67677E", fontSize: 12 }}>{recipe.cuisine} · {recipe.time} min</span><h2 style={{ margin: "5px 0 15px" }}>{recipe.name}</h2></div><button aria-label="Close recipe" style={actionStyle} onClick={() => setRecipe(null)}><X size={18}/></button></div>
         {step === null ? <>
-          <h3>What you'll need</h3><ul style={{ lineHeight: 1.9, paddingLeft: 22 }}>{(recipe.ingredients || []).map((i,n) => <li key={n}>{i.amount == null ? "" : Math.round(i.amount * ((recipe.pax || pax || recipe.baseServings || 1)/(recipe.baseServings || 1))*10)/10 + " " + (i.unit || "") + " "}{i.name}</li>)}</ul>
+          <h3>What you'll need</h3><ul style={{ lineHeight: 1.9, paddingLeft: 22 }}>{(recipe.ingredients || []).map((i,n) => <li key={n}>{plannedAmount(recipe,i,n) == null ? "" : plannedAmount(recipe,i,n) + " " + (i.unit || "") + " "}{i.name}</li>)}</ul>
+          {!recipe.cooked && <button type="button" style={{...ui.button,marginBottom:12}} onClick={() => {setAdjusting(v=>!v);setQuantityEdits({});}}>{adjusting ? "Cancel adjustments" : "Adjust quantities for this cooking"}</button>}
+          {adjusting && <div style={{background:"#FFF8F2",border:"1px solid #F0D8CA",padding:14,borderRadius:12,marginBottom:16}}>
+            <strong>What did you actually use?</strong>
+            <p style={{fontSize:12,color:"#67677E"}}>Only changes this planned dish, not your cookbook. Kitchen stock will use these quantities when marked cooked.</p>
+            {(recipe.ingredients || []).map((i,n)=><label key={n} style={{display:"flex",alignItems:"center",gap:9,marginBottom:10}}>
+              <span style={{flex:1,fontSize:13}}>{i.name}</span>
+              {i.amount != null ? <input aria-label={"Actual quantity of "+i.name} type="number" min="0" step="any" inputMode="decimal" value={quantityEdits[n] ?? String(plannedAmount(recipe,i,n))} onChange={e=>setQuantityEdits(p=>({...p,[n]:e.target.value}))} style={{width:85,padding:9,borderRadius:9,border:"1px solid #D8D3D0"}}/> : <span style={{fontSize:12,color:"#67677E"}}>As needed</span>}
+              <span style={{fontSize:12,minWidth:34}}>{i.unit || ""}</span>
+            </label>)}
+            <button type="button" style={{...ui.button,width:"100%",background:"#EAA28F"}} onClick={()=>{
+              const next={...(recipe.actualQuantities || {})};
+              for (const [key,raw] of Object.entries(quantityEdits)) {
+                if (raw.trim() === "" || !Number.isFinite(Number(raw)) || Number(raw)<0) return;
+                next[key]=Number(raw);
+              }
+              onAdjustQuantities(recipe.uid,next);
+              setRecipe(prev=>({...prev,actualQuantities:next}));
+              setAdjusting(false);
+            }}>Save actual quantities</button>
+          </div>}
           <h3>How to make it</h3><ol style={{ lineHeight: 1.8, paddingLeft: 22 }}>{(recipe.steps || []).map((s,n) => <li key={n}>{s}</li>)}</ol>
           <button style={{ ...ui.button, width: "100%", background: "#EAA28F", color: "#303241" }} onClick={() => setStep(0)}>Start cooking mode</button>
         </> : <>
