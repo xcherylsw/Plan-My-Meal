@@ -35,10 +35,41 @@ service cloud.firestore {
         // ...but only if the owner has put their Google email on the invite list
         || (!(request.auth.uid in resource.data.members)
           && request.auth.token.email_verified == true
-          && exists(/databases/$(database)/documents/households/$(hid)/invites/$(request.auth.token.email.lower()))
+          && (exists(/databases/$(database)/documents/households/$(hid)/invites/$(request.auth.token.email.lower()))
+            || (exists(/databases/$(database)/documents/households/$(hid)/requests/$(request.auth.uid))
+              && get(/databases/$(database)/documents/households/$(hid)/requests/$(request.auth.uid)).data.status == 'approved'))
           && request.resource.data.members.toSet() == resource.data.members.toSet().union([request.auth.uid].toSet())
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members', 'names']))
       );
+
+      // Membership requests are separate from private household data.
+      // Applicants can submit only their own verified identity, never approve themselves.
+      match /requests/{requesterUid} {
+        allow get: if request.auth != null && (
+          request.auth.uid == requesterUid ||
+          request.auth.uid == get(/databases/$(database)/documents/households/$(hid)).data.owner
+        );
+        allow list: if request.auth != null &&
+          request.auth.uid == get(/databases/$(database)/documents/households/$(hid)).data.owner;
+        allow create: if request.auth != null
+          && request.auth.uid == requesterUid
+          && request.auth.token.email_verified == true
+          && !(request.auth.uid in get(/databases/$(database)/documents/households/$(hid)).data.members)
+          && request.resource.data.keys().hasOnly(['uid','email','name','status','createdAt'])
+          && request.resource.data.uid == requesterUid
+          && request.resource.data.email == request.auth.token.email.lower()
+          && request.resource.data.name is string
+          && request.resource.data.name.size() <= 100
+          && request.resource.data.status == 'pending'
+          && request.resource.data.createdAt is int;
+        allow update: if request.auth != null
+          && request.auth.uid == get(/databases/$(database)/documents/households/$(hid)).data.owner
+          && resource.data.status == 'pending'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','reviewedAt'])
+          && request.resource.data.status in ['approved','declined']
+          && request.resource.data.reviewedAt is int;
+        allow delete: if false;
+      }
 
       // Plans, kitchen, recipes: members only.
       match /chunks/{docId} {
