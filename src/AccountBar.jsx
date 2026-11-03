@@ -87,29 +87,29 @@ export default function AccountBar() {
               </div>
               {s.household && s.household.members.length > 0 && (
                 <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${LINE}` }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "#666A73", letterSpacing: 0.5, textTransform: "uppercase" }}>Your household</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#666A73", letterSpacing: 0.5, textTransform: "uppercase" }}>{t("accountHousehold")}</div>
                   <div style={{ fontSize: 12, color: INK, marginTop: 4, lineHeight: 1.45 }}>
                     {s.household.members.map(m => m.name).join(", ")}
                   </div>
-                  <div style={{ fontSize: 11, color: "#666A73", marginTop: 8 }}>{isOwner ? "Family need this code and an invite below:" : "Household code:"}</div>
+                  <div style={{ fontSize: 11, color: "#666A73", marginTop: 8 }}>{isOwner ? t("accountFamilyCodeHelp") : t("accountCodeLabel")}</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
                     <code style={{ flex: 1, background: OAT, border: `1px solid ${LINE}`, borderRadius: 8, padding: "6px 8px", fontSize: 14, fontWeight: 700, letterSpacing: 1, color: BROWN, textAlign: "center" }}>{s.household.id}</code>
                     <button onClick={async () => {
-                      const text = `Join my Plan My Meals household. Open ${location.origin}, sign in with Google, then tap your picture → Join a household and enter: ${s.household.id}. Use the Google account I invited.`;
+                      const text = t("accountShareMessage").replace("{url}", location.origin).replace("{code}", s.household.id);
                       try { if (navigator.share) { await navigator.share({ text }); return; } } catch (e) { return; }
-                      try { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch (e) { setNote("Couldn't copy — select the code and copy it."); }
-                    }} style={{ ...btn(false), flex: "none", padding: "7px 10px" }}>{copied ? "Copied" : "Share"}</button>
+                      try { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch (e) { setNote(t("accountCopyError")); }
+                    }} style={{ ...btn(false), flex: "none", padding: "7px 10px" }}>{copied ? t("accountCopied") : t("accountShare")}</button>
                   </div>
                 </div>
               )}
               {isOwner && s.household && (
                 <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${LINE}` }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "#666A73", letterSpacing: 0.5, textTransform: "uppercase" }}>Who can join</div>
-                  <div style={{ fontSize: 11, color: "#666A73", marginTop: 4, lineHeight: 1.4 }}>Only the Google emails you add here can join, and they still need the code. Use the exact email they sign in with.</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#666A73", letterSpacing: 0.5, textTransform: "uppercase" }}>{t("accountWhoCanJoin")}</div>
+                  <div style={{ fontSize: 11, color: "#666A73", marginTop: 4, lineHeight: 1.4 }}>{t("accountInviteHelp")}</div>
                   {invites.map(em => (
                     <div key={em} style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6, fontSize: 12, color: INK }}>
                       <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{em}</span>
-                      <button aria-label={"Remove " + em} onClick={async () => { const r = await removeInvite(em); if (r.ok) setInvites(v => v.filter(x => x !== em)); else setNote(r.message || ""); }} style={{ ...link, fontSize: 15, lineHeight: 1, padding: "0 4px" }}>×</button>
+                      <button aria-label={t("accountRemoveInvite") + " " + em} onClick={async () => { const r = await removeInvite(em); if (r.ok) setInvites(v => v.filter(x => x !== em)); else setNote(r.message || ""); }} style={{ ...link, fontSize: 15, lineHeight: 1, padding: "0 4px" }}>×</button>
                     </div>
                   ))}
                   <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
@@ -118,34 +118,34 @@ export default function AccountBar() {
                     <button onClick={async () => {
                       const r = await addInvite(inviteEmail);
                       if (r.ok) { setInvites(v => [...new Set([...v, r.email])].sort()); setInviteEmail(""); setNote(""); } else setNote(r.message || "");
-                    }} style={{ ...btn(false), flex: "none", padding: "7px 12px" }}>Add</button>
+                    }} style={{ ...btn(false), flex: "none", padding: "7px 12px" }}>{t("accountAdd")}</button>
                   </div>
                 </div>
               )}
               {!joining ? (
                 <div style={{ display: "flex", gap: 14, marginTop: 10 }}>
-                  <button onClick={() => { setJoining(true); setNote(""); }} style={link}>Join a household</button>
+                  <button onClick={() => { setJoining(true); setNote(""); }} style={link}>{t("accountJoinHousehold")}</button>
                   {s.household && s.household.members.length > 1 && !isOwner && (
                     <button onClick={async () => {
-                      if (!window.confirm("Leave this household? You'll keep a copy of everything on this device in a new, private household.")) return;
+                      if (!window.confirm(t("accountLeaveConfirm"))) return;
                       const r = await leaveHousehold(); if (!r.ok) setNote(r.message || "");
-                    }} style={link}>Leave</button>
+                    }} style={link}>{t("accountLeave")}</button>
                   )}
                 </div>
               ) : (
                 <div style={{ marginTop: 10 }}>
-                  <div style={{ fontSize: 11, color: "#666A73", lineHeight: 1.4 }}>Enter the code from your family. This replaces the plans on this device with the household's.</div>
+                  <div style={{ fontSize: 11, color: "#666A73", lineHeight: 1.4 }}>{t("accountJoinHelp")}</div>
                   <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
                     <input value={code} onChange={e => setCode(e.target.value)} placeholder="ABCD-2345" autoCapitalize="characters" autoCorrect="off" spellCheck={false}
                       style={{ flex: 1, minWidth: 0, border: `1px solid ${LINE}`, borderRadius: 8, padding: "7px 8px", fontSize: 14, letterSpacing: 1, textTransform: "uppercase", fontFamily: "'IBM Plex Mono', monospace" }} />
                     <button onClick={async () => {
-                      if (!window.confirm("Join this household? The plans, kitchen and recipes on this device will be replaced by the household's.")) return;
-                      setNote("Joining…");
+                      if (!window.confirm(t("accountJoinConfirm"))) return;
+                      setNote(t("accountJoining"));
                       const r = await joinHousehold(code);
                       if (r.ok) { setJoining(false); setCode(""); setNote(""); setOpen(false); } else setNote(r.message || "");
-                    }} style={{ ...btn(false), flex: "none", padding: "7px 12px" }}>Join</button>
+                    }} style={{ ...btn(false), flex: "none", padding: "7px 12px" }}>{t("accountJoin")}</button>
                   </div>
-                  <button onClick={() => { setJoining(false); setNote(""); }} style={{ ...link, marginTop: 6 }}>Cancel</button>
+                  <button onClick={() => { setJoining(false); setNote(""); }} style={{ ...link, marginTop: 6 }}>{t("accountCancel")}</button>
                 </div>
               )}
               {note && <div style={{ fontSize: 11.5, color: CLAY, marginTop: 8, lineHeight: 1.4 }}>{note}</div>}
