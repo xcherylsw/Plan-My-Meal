@@ -591,6 +591,35 @@ function formatDuration(minutes) {
 const CUISINES = [...new Set(MEALS.map(m => m.cuisine))];
 const PROTEINS = [...new Set(MEALS.map(m => m.protein))].filter(p => p !== "vegetarian");
 
+const DISH_CATEGORIES = ["vegetable", "meat", "seafood", "egg", "tofu", "one-dish", "other"];
+function recipeIngredientFlags(ingredients = []) {
+  const names = ingredients.map(i => String(i.name || "").toLowerCase());
+  const contains = (pattern) => names.some(n => pattern.test(n));
+  const shellfish = contains(/\\b(prawn|prawns|shrimp|shrimps|scallop|scallops|crab|oyster|oysters|clam|clams|mussel|mussels|lobster|sotong|squid|belacan|belachan|hae bee|dried shrimp|虾|蝦|蚝|蠔|扇贝|扇貝)\\b/i);
+  const fish = contains(/\\b(fish|anchov(?:y|ies)|ikan bilis|salmon|tuna|mackerel|fish sauce|鱼露|魚露|鱼|魚)\\b/i);
+  const meat = contains(/\\b(pork|lard|bacon|ham|chicken|beef|mutton|lamb|duck|猪|豬|鸡|雞|牛肉|羊肉)\\b/i);
+  const egg = contains(/\\b(egg|eggs|mayonnaise)\\b|鸡蛋|雞蛋/i);
+  const dairy = contains(/\\b(milk|butter|cheese|cream|yogh?urt|whey)\\b/i);
+  const soy = contains(/\\b(soy|soya|tofu|tau kwa|tempeh|miso)\\b/i);
+  const peanut = contains(/\\b(peanut|groundnut|花生)\\b/i);
+  const sesame = contains(/\\b(sesame|芝麻)\\b/i);
+  const wheat = contains(/\\b(wheat|flour|bread|noodles|pasta|soy sauce)\\b/i);
+  const allergens = [shellfish && "shellfish", fish && "fish", egg && "egg", dairy && "milk", soy && "soy", peanut && "peanuts", sesame && "sesame", wheat && "wheat"].filter(Boolean);
+  return { shellfish, fish, meat, egg, allergens, vegetarian: !(shellfish || fish || meat) };
+}
+function recipeDishCategory(recipe) {
+  if (recipe.dishCategory) return recipe.dishCategory;
+  if (recipe.completeMeal || recipe.oneDish) return "one-dish";
+  const n = String(recipe.name || "").toLowerCase();
+  if (/sweet potato leaves|kailan|kai lan|bok choy|pak choy|spinach|broccoli|cabbage|choy sum|long beans|green beans|kang kong|kangkong|brinjal|eggplant|asparagus|cauliflower|lettuce|蔬菜|菜心|空心菜|苋菜|莧菜/.test(n)) return "vegetable";
+  if (recipe.protein === "egg") return "egg";
+  if (recipe.protein === "tofu") return "tofu";
+  if (recipe.protein === "fish" || recipe.protein === "seafood") return "seafood";
+  if (["chicken","beef","pork","lamb","duck"].includes(recipe.protein)) return "meat";
+  return "other";
+}
+
+
 const SCOPES = [
   { id: "day", label: "A day" },
   { id: "week", label: "A week" },
@@ -4727,7 +4756,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
 
   function blankDraft() {
     return {
-      name: "", cuisine: CUISINES[0], protein: PROTEINS[0], time: 30, soft: false, side: false, completeMeal: false,
+      name: "", cuisine: CUISINES[0], protein: PROTEINS[0], dishCategory: "other", time: 30, soft: false, side: false, completeMeal: false,
       isComponent: false, yieldAmount: "", yieldUnit: "",
       mealTypes: ["lunch", "dinner"], baseServings: 4,
       ingredients: [{ id: "d" + Date.now(), name: "", category: "other", amount: null, unit: "", componentId: null }],
@@ -4879,6 +4908,8 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
       name: draft.name.trim(),
       cuisine: draft.cuisine,
       protein: draft.protein,
+      dishCategory: draft.dishCategory || "other",
+      allergens: recipeIngredientFlags(cleanIngredients).allergens,
       time: draft.time,
       soft: draft.soft,
       side: draft.side,
@@ -4924,7 +4955,7 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
   function draftFromRecipe(recipe) {
     return {
       id: recipe.id,
-      name: recipe.name, cuisine: recipe.cuisine, protein: recipe.protein, time: recipe.time,
+      name: recipe.name, cuisine: recipe.cuisine, protein: recipe.protein, dishCategory: recipeDishCategory(recipe), time: recipe.time,
       soft: !!recipe.soft, side: !!recipe.side, completeMeal: recipe.completeMeal === true || (recipe.completeMeal == null && isOneDishMeal(recipe)),
       isComponent: !!recipe.isComponent,
       yieldAmount: recipe.yieldAmount != null ? String(recipe.yieldAmount) : "",
@@ -5160,7 +5191,12 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
             ))}
           </div>
 
-          <label style={labelStyle}>Protein</label>
+          <label style={labelStyle}>Dish category</label>
+          <p style={{fontSize:12,color:C.inkSoft,margin:"2px 0 9px"}}>What kind of dish is this? A vegetable dish can still contain shrimp, scallops or meat.</p>
+          <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:14}}>
+            {DISH_CATEGORIES.map(category => <Chip key={category} active={(draft.dishCategory || "other") === category} onClick={() => setDraft(prev => ({...prev,dishCategory:category}))}>{({"vegetable":"🥬 Vegetables","meat":"Meat","seafood":"Seafood","egg":"Egg","tofu":"Tofu","one-dish":"One-dish meal","other":"Other"})[category]}</Chip>)}
+          </div>
+          <label style={labelStyle}>Main protein (optional classification)</label>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
             {PROTEINS.map(p => (
               <Chip key={p} active={draft.protein === p} onClick={() => setDraft(prev => ({ ...prev, protein: p }))}>{displayRecipeLabel(p)}</Chip>
@@ -5168,6 +5204,12 @@ function ImportScreen({ myRecipes, saveRecipe, deleteRecipe, household, draft, s
           </div>
 
 
+          <div style={{background:"#FFF8EF",border:"1px solid #F0E1CC",borderRadius:12,padding:"11px 13px",marginBottom:14,fontSize:12,color:C.ink}}>
+            <strong>Detected from ingredients (review before saving)</strong>
+            <div style={{marginTop:5}}>Dietary: {recipeIngredientFlags(draft.ingredients).vegetarian ? "No meat or seafood detected" : "Contains meat and/or seafood"}</div>
+            <div style={{marginTop:4}}>Possible allergens: {recipeIngredientFlags(draft.ingredients).allergens.join(", ") || "None detected"}</div>
+            <div style={{marginTop:5,color:C.inkSoft}}>Automatic detection is a guide, not an allergy or dietary safety guarantee. Check sauces, pastes and ingredient labels.</div>
+          </div>
           <TimeInput minutes={draft.time} onChange={v => setDraft(prev => ({ ...prev, time: v }))} />
           {!draft.isComponent && (
             <Stepper label="This recipe serves (as shown)" value={draft.baseServings} min={1} max={20} onChange={v => setDraft(prev => ({ ...prev, baseServings: v }))} />
