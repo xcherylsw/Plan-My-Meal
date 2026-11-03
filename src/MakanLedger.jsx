@@ -3618,61 +3618,63 @@ const stepBtnStyle = {
 // (e.g. "3h 20m") for a long braise/roast/marinade — either way it still
 // just writes a total-minutes number back out.
 function TimeInput({ minutes, onChange }) {
-  // Default to whichever mode already matches the stored value, so opening
-  // an existing recipe that's e.g. 200 minutes shows "3h 20m" right away
-  // instead of defaulting back to a raw minutes count every time.
   const [unit, setUnit] = useState(minutes >= 60 ? "hr" : "min");
-  const clamp = v => Math.max(1, Math.min(1440, v || 0));
-  const hoursPart = Math.floor((minutes || 0) / 60);
-  const minsPart = (minutes || 0) % 60;
+  // Keep the field's text locally while typing. Clamping on every keystroke
+  // made clearing "11" immediately turn it into "1", preventing re-entry.
+  const [editing, setEditing] = useState(null);
+  const [typed, setTyped] = useState("");
+  const clamp = v => Math.max(1, Math.min(1440, v));
+  const total = Number(minutes) || 1;
+  const hoursPart = Math.floor(total / 60);
+  const minsPart = total % 60;
+  function numberField(key, value, min, max, commit, width) {
+    return <input
+      type="number" inputMode="numeric" min={min} max={max}
+      aria-label={key === "total" ? "Cooking time in minutes" : key === "hours" ? "Cooking hours" : "Additional cooking minutes"}
+      value={editing === key ? typed : value}
+      onFocus={e => { setEditing(key); setTyped(e.target.value); e.target.select(); }}
+      onChange={e => {
+        const raw = e.target.value;
+        setTyped(raw);
+        if (raw.trim() === "") return;
+        const n = Number(raw);
+        if (Number.isFinite(n) && n >= min && n <= max) commit(n);
+      }}
+      onBlur={() => {
+        if (editing === key) {
+          const n = Number(typed);
+          if (typed.trim() !== "" && Number.isFinite(n)) commit(Math.max(min, Math.min(max, Math.trunc(n))));
+          setEditing(null);
+        }
+      }}
+      onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); }}
+      style={{ width, minWidth:0, boxSizing:"border-box", border: `1px solid ${C.line}`, borderRadius: 8, padding:"6px 8px", fontFamily: FONT_MONO, fontWeight:700, fontSize:16, textAlign:"center", background:"#fff", color:C.ink }}
+    />;
+  }
   return (
-    <div style={{ marginBottom: 12, background: C.paperDim, borderRadius: 10, padding: "8px 10px" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: unit === "hr" ? 8 : 0 }}>
-        <span style={{ fontSize: 12.5, fontWeight: 600, color: C.ink }}>Cook time</span>
-        <div style={{ display: "flex", gap: 4 }}>
-          <Chip active={unit === "min"} onClick={() => setUnit("min")}>Minutes</Chip>
-          <Chip active={unit === "hr"} onClick={() => setUnit("hr")}>Hours + min</Chip>
+    <div style={{ marginBottom:12, background:C.paperDim, borderRadius:10, padding:"8px 10px" }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, flexWrap:"wrap" }}>
+        <span style={{ fontSize:12.5, fontWeight:600, color:C.ink }}>Cook time</span>
+        <div style={{ display:"flex", gap:4 }}>
+          <Chip active={unit === "min"} onClick={() => { setEditing(null); setUnit("min"); }}>Minutes</Chip>
+          <Chip active={unit === "hr"} onClick={() => { setEditing(null); setUnit("hr"); }}>Hours + min</Chip>
         </div>
       </div>
       {unit === "min" ? (
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
-          <input
-            type="number"
-            inputMode="numeric"
-            min={1}
-            max={1440}
-            value={minutes || ""}
-            onChange={e => onChange(clamp(parseInt(e.target.value, 10)))}
-            style={{ width: 70, border: `1px solid ${C.line}`, borderRadius: 8, padding: "6px 8px", fontFamily: FONT_MONO, fontWeight: 700, fontSize: 14, textAlign: "center", background: "#fff", color: C.ink }}
-          />
-          <span style={{ fontSize: 12, color: C.inkSoft }}>minutes</span>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto" }}>
-            <button onClick={() => onChange(clamp((minutes || 0) - 5))} style={stepBtnStyle}>−</button>
-            <button onClick={() => onChange(clamp((minutes || 0) + 5))} style={stepBtnStyle}>+</button>
+        <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:8 }}>
+          {numberField("total",total,1,1440,n => onChange(clamp(n)),82)}
+          <span style={{ fontSize:12, color:C.inkSoft }}>minutes</span>
+          <div style={{ display:"flex", alignItems:"center", gap:6, marginLeft:"auto" }}>
+            <button type="button" onClick={() => { setEditing(null); onChange(clamp(total - 1)); }} style={stepBtnStyle} aria-label="Subtract one minute">−</button>
+            <button type="button" onClick={() => { setEditing(null); onChange(clamp(total + 1)); }} style={stepBtnStyle} aria-label="Add one minute">+</button>
           </div>
         </div>
       ) : (
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
-          <input
-            type="number"
-            inputMode="numeric"
-            min={0}
-            max={24}
-            value={hoursPart}
-            onChange={e => onChange(clamp((parseInt(e.target.value, 10) || 0) * 60 + minsPart))}
-            style={{ width: 55, border: `1px solid ${C.line}`, borderRadius: 8, padding: "6px 8px", fontFamily: FONT_MONO, fontWeight: 700, fontSize: 14, textAlign: "center", background: "#fff", color: C.ink }}
-          />
-          <span style={{ fontSize: 12, color: C.inkSoft }}>hr</span>
-          <input
-            type="number"
-            inputMode="numeric"
-            min={0}
-            max={59}
-            value={minsPart}
-            onChange={e => onChange(clamp(hoursPart * 60 + (parseInt(e.target.value, 10) || 0)))}
-            style={{ width: 55, border: `1px solid ${C.line}`, borderRadius: 8, padding: "6px 8px", fontFamily: FONT_MONO, fontWeight: 700, fontSize: 14, textAlign: "center", background: "#fff", color: C.ink }}
-          />
-          <span style={{ fontSize: 12, color: C.inkSoft }}>min</span>
+        <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:8, flexWrap:"wrap" }}>
+          {numberField("hours",hoursPart,0,24,n => onChange(clamp(n * 60 + minsPart)),64)}
+          <span style={{ fontSize:12, color:C.inkSoft }}>hr</span>
+          {numberField("remainder",minsPart,0,59,n => onChange(clamp(hoursPart * 60 + n)),64)}
+          <span style={{ fontSize:12, color:C.inkSoft }}>min</span>
         </div>
       )}
     </div>
