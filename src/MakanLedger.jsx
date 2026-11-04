@@ -78,6 +78,63 @@ const FONT_MONO = "'IBM Plex Mono', ui-monospace, monospace";
 const ing = (name, category, amount = null, unit = "") => ({ name, category, amount, unit });
 
 const MEALS = [
+  {
+    id: "home_tcm_dangshen_chicken_soup_2026", name: "Dang Shen Chicken Soup (党参鸡汤)", cuisine: "Chinese", protein: "chicken", dishCategory: "one-dish", time: 100, baseServings: 4, mealType: "main", ingredients: [
+      ing("Bone-in chicken", "protein", 550, "g"),
+      ing("Dang Shen (党参) — practitioner-approved amount", "other"),
+      ing("Red dates, pitted", "other", 5, "pcs"),
+      ing("Ginger", "vegetable", 3, "slices"),
+      ing("Water", "other", 1.35, "L"),
+      ing("Salt", "seasoning"),
+      ing("Chinese yam (淮山), optional", "vegetable", 150, "g")
+    ], steps: [
+      "Blanch the chicken in boiling water for 2–3 minutes, then rinse.",
+      "Place chicken, ginger, red dates and optional Chinese yam into a pot.",
+      "Add water and bring to a boil.",
+      "Add Dang Shen only in the amount approved by a qualified practitioner.",
+      "Reduce heat and simmer gently for 60–90 minutes, until the chicken is thoroughly cooked.",
+      "Season with salt and serve. Remove any tough herb roots before serving."
+    ], notes: "Dang Shen is optional and requires individual advice from a qualified practitioner, particularly for children or anyone taking medicines. Do not infer a dose from this recipe."
+  },
+  {
+    id: "home_tcm_huangqi_pork_rib_soup_2026", name: "Huang Qi Pork Rib & Chinese Yam Soup (黄芪排骨淮山汤)", cuisine: "Chinese", protein: "pork", dishCategory: "one-dish", time: 105, baseServings: 4, mealType: "main", ingredients: [
+      ing("Pork ribs", "protein", 500, "g"),
+      ing("Huang Qi (黄芪) — practitioner-approved amount", "other"),
+      ing("Fresh Chinese yam (淮山)", "vegetable", 175, "g"),
+      ing("Red dates, pitted", "other", 4, "pcs"),
+      ing("Ginger", "vegetable", 3, "slices"),
+      ing("Water", "other", 1.5, "L"),
+      ing("Salt", "seasoning")
+    ], steps: [
+      "Blanch pork ribs for 3 minutes and rinse.",
+      "Peel and cut Chinese yam into chunks.",
+      "Place pork ribs, ginger, red dates and yam into a soup pot.",
+      "Add water and bring to a boil.",
+      "Add Huang Qi only in the amount approved by a qualified practitioner.",
+      "Simmer over low heat for approximately 90 minutes, until the pork is thoroughly cooked.",
+      "Remove the tough Huang Qi root slices before serving. Season with salt."
+    ], notes: "Huang Qi is optional and requires individual advice from a qualified practitioner, particularly for children or anyone taking medicines. Do not infer a dose from this recipe."
+  },
+  {
+    id: "home_tcm_steamed_chicken_mushroom_dangshen_2026", name: "Steamed Chicken with Mushrooms, Red Dates & Ginger", cuisine: "Chinese", protein: "chicken", dishCategory: "meat", time: 30, baseServings: 4, mealType: "main", ingredients: [
+      ing("Chicken, cut into pieces (quantity to confirm)", "protein"),
+      ing("Mushrooms (quantity to confirm)", "vegetable"),
+      ing("Ginger, julienned", "vegetable", 3, "slices"),
+      ing("Red dates, pitted and sliced", "other", 3, "pcs"),
+      ing("Light soy sauce", "seasoning", 1, "tbsp"),
+      ing("Sesame oil", "seasoning", 1, "tsp"),
+      ing("Cornflour", "other", 1, "tsp"),
+      ing("Water", "other", 2, "tbsp"),
+      ing("Dang Shen (党参), optional — practitioner-approved amount", "other")
+    ], steps: [
+      "Mix chicken with light soy sauce, sesame oil and cornflour.",
+      "Add mushrooms, ginger, red dates and water.",
+      "If individually approved by a qualified practitioner, add the prescribed Dang Shen.",
+      "Arrange everything in a shallow heatproof dish.",
+      "Steam over boiling water for 20–25 minutes, or until the thickest chicken pieces reach 74°C internally.",
+      "Remove any tough herb roots before serving."
+    ], notes: "Chicken and mushroom quantities were missing from the supplied recipe and must be confirmed before shopping or cooking. Dang Shen is optional and must not be dosed from this recipe."
+  },
   { id: "regional_batch3_1", name: "Taiwanese Scallion Oil Noodles", cuisine: "Chinese", region: "Taiwanese", protein: "egg", time: 20, baseServings: 4, ingredients: [ing("Wheat noodles", "noodle", 400, "g"), ing("Spring onion", "vegetable", 8, "stalks"), ing("Light soy sauce", "seasoning", 3, "tbsp"), ing("Dark soy sauce", "seasoning", 1, "tbsp"), ing("Sugar", "seasoning", 1, "tsp"), ing("Cooking oil", "seasoning", 5, "tbsp"), ing("Eggs", "protein", 4, "pcs")], steps: ["Cut spring onions into 5 cm lengths and dry thoroughly. Mix soy sauces and sugar.","Heat oil over low heat and gently fry spring onions for 8–10 minutes until golden, not burnt. Remove the onions and stir sauce mixture into the warm oil.","Cook noodles according to packet instructions and drain. Toss with scallion oil sauce and top with cooked eggs and crisp spring onions."], completeMeal: true },
   { id: "regional_batch3_2", name: "Taiwanese Tomato Egg Noodle Soup", cuisine: "Chinese", region: "Taiwanese", protein: "egg", time: 25, baseServings: 4, ingredients: [ing("Tomatoes", "vegetable", 5, "pcs"), ing("Eggs", "protein", 5, "pcs"), ing("Wheat noodles", "noodle", 400, "g"), ing("Chicken stock", "other", 1.2, "L"), ing("Spring onion", "vegetable", 3, "stalks"), ing("Light soy sauce", "seasoning", 2, "tbsp")], steps: ["Chop tomatoes and spring onions; beat eggs lightly.","Cook tomatoes in a little oil for 5 minutes until soft, then add stock and soy sauce and simmer 8 minutes.","Cook noodles separately. Pour eggs slowly into simmering soup and leave to set for 1 minute; stir gently. Divide noodles into bowls and ladle over soup."], completeMeal: true },
   { id: "regional_batch3_3", name: "Cantonese Fish Congee", cuisine: "Chinese", region: "Cantonese", protein: "fish", time: 65, baseServings: 4, ingredients: [ing("Rice", "grain", 250, "g"), ing("White fish fillet", "protein", 550, "g"), ing("Ginger", "seasoning", 30, "g"), ing("Spring onion", "vegetable", 3, "stalks"), ing("Chicken stock", "other", 1.8, "L"), ing("Light soy sauce", "seasoning", 1, "tbsp")], steps: ["Rinse rice; slice ginger and spring onion. Cut fish into bite-size pieces.","Simmer rice with stock and ginger for 45–50 minutes, stirring regularly, until grains break down and congee thickens; add water as needed.","Add fish and simmer gently for 5–7 minutes until cooked through. Season with soy sauce and garnish with spring onions."], completeMeal: true },
