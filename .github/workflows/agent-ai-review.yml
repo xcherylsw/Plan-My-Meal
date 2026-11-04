@@ -1,0 +1,33 @@
+name: Agent AI review (manual, no code changes)
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: Existing open GitHub Issue number with agent-stage label
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288ca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+      - name: Validate coordinator
+        run: node --test agents/orchestrator.test.mjs
+      - name: Generate advisory analysis
+        run: node agents/ai-runner.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: gpt-4.1-mini
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
