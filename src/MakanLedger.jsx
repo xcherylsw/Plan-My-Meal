@@ -1200,6 +1200,58 @@ function OnboardingTour({ step, onNext, onBack, onSkip }) {
   );
 }
 
+function FirstVisitStory({ language, onStart }) {
+  const copy = {
+    en: { eyebrow:"WHY TODAY COOK WHAT?", heading:"Cooking isn't the hard part. Deciding what to cook is.", sub:"Swipe through the everyday dinner struggles.", cta:"Let's plan my dinners", skip:"Skip intro", problems:[
+      ["🤔","Today cook what ah?","The same question. Every single day.","Plan your dinners for the week."],
+      ["🥬","Eh, I already bought this?","Forgotten groceries and duplicate purchases.","Use what's already in your kitchen."],
+      ["⏰","Where got time to cook?","A two-hour recipe on a busy Monday? No thanks.","Plan around your available cooking time."],
+      ["🛒","What do I need to buy?","Too many lists, too many last-minute trips.","Build a shopping list from your meal plan."],
+      ["🏠","Why am I planning everything?","The household's meal decisions fall on one person.","Keep meal planning and kitchen information together."]
+    ]},
+    zh: {eyebrow:"为什么选择 TODAY COOK WHAT？",heading:"做饭不难，难的是每天想吃什么。",sub:"左右滑动，看看这些熟悉的烦恼。",cta:"开始规划晚餐",skip:"跳过介绍",problems:[
+      ["🤔","今天煮什么？","每天都要回答同一个问题。","一次规划一周的晚餐。"],["🥬","咦，我不是买过了吗？","食材被遗忘，还重复购买。","先看看厨房里有什么。"],["⏰","哪有时间煮？","工作日没空做复杂料理。","根据可用时间安排晚餐。"],["🛒","到底要买什么？","购物清单零零散散。","根据菜单整理购物清单。"],["🏠","怎么都是我在想？","一家人的菜单总由一个人操心。","把菜单和厨房资料集中管理。"]]},
+    my: {eyebrow:"TODAY COOK WHAT ကို ဘာကြောင့်သုံးမလဲ",heading:"ချက်ပြုတ်ရတာထက် ဘာချက်ရမလဲ စဉ်းစားရတာ ပိုခက်တယ်။",sub:"နေ့စဉ်ကြုံရတဲ့ အခက်အခဲတွေကို ဘေးတိုက်ပွတ်ကြည့်ပါ။",cta:"ညစာအစီအစဉ် စတင်မယ်",skip:"ကျော်မယ်",problems:[
+      ["🤔","ဒီနေ့ ဘာချက်မလဲ။","နေ့တိုင်း ဒီမေးခွန်းပဲ။","တစ်ပတ်စာ ညစာ စီစဉ်ပါ။"],["🥬","ဒါ ဝယ်ပြီးသားလား။","စားစရာတွေ မေ့ပြီး ထပ်ဝယ်မိတယ်။","မီးဖိုချောင်မှာ ရှိတာကို သုံးပါ။"],["⏰","ချက်ဖို့ အချိန်မရှိဘူး။","အလုပ်များတဲ့နေ့မှာ အချိန်မလောက်ဘူး။","အချိန်နဲ့ကိုက်တဲ့ ဟင်းရွေးပါ။"],["🛒","ဘာတွေ ဝယ်ရမလဲ။","ဈေးဝယ်စာရင်းတွေ ရှုပ်နေတယ်။","ဟင်းအစီအစဉ်ကနေ စာရင်းလုပ်ပါ။"],["🏠","အားလုံး ငါပဲ စီစဉ်ရတာလား။","အိမ်ရဲ့ ဟင်းကိစ္စကို တစ်ယောက်တည်း စဉ်းစားရတယ်။","အစီအစဉ်နဲ့ မီးဖိုချောင်အချက်အလက်ကို တစ်နေရာတည်းထားပါ။"]]},
+    tl: {eyebrow:"BAKIT TODAY COOK WHAT?",heading:"Hindi pagluluto ang mahirap. Ang mahirap ay mag-isip ng lulutuin.",sub:"Mag-swipe para makita ang mga karaniwang problema sa hapunan.",cta:"Planuhin ang mga hapunan",skip:"Laktawan",problems:[
+      ["🤔","Ano na namang lulutuin?","Parehong tanong araw-araw.","Planuhin ang hapunan para sa isang linggo."],["🥬","Nabili ko na pala ito?","Nakakalimutang sangkap at dobleng bili.","Gamitin muna ang nasa kusina."],["⏰","Wala nang oras magluto!","Mahirap ang mahabang recipe kapag busy.","Pumili ng ulam ayon sa oras mo."],["🛒","Ano ang bibilhin?","Magulo ang mga listahan ng bilihin.","Gumawa ng shopping list mula sa meal plan."],["🏠","Bakit ako lang ang nagpaplano?","Isang tao lang ang laging nag-iisip ng kakainin.","Ilagay sa iisang lugar ang plano at impormasyon sa kusina."]]}
+  };
+  const c=copy[language] || copy.en;
+  const [index,setIndex]=useState(0);
+  const [paused,setPaused]=useState(false);
+  const [reducedMotion,setReducedMotion]=useState(false);
+  useEffect(()=>{
+    if(typeof window.matchMedia!=="function")return;
+    const mq=window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReducedMotion(mq.matches);
+    const changed=()=>setReducedMotion(mq.matches);
+    mq.addEventListener?.("change",changed);
+    return ()=>mq.removeEventListener?.("change",changed);
+  },[]);
+  useEffect(()=>{
+    if(paused||reducedMotion)return;
+    const timer=setInterval(()=>setIndex(i=>(i+1)%c.problems.length),5500);
+    return ()=>clearInterval(timer);
+  },[paused,reducedMotion,c.problems.length]);
+  const startX=useRef(null);
+  return <section aria-label={c.eyebrow} style={{padding:"24px 18px 22px",background:"#F8F4EE",color:"#29382F"}}>
+    <div style={{fontSize:11,fontWeight:800,letterSpacing:1.4,color:"#4D765F"}}>{c.eyebrow}</div>
+    <h1 style={{fontFamily:FONT_DISPLAY,fontSize:"clamp(25px,4vw,37px)",lineHeight:1.17,margin:"10px 0"}}>{c.heading}</h1>
+    <p style={{fontSize:13,color:"#657267",margin:"0 0 16px"}}>{c.sub}</p>
+    <div onPointerDown={e=>{startX.current=e.clientX;setPaused(true);}} onPointerUp={e=>{if(startX.current!=null){const delta=e.clientX-startX.current;if(Math.abs(delta)>35)setIndex(i=>(i+(delta<0?1:c.problems.length-1))%c.problems.length);}startX.current=null;}} onPointerCancel={()=>{startX.current=null;}} onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)} onFocusCapture={()=>setPaused(true)} style={{touchAction:"pan-y",userSelect:"none"}}>
+      <div aria-live="off" style={{background:["#FFEDE1","#E7F2E7","#F1EAF8","#FFF1D9","#E8EFF9"][index],borderRadius:22,padding:22,minHeight:216,display:"flex",flexDirection:"column",justifyContent:"space-between",transition:reducedMotion?"none":"background .35s"}}>
+        <div aria-hidden="true" style={{fontSize:49}}>{c.problems[index][0]}</div>
+        <div><h2 style={{fontSize:22,margin:"8px 0",fontFamily:FONT_DISPLAY}}>{c.problems[index][1]}</h2><p style={{fontSize:13,margin:"0 0 12px",color:"#665F5B"}}>{c.problems[index][2]}</p><div style={{fontSize:13,fontWeight:700,color:"#34694D"}}>✓ {c.problems[index][3]}</div></div>
+      </div>
+    </div>
+    <div style={{display:"flex",justifyContent:"center",gap:9,margin:"14px 0 18px"}}>
+      {c.problems.map((_,i)=><button key={i} type="button" onClick={()=>{setIndex(i);setPaused(true);}} aria-label={`Slide ${i+1} of ${c.problems.length}`} aria-current={index===i?"true":undefined} style={{width:index===i?24:9,height:9,borderRadius:99,border:0,background:index===i?"#387653":"#C9D4C9",cursor:"pointer",padding:0}} />)}
+    </div>
+    <button type="button" onClick={onStart} style={{display:"block",width:"100%",padding:15,border:0,borderRadius:13,background:"#356B50",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>{c.cta} →</button>
+    <button type="button" onClick={onStart} style={{display:"block",margin:"10px auto 0",border:0,background:"transparent",color:"#68746C",fontSize:12,cursor:"pointer",padding:8}}>{c.skip}</button>
+  </section>;
+}
+
 /* ---------------------------------------------------------------
    MAIN APP
 ------------------------------------------------------------------*/
@@ -1213,6 +1265,8 @@ export default function MakanLedger() {
       return saved === "generate" ? "week" : (saved && ["home", "week", "custom", "prep", "me", "manual", "list", "pantry", "library", "import", "household"].includes(saved) ? saved : "home");
     } catch (e) { return "home"; }
   });
+  const [showFirstVisitStory,setShowFirstVisitStory] = useState(()=>{try{return localStorage.getItem("tcw-intro-seen-v1")!=="yes";}catch{return true;}});
+  const finishFirstVisitStory = () => {try{localStorage.setItem("tcw-intro-seen-v1","yes");}catch{}setShowFirstVisitStory(false);};
   const [moreOpen, setMoreOpen] = useState(false);
   useEffect(() => { try { sessionStorage.setItem("pmm-tab", tab); } catch (e) { /* ignore */ } }, [tab]);
   // Changing sections must not leave users at the previous screen\'s scroll position.
@@ -2939,6 +2993,7 @@ export default function MakanLedger() {
             whole (header/nav stay put via sticky, not by clipping this). */}
         <div style={{ flex: 1, background: C.paper }}>
           {tab === "home" && (<>
+            {showFirstVisitStory && <FirstVisitStory language={language} onStart={finishFirstVisitStory} />}
             <GenerateScreen
               pantry={pantry}
               variant="home"
