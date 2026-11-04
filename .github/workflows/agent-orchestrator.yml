@@ -1,0 +1,42 @@
+name: Agent handover (manual, no deployment)
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: Existing GitHub issue number
+        required: true
+        type: string
+      handover_event:
+        description: Workflow event
+        required: true
+        type: choice
+        options:
+          - start
+          - handoff
+          - pass
+          - fail
+          - reject
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  handover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+      - name: Validate state machine
+        run: node --test agents/orchestrator.test.mjs
+      - name: Record handover in GitHub issue
+        run: node agents/orchestrator-run.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+          HANDOVER_EVENT: ${{ inputs.handover_event }}
